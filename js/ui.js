@@ -16,3 +16,20 @@ function getAddTaskFormData() {
     };
 }
 window.getAddTaskFormData = getAddTaskFormData;
+function getEditTaskFormData() {
+    const newParentIdRaw = document.getElementById('editParentInput').value;
+    return {
+        name: document.getElementById('editNameInput').value.trim(),
+        status: document.getElementById('editStatusInput').value,
+        area: document.getElementById('editAreaInput').value,
+        context: document.getElementById('editContextInput').value,
+        priority: document.getElementById('editPriorityInput').value,
+        dateInput: document.getElementById('editDateInput').value,
+        timeInput: document.getElementById('editTimeInput').value,
+        notes: document.getElementById('editNotesInput').value.trim(),
+        reminder: document.getElementById('editReminderToggle').checked,
+        rule: typeof buildRuleFromUI === 'function' ? buildRuleFromUI('edit') : null,
+        newParentId: newParentIdRaw === 'root' ? 'root' : Number(newParentIdRaw)
+    };
+}
+window.getEditTaskFormData = getEditTaskFormData;
