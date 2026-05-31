@@ -142,18 +142,6 @@ function migrateAndNormalizeTasks() {
     return changed;
 }
 
-async function loadDataFromCloud() {
-    if (!dbUrl) return false;
-    showSyncStatus('loading');
-    try {
-        const res = await fetch(getSecureDbUrl(), { method: 'GET', redirect: 'follow' });
-        if (!res.ok) throw new Error("Fallo HTTP: " + res.status);
-        const textData = await res.text();
-        
-        if (textData.trim().startsWith('<')) {
-            throw new Error("La URL devolvió código HTML. Revisá los permisos de tu Apps Script.");
-        }
-
         const data = JSON.parse(textData);
         if (Array.isArray(data)) { 
             tasks = data; 
