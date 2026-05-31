@@ -1251,23 +1251,31 @@ function openBulkMoveModal() {
 function closeBulkMoveModal() { 
     document.getElementById('bulkMoveModal').classList.add('hidden'); 
 }
-
 async function applyBulkMove() {
-    const newArea = document.getElementById('bulkAreaInput').value;
-    const newContext = document.getElementById('bulkContextInput').value;
+    // 1. UI: Recolectar datos
+    const formData = getBulkMoveFormData();
+    
+    // 2. Modelo: Mutar las tareas seleccionadas
     selectedTaskIds.forEach(id => {
         findAndMutateTask(id, (nodes, i) => {
-            nodes[i].area = newArea;
-            if (newContext !== "") nodes[i].context = newContext;
+            nodes[i].area = formData.newArea;
+            if (formData.newContext !== "") {
+                nodes[i].context = formData.newContext;
+            }
         });
     });
-    toggleBulkMode();
-    closeBulkMoveModal();
+    
+    // 3. UI: Refrescar interfaz y cerrar modales
+    if (typeof toggleBulkMode === 'function') toggleBulkMode();
+    if (typeof closeBulkMoveModal === 'function') closeBulkMoveModal();
     refreshAllDropdowns();
     renderTasks();
     showNotice("Tareas reubicadas");
+    
+    // 4. Cloud: Persistencia
     await saveData();
 }
+window.applyBulkMove = applyBulkMove;
 // POSTPONE ACTIONS
 function openPostponeModal(id, e) { if (e) e.stopPropagation(); postponeState = { id }; document.getElementById('postponeModal').classList.remove('hidden'); }
 function closePostponeModal() { document.getElementById('postponeModal').classList.add('hidden'); }
