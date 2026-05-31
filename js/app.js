@@ -1,11 +1,4 @@
 // ESTADOS Y VARIABLES GLOBALES
-function getSecureDbUrl() {
-    if (!dbUrl) return "";
-    
-    const separator = dbUrl.includes('?') ? '&' : '?';
-    
-    return dbUrl + separator + 'token=' + SECURITY_TOKEN;
-}
 
 function safeParse(key, fallback) {
     try { const data = localStorage.getItem(key); return data ? JSON.parse(data) : fallback; } 
@@ -149,31 +142,6 @@ function migrateAndNormalizeTasks() {
     return changed;
 }
 
-// COMUNICACIÓN CLOUD Y PERSISTENCIA
-async function saveData() {
-    localStorage.setItem('leo_agenda_v11', JSON.stringify(tasks));
-    localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
-    localStorage.setItem('leo_custom_contexts', JSON.stringify(customContexts));
-    
-    if (!dbUrl) return;
-    showSyncStatus('saving');
-    try {
-        const response = await fetch(getSecureDbUrl(), { 
-            method: 'POST', 
-            headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-            body: JSON.stringify(tasks),
-            redirect: 'follow'
-        });
-        if (!response.ok) throw new Error('Respuesta HTTP no exitosa: ' + response.status);
-        const textData = await response.text();
-        if (textData.trim().startsWith('<')) throw new Error('El servidor devolvió HTML (Posible error de permisos)');
-        showSyncStatus('synced');
-    } catch (e) { 
-        console.error("Error al guardar:", e); 
-        showSyncStatus('offline'); 
-        showNotice("Fallo al guardar: " + e.message.substring(0, 40));
-    }
-}
 async function loadDataFromCloud() {
     if (!dbUrl) return false;
     showSyncStatus('loading');
