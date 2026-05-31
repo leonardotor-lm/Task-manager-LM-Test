@@ -33,3 +33,10 @@ function getEditTaskFormData() {
     };
 }
 window.getEditTaskFormData = getEditTaskFormData;
+function getBulkMoveFormData() {
+    return {
+        newArea: document.getElementById('bulkAreaInput').value,
+        newContext: document.getElementById('bulkContextInput').value
+    };
+}
+window.getBulkMoveFormData = getBulkMoveFormData;
