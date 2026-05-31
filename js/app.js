@@ -589,57 +589,6 @@ function updateUI() {
     else if (typeof renderTasks === 'function') renderTasks();
 }
 
-// TREE AND LIST RENDER LOGIC
-function containsFocusNode(node, targetId) { if (node.id === targetId) return true; if (!node.subtasks) return false; return node.subtasks.some(s => containsFocusNode(s, targetId)); }
-function sortTasks(taskList) { if (currentSort.by === 'none') return taskList; const priorityWeight = { urgente: 4, alta: 3, media: 2, baja: 1 }; return taskList.sort((a, b) => { let valA, valB; if (currentSort.by === 'priority') { valA = priorityWeight[a.priority] || 0; valB = priorityWeight[b.priority] || 0; } else if (currentSort.by === 'date') { valA = a.date || '9999-12-31'; valB = b.date || '9999-12-31'; } else if (currentSort.by === 'name') { valA = (a.name || '').toLowerCase(); valB = (b.name || '').toLowerCase(); } else if (currentSort.by === 'context') { valA = (a.context || '\uFFFF').toLowerCase(); valB = (b.context || '\uFFFF').toLowerCase(); } let comparison = 0; if (valA < valB) comparison = -1; if (valA > valB) comparison = 1; return currentSort.order === 'desc' ? -comparison : comparison; }); }
-
-function pruneTree(nodeList, inFocusedSubtree = false) {
-    if (!Array.isArray(nodeList)) return [];
-    const todayStr = formatDateLocal(new Date());
-    const tomorrowObj = new Date(); tomorrowObj.setDate(tomorrowObj.getDate() + 1); const tomorrowStr = formatDateLocal(tomorrowObj);
-    
-    // CORRECCIÓN: Proyección de ventana móvil de 7 días exactos en lugar de límite de domingo
-    const nextWeekObj = new Date(); nextWeekObj.setDate(nextWeekObj.getDate() + 7); const nextWeekStr = formatDateLocal(nextWeekObj);
-    
-    const fortnightObj = new Date(); fortnightObj.setDate(fortnightObj.getDate() + 15); const fortnightStr = formatDateLocal(fortnightObj);
-    
-    let filtered = nodeList.map(node => {
-        if (node.isDeleted) return null; 
-        let matches = true;
-        if (currentFilters.search !== '') { const sTerm = currentFilters.search.toLowerCase(); const textMatch = node.name.toLowerCase().includes(sTerm) || (node.area || '').toLowerCase().includes(sTerm) || (node.context || '').toLowerCase().includes(sTerm); if (!textMatch) matches = false; }
-        if (currentFilters.status === 'pending' && node.status === 'completed') matches = false; 
-        if (currentFilters.status === 'in_progress' && node.status !== 'in_progress') matches = false; 
-        if (currentFilters.status === 'completed' && node.status !== 'completed') matches = false; 
-        if (currentFilters.priority !== 'all' && node.priority !== currentFilters.priority) matches = false; 
-        if (currentFilters.context !== 'all' && node.context !== currentFilters.context) matches = false;
-        
-        if (currentState.view === 'today') { if (!node.date || node.date > todayStr) matches = false; }
-        else if (currentState.view === 'tomorrow') { if (!node.date || node.date !== tomorrowStr) matches = false; }
-        // Se aplica el nuevo horizonte temporal en la evaluación de la vista semanal
-        else if (currentState.view === 'week') { if (!node.date || node.date > nextWeekStr) matches = false; }
-        else if (currentState.view === 'fortnight') { if (!node.date || node.date > fortnightStr) matches = false; }
-        else if (currentState.view === 'area') { if (node.area !== currentState.selectedArea) matches = false; }
-        else if (currentState.view === 'focus') { if (!inFocusedSubtree && !containsFocusNode(node, currentState.focusTargetId)) matches = false; }
-        
-        const isNowFocused = inFocusedSubtree || (currentState.view === 'focus' && node.id === currentState.focusTargetId);
-        const prunedSubtasks = pruneTree(node.subtasks || [], isNowFocused);
-        if (matches || prunedSubtasks.length > 0) return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
-        return null;
-    }).filter(Boolean);
-    
-    return sortTasks(filtered);
-}
-
-// FLATTEN MATCHES
-function flattenMatches(prunedNodes, path = []) {
-    let flat = []; if (!Array.isArray(prunedNodes)) return flat;
-    prunedNodes.forEach(node => {
-        const currentPath = [...path, { id: node.id, name: node.name }];
-        if (node._explicitMatch) flat.push({ ...node, _parentPath: path, subtasks: [] });
-        if (node.subtasks && node.subtasks.length > 0) flat = flat.concat(flattenMatches(node.subtasks, currentPath));
-    }); return flat;
-}
-
 // BUILD TASK ROWS
 function buildTaskRows(nodes, path = []) {
     if (!nodes || nodes.length === 0) return '';
