@@ -212,16 +212,63 @@ async function addTask() {
 }
 window.addTask = addTask;
 async function saveEdit() {
-    const id = editState.id; const name = document.getElementById('editNameInput').value.trim(); if (!name) return;
-    const status = document.getElementById('editStatusInput').value; const area = document.getElementById('editAreaInput').value; const context = document.getElementById('editContextInput').value; 
-    const priority = document.getElementById('editPriorityInput').value; const date = document.getElementById('editDateInput').value; const time = document.getElementById('editTimeInput').value; 
-    const notes = document.getElementById('editNotesInput').value.trim(); const reminder = document.getElementById('editReminderToggle').checked; const rule = buildRuleFromUI('edit');
-    const newParentIdRaw = document.getElementById('editParentInput').value; const newParentId = newParentIdRaw === 'root' ? 'root' : Number(newParentIdRaw);
-    let targetTask = null; if (newParentId !== editState.parentId) targetTask = extractTask(id);
-    if (targetTask) { targetTask.name = name; targetTask.status = status; targetTask.area = area; targetTask.context = context; targetTask.priority = priority; targetTask.date = date; targetTask.time = time; targetTask.notes = notes; targetTask.reminder = reminder; targetTask.recurrenceRule = rule; targetTask.attachments = [...currentAttachments]; insertTask(targetTask, newParentId); }
-    else { findAndMutateTask(id, (nodes, i) => { const n = nodes[i]; n.name = name; n.status = status; n.area = area; n.context = context; n.priority = priority; n.date = date; n.time = time; n.notes = notes; n.reminder = reminder; n.recurrenceRule = rule; n.attachments = [...currentAttachments]; }); }
-    closeEditModal(); refreshAllDropdowns(); renderTasks(); showNotice("Guardado exitosamente"); await saveData(); 
+    // 1. UI: Recolectar datos
+    const formData = getEditTaskFormData();
+    if (!formData.name) return; // Validación de negocio
+    
+    const id = editState.id; 
+    
+    // 2. Modelo: Lógica de mutación y reubicación jerárquica
+    let targetTask = null; 
+    
+    // Evalúa si la tarea cambió de padre (movimiento estructural)
+    if (formData.newParentId !== editState.parentId) { 
+        targetTask = extractTask(id); 
+    }
+    
+    if (targetTask) { 
+        // Se extrajo la tarea entera, se actualizan sus valores y se reinserta en su nuevo lugar
+        targetTask.name = formData.name; 
+        targetTask.status = formData.status; 
+        targetTask.area = formData.area; 
+        targetTask.context = formData.context; 
+        targetTask.priority = formData.priority; 
+        targetTask.date = formData.dateInput; 
+        targetTask.time = formData.timeInput; 
+        targetTask.notes = formData.notes; 
+        targetTask.reminder = formData.reminder; 
+        targetTask.recurrenceRule = formData.rule; 
+        targetTask.attachments = [...currentAttachments]; 
+        
+        insertTask(targetTask, formData.newParentId); 
+    } else { 
+        // No cambió de padre, se muta in situ
+        findAndMutateTask(id, (nodes, i) => { 
+            const n = nodes[i]; 
+            n.name = formData.name; 
+            n.status = formData.status; 
+            n.area = formData.area; 
+            n.context = formData.context; 
+            n.priority = formData.priority; 
+            n.date = formData.dateInput; 
+            n.time = formData.timeInput; 
+            n.notes = formData.notes; 
+            n.reminder = formData.reminder; 
+            n.recurrenceRule = formData.rule; 
+            n.attachments = [...currentAttachments]; 
+        }); 
+    }
+    
+    // 3. UI: Refrescar interfaz
+    closeEditModal(); 
+    refreshAllDropdowns(); 
+    renderTasks(); 
+    showNotice("Guardado exitosamente"); 
+    
+    // 4. Cloud: Persistencia
+    await saveData(); 
 }
+window.saveEdit = saveEdit;
 async function toggleTaskUniversal(id) {
     findAndMutateTask(id, (nodes, i) => {
         const t = nodes[i];
