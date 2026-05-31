@@ -170,15 +170,47 @@ function validateAndProjectRecurrence(mode) {
 
 // LÓGICA DE TAREAS (CREATE / UPDATE / DELETE / COMPLETE)
 async function addTask() { 
-    const name = document.getElementById('taskInput').value.trim(); if (!name) return; 
-    const area = document.getElementById('areaInput').value; const context = document.getElementById('contextInput').value; const priority = document.getElementById('priorityInput').value; 
-    const dateInput = document.getElementById('dateInput').value; const timeInput = document.getElementById('timeInput').value; const notes = document.getElementById('notesInput').value.trim(); 
-    const reminder = document.getElementById('reminderToggle').checked; const rule = buildRuleFromUI('add');
-    const parentIdRaw = document.getElementById('parentInput').value; const parentId = parentIdRaw === 'root' ? 'root' : Number(parentIdRaw);
-    const newTask = { id: Date.now(), name, area, context, priority, date: dateInput, startDate: dateInput, time: timeInput, notes, reminder, status: 'pending', attachments: [...currentAttachments], subtasks: [], recurrenceRule: rule };
-    if (parentId === 'root') tasks.unshift(newTask); else insertTask(newTask, parentId);
-    closeAddTaskModal(); refreshAllDropdowns(); renderTasks(); showNotice("Tarea guardada"); await saveData(); 
+    // 1. UI: Recolectar datos del formulario vía el nuevo helper
+    const formData = getAddTaskFormData();
+    
+    // Validación de negocio
+    if (!formData.name) return; 
+    
+    // 2. Modelo: Construir el objeto de dominio
+    const newTask = { 
+        id: Date.now(), 
+        name: formData.name, 
+        area: formData.area, 
+        context: formData.context, 
+        priority: formData.priority, 
+        date: formData.dateInput, 
+        startDate: formData.dateInput, 
+        time: formData.timeInput, 
+        notes: formData.notes, 
+        reminder: formData.reminder, 
+        status: 'pending', 
+        attachments: [...currentAttachments], 
+        subtasks: [], 
+        recurrenceRule: formData.rule 
+    };
+    
+    // Inserción en el Estado
+    if (formData.parentId === 'root') {
+        tasks.unshift(newTask);
+    } else {
+        insertTask(newTask, formData.parentId);
+    }
+    
+    // 3. UI: Refrescar interfaz
+    closeAddTaskModal(); 
+    refreshAllDropdowns(); 
+    renderTasks(); 
+    showNotice("Tarea guardada"); 
+    
+    // 4. Cloud: Persistir datos
+    await saveData(); 
 }
+window.addTask = addTask;
 async function saveEdit() {
     const id = editState.id; const name = document.getElementById('editNameInput').value.trim(); if (!name) return;
     const status = document.getElementById('editStatusInput').value; const area = document.getElementById('editAreaInput').value; const context = document.getElementById('editContextInput').value; 
