@@ -142,23 +142,6 @@ function migrateAndNormalizeTasks() {
     return changed;
 }
 
-        const data = JSON.parse(textData);
-        if (Array.isArray(data)) { 
-            tasks = data; 
-            localStorage.setItem('leo_agenda_v11', JSON.stringify(tasks)); 
-            showSyncStatus('synced'); 
-            showNotice("Sincronizado");
-            return true;
-        }
-        return false;
-    } catch (e) { 
-        console.error("Error al cargar:", e); 
-        showSyncStatus('offline'); 
-        showNotice("Modo Offline: " + e.message.substring(0, 50)); 
-        return false;
-    }
-}
-
 // LÓGICA DE RECURRENCIA
 function parseDateLocal(dateStr) { if (!dateStr) return new Date(); const [y, m, d] = dateStr.split('-').map(Number); return new Date(y, m - 1, d, 0, 0, 0, 0); }
 function formatDateLocal(dateObj) { const y = dateObj.getFullYear(); const m = String(dateObj.getMonth() + 1).padStart(2, '0'); const d = String(dateObj.getDate()).padStart(2, '0'); return `${y}-${m}-${d}`; }
