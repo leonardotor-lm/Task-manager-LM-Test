@@ -485,35 +485,35 @@ function buildTaskRows(nodes, path = []) {
     }).join('');
 }
 
-function renderTasks() {
+
+window.renderTasks = function() {
     const list = document.getElementById('taskList'); 
     const empty = document.getElementById('emptyState');
     
-    // Intervención preventiva: Validación y consolidación de estado global
-    if (!window.currentState) window.currentState = { view: 'area', selectedArea: 'Inbox' };
-    if (!window.currentFilters) window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+    // Sincronización estricta con la fuente de verdad global
+    const state = window.currentState || { view: 'area', selectedArea: 'Inbox' };
+    const filters = window.currentFilters || { search: '', status: 'pending', priority: 'all', context: 'all' };
 
     let nodesToRender = [];
     
-    if (currentState.view === 'trash') {
+    if (state.view === 'trash') {
         function collectDeleted(nodes) { nodes.forEach(n => { if (n.isDeleted) nodesToRender.push(n); else if (n.subtasks) collectDeleted(n.subtasks); }); }
         if (typeof tasks !== 'undefined') collectDeleted(tasks); 
         nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
         const pruned = (typeof pruneTree === 'function' && typeof tasks !== 'undefined') ? pruneTree(tasks) : [];
         
-        // Corrección algorítmica: Evaluación estricta de variables de aplanamiento
-        const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(currentState.view);
-        const hasActiveSearch = typeof currentFilters.search === 'string' && currentFilters.search.trim() !== '';
-        const hasActivePriority = currentFilters.priority && currentFilters.priority !== 'all';
-        const hasActiveContext = currentFilters.context && currentFilters.context !== 'all';
-        const hasActiveStatus = currentFilters.status && currentFilters.status !== 'pending' && currentFilters.status !== 'all';
+        const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(state.view);
+        const hasActiveSearch = typeof filters.search === 'string' && filters.search.trim() !== '';
+        const hasActivePriority = filters.priority && filters.priority !== 'all';
+        const hasActiveContext = filters.context && filters.context !== 'all';
+        const hasActiveStatus = filters.status && filters.status !== 'pending' && filters.status !== 'all';
         
         const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus;
         
         nodesToRender = isFlatView ? (typeof flattenMatches === 'function' ? flattenMatches(pruned) : []) : pruned;
 
-        if (['week', 'fortnight'].includes(currentState.view)) {
+        if (['week', 'fortnight'].includes(state.view)) {
             nodesToRender.sort((a, b) => {
                 if (!a.date && !b.date) return 0;
                 if (!a.date) return 1;
@@ -526,17 +526,17 @@ function renderTasks() {
     if (nodesToRender.length === 0) { 
         if (list) list.innerHTML = ''; 
         if (empty) {
-            empty.innerText = currentState.view === 'trash' ? "La papelera está vacía." : "No se encontraron tareas bajo los criterios actuales."; 
+            empty.innerText = state.view === 'trash' ? "La papelera está vacía." : "No se encontraron tareas bajo los criterios actuales."; 
             empty.classList.remove('hidden'); 
         }
         return; 
     }
     
     if (empty) empty.classList.add('hidden');
-    if (list && typeof buildTaskRows === 'function') {
-        list.innerHTML = `<div id="taskList-root" class="flex flex-col min-h-[50px] pb-4">${buildTaskRows(nodesToRender)}</div>`;
+    if (list && typeof window.buildTaskRows === 'function') {
+        list.innerHTML = `<div id="taskList-root" class="flex flex-col min-h-[50px] pb-4">${window.buildTaskRows(nodesToRender)}</div>`;
     }
-}
+};
 
 window.buildTaskRows = buildTaskRows;
 window.renderTasks = renderTasks;
