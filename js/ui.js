@@ -493,8 +493,7 @@ function renderTasks() {
         collectDeleted(tasks); nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
         const pruned = pruneTree(tasks);
-        const isFlatView = ['today', 'tomorrow', 'week', 'fortnight'].includes(currentState.view) || (currentFilters.search !== '' || currentFilters.priority !== 'all' || currentFilters.context !== 'all' || currentFilters.status !== 'pending');
-        nodesToRender = isFlatView ? flattenMatches(pruned) : pruned;
+        const isFlatView = ['today', 'tomorrow', 'week', 'fortnight'].includes(currentState.view) || (currentFilters.search !== '' || currentFilters.priority !== 'all' || currentFilters.context !== 'all' || (currentFilters.status !== 'pending' && currentFilters.status !== 'all'));
 
         // Intervención quirúrgica: Ordenamiento cronológico predeterminado para ventanas de corto y mediano plazo
         if (['week', 'fortnight'].includes(currentState.view)) {
