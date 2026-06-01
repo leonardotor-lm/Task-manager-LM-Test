@@ -89,3 +89,22 @@ function flattenMatches(prunedNodes, path = []) {
         if (node.subtasks && node.subtasks.length > 0) flat = flat.concat(flattenMatches(node.subtasks, currentPath));
     }); return flat;
 }
+function getAreaTaskCount(areaName) {
+    let count = 0;
+    if (typeof tasks === 'undefined' || !Array.isArray(tasks)) return count;
+    
+    function walk(nodes) {
+        nodes.forEach(t => {
+            if (!t.isDeleted && t.status !== 'completed' && t.area === areaName) {
+                count++;
+            }
+            if (t.subtasks && Array.isArray(t.subtasks)) {
+                walk(t.subtasks);
+            }
+        });
+    }
+    
+    walk(tasks);
+    return count;
+}
+window.getAreaTaskCount = getAreaTaskCount;
