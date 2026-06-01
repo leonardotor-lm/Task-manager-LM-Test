@@ -288,8 +288,6 @@ async function toggleTaskUniversal(id) {
 async function deleteTaskUniversal(id) { const task = getTaskById(id); if (!task) return; const performDelete = async () => { if (findAndMutateTask(id, (nodes, i) => { nodes[i].isDeleted = true; nodes[i].deletedAt = Date.now(); })) { refreshAllDropdowns(); renderTasks(); renderCalendar(); showNotice("Enviada a papelera"); await saveData(); } }; if (task.subtasks && task.subtasks.length > 0) { showConfirm("Eliminar con subtareas", `¿Enviar a papelera con sus ${task.subtasks.length} subtareas?`, performDelete, true); } else { await performDelete(); } }
 
 // UTILIDADES Y RENDERIZADO VISUAL
-function openSettingsModal() { document.getElementById('settingsDbUrlInput').value = dbUrl; document.getElementById('settingsApiKeyInput').value = customApiKey; document.getElementById('settingsModal').classList.remove('hidden'); }
-function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
 async function saveSettings() { dbUrl = document.getElementById('settingsDbUrlInput').value.trim(); customApiKey = document.getElementById('settingsApiKeyInput').value.trim(); if (dbUrl) localStorage.setItem(DB_URL_KEY, dbUrl); else localStorage.removeItem(DB_URL_KEY); if (customApiKey) localStorage.setItem(API_KEY_STORAGE_KEY, customApiKey); else localStorage.removeItem(API_KEY_STORAGE_KEY); closeSettingsModal(); showNotice("Configuración actualizada."); if (dbUrl) await loadDataFromCloud(); else { showSyncStatus('none'); updateUI(); } }
 
 // CORE ENGINE HELPERS
