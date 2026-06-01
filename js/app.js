@@ -326,8 +326,30 @@ function importData(event) { const file = event.target.files[0]; if (!file) retu
     }
 window.refreshAllDropdowns = refreshAllDropdowns;
 // NAVIGATION & FILTERS CONTINUATION
-function updateFilters() { currentFilters = { search: document.getElementById('searchInput').value.trim(), status: document.getElementById('filterStatus').value, priority: document.getElementById('filterPriority').value, context: document.getElementById('filterContext').value }; renderTasks(); }
-function resetFilters() { document.getElementById('searchInput').value = ''; document.getElementById('filterStatus').value = 'pending'; document.getElementById('filterPriority').value = 'all'; document.getElementById('filterContext').value = 'all'; document.getElementById('sortSelect').value = 'date-asc'; currentSort = { by: 'date', order: 'asc' }; updateFilters(); showNotice("Filtros restablecidos"); }
+function updateFilters() { 
+    currentFilters = { 
+        search: document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '', 
+        status: document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'pending', 
+        priority: document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : 'all', 
+        context: document.getElementById('filterContext') ? document.getElementById('filterContext').value : 'all' 
+    }; 
+    if (typeof renderTasks === 'function') renderTasks(); 
+}
+
+function resetFilters() { 
+    if (document.getElementById('searchInput')) document.getElementById('searchInput').value = ''; 
+    if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = 'pending'; 
+    if (document.getElementById('filterPriority')) document.getElementById('filterPriority').value = 'all'; 
+    if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all'; 
+    
+    if (document.getElementById('sortSelect')) {
+        document.getElementById('sortSelect').value = 'date-asc'; 
+        currentSort = { by: 'date', order: 'asc' }; 
+    }
+    
+    updateFilters(); 
+    if (typeof showNotice === 'function') showNotice("Filtros restablecidos"); 
+}
 function updateSort() { const val = document.getElementById('sortSelect').value.split('-'); currentSort = { by: val[0], order: val[1] }; renderTasks(); }
 
 // Orquestador de interfaz actualizado
