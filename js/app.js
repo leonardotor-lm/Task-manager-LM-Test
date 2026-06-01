@@ -403,8 +403,9 @@ function updateUI() {
     if (currentState.view === 'calendar' && typeof isBulkMode !== 'undefined' && isBulkMode && typeof toggleBulkMode === 'function') toggleBulkMode();
     
     // Ejecución inyectada del motor analítico
-    if (typeof updateSidebarCounters === 'function') updateSidebarCounters();
-
+if (typeof calculateSidebarCounters === 'function' && typeof renderSidebarCounters === 'function') {
+    renderSidebarCounters(calculateSidebarCounters(tasks));
+}
     // Renderizado final
     if (currentState.view === 'calendar' && typeof renderCalendar === 'function') renderCalendar(); 
     else if (typeof renderTasks === 'function') renderTasks();
