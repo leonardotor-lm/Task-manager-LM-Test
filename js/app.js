@@ -111,63 +111,6 @@ function migrateAndNormalizeTasks() {
     return changed;
 }
 
-// FUNCIONES DE INTERFAZ RECURRENCIA (MODALS)
-function toggleRecurrenceUI(mode) {
-    const checked = document.getElementById(`${mode}HasRecurrence`).checked;
-    document.getElementById(`${mode}RecurrenceContainer`).classList.toggle('hidden', !checked);
-    refreshRecurrenceUI(mode);
-}
-function toggleDay(mode, dayVal) {
-    const arr = mode === 'add' ? addSelectedDays : editSelectedDays;
-    if (arr.includes(dayVal)) { const idx = arr.indexOf(dayVal); arr.splice(idx, 1); } else { arr.push(dayVal); arr.sort((a, b) => a - b); }
-    for (let i=0; i<7; i++) {
-        const btn = document.getElementById(`${mode}-day-${i}`);
-        if (arr.includes(i)) { btn.classList.add('bg-brand-500', 'text-navy-900', 'border-brand-500', 'scale-110'); btn.classList.remove('bg-navy-800'); }
-        else { btn.classList.remove('bg-brand-500', 'text-navy-900', 'border-brand-500', 'scale-110'); btn.classList.add('bg-navy-800'); }
-    }
-    validateAndProjectRecurrence(mode);
-}
-function refreshRecurrenceUI(mode) {
-    const freq = document.getElementById(`${mode}Frequency`).value;
-    document.getElementById(`${mode}IntervalLabel`).innerText = freq === 'daily' ? 'días' : freq === 'weekly' ? 'semanas' : freq === 'monthly' ? 'meses' : freq === 'yearly' ? 'años' : freq === 'after_completion' ? 'días post-resolución' : 'meses';
-    document.getElementById(`${mode}WeeklyBlock`).classList.toggle('hidden', freq !== 'weekly');
-    document.getElementById(`${mode}MonthlyBlock`).classList.toggle('hidden', freq !== 'monthly');
-    document.getElementById(`${mode}YearlyBlock`).classList.toggle('hidden', freq !== 'yearly');
-    document.getElementById(`${mode}CustomBlock`).classList.toggle('hidden', freq !== 'custom');
-    document.getElementById(`${mode}CompletionBaseBlock`).classList.toggle('hidden', freq === 'after_completion');
-    if (freq === 'monthly') {
-        const isFixed = document.querySelector(`input[name="${mode}MonthlyMode"]:checked`).value === 'fixed';
-        document.getElementById(`${mode}MonthlyFixedBlock`).classList.toggle('hidden', !isFixed);
-        document.getElementById(`${mode}MonthlyBusinessBlock`).classList.toggle('hidden', isFixed);
-    }
-    validateAndProjectRecurrence(mode);
-}
-function buildRuleFromUI(mode) {
-    if (!document.getElementById(`${mode}HasRecurrence`).checked) return null;
-    const freq = document.getElementById(`${mode}Frequency`).value;
-    const interval = parseInt(document.getElementById(`${mode}Interval`).value) || 1;
-    const baseOnComp = freq === 'after_completion' ? true : document.getElementById(`${mode}BaseOnCompletion`).checked;
-    let rule = { frequency: freq, interval, baseOnCompletion: baseOnComp };
-    if (freq === 'weekly') rule.daysOfWeek = mode === 'add' ? [...addSelectedDays] : [...editSelectedDays];
-    else if (freq === 'monthly') {
-        const isFixed = document.querySelector(`input[name="${mode}MonthlyMode"]:checked`).value === 'fixed';
-        if (isFixed) rule.dayOfMonth = parseInt(document.getElementById(`${mode}DayOfMonth`).value) || 1;
-        else rule.nthBusinessDay = parseInt(document.getElementById(`${mode}NthBusinessDay`).value) || 5;
-    }
-    else if (freq === 'yearly') { rule.dayOfMonth = parseInt(document.getElementById(`${mode}YearDay`).value) || 1; rule.monthOfYear = parseInt(document.getElementById(`${mode}YearMonth`).value) || 1; }
-    else if (freq === 'custom') { rule.dayOfMonth = parseInt(document.getElementById(`${mode}CustomDay`).value) || 1; }
-    return rule;
-}
-function validateAndProjectRecurrence(mode) {
-    const rule = buildRuleFromUI(mode); const projEl = document.getElementById(`${mode}RecurrenceProjection`);
-    if (!rule) { projEl.innerText = ''; return; }
-    const tDate = document.getElementById(mode === 'add' ? 'dateInput' : 'editDateInput').value;
-    if (!tDate) { projEl.innerText = 'Seleccioná una fecha base para simular.'; return; }
-    if (rule.frequency === 'weekly' && (!rule.daysOfWeek || rule.daysOfWeek.length === 0)) { projEl.innerText = 'Seleccioná al menos un día.'; return; }
-    try { const simTask = { date: tDate, startDate: tDate, recurrenceRule: rule }; const nextDate = calculateNextOccurrence(simTask); projEl.innerText = nextDate ? `Próxima ejecución: ${nextDate}` : 'Configuración inválida.'; } 
-    catch (e) { projEl.innerText = 'Error algorítmico.'; }
-}
-
 // LÓGICA DE TAREAS (CREATE / UPDATE / DELETE / COMPLETE)
 async function addTask() { 
     // 1. UI: Recolectar datos del formulario vía el nuevo helper
