@@ -1107,18 +1107,6 @@ window.bulkPostpone = function() {
         document.getElementById('postponeModal').classList.remove('hidden');
     }
 };
-
-function openBulkMoveModal() { 
-    if (selectedTaskIds.size === 0) return;
-    populateSelect('bulkAreaInput', getAllAreasOrdered());
-    const allContexts = [...new Set([...customContexts.map(c => c.name), ...getUniqueValues(tasks, 'context')])].filter(c => c && c.trim() !== '').sort();
-    populateSelect('bulkContextInput', allContexts, "Mantener contexto actual", "");
-    document.getElementById('bulkMoveModal').classList.remove('hidden'); 
-}
-
-function closeBulkMoveModal() { 
-    document.getElementById('bulkMoveModal').classList.add('hidden'); 
-}
 async function applyBulkMove() {
     // 1. UI: Recolectar datos
     const formData = getBulkMoveFormData();
