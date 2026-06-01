@@ -249,3 +249,81 @@ window.openPostponeModal = openPostponeModal;
 window.closePostponeModal = closePostponeModal;
 window.toggleSidebar = toggleSidebar;
 
+function updateDateDisplay() { document.getElementById('current-date-display').innerText = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }); }
+function toggleConfigMenu() { const content = document.getElementById('configMenuContent'); const chevron = document.getElementById('configMenuChevron'); if (content.classList.contains('hidden')) { content.classList.remove('hidden'); chevron.classList.add('rotate-180'); } else { content.classList.add('hidden'); chevron.classList.remove('rotate-180'); } }
+function getContextStyles(contextName) { const found = customContexts.find(c => c.name === contextName); const color = found ? found.color : 'gray'; return contextColorMap[color] || contextColorMap['gray']; }
+function formatDateAR(dateStr, timeStr) { if (!dateStr) return ''; const parts = dateStr.split('-'); if (parts.length !== 3) return dateStr; const formattedDate = `${parts[2]}/${parts[1]}`; return timeStr ? `${formattedDate}` : formattedDate; }
+
+function openSettingsModal() { document.getElementById('settingsDbUrlInput').value = dbUrl; document.getElementById('settingsApiKeyInput').value = customApiKey; document.getElementById('settingsModal').classList.remove('hidden'); }
+function closeSettingsModal() { document.getElementById('settingsModal').classList.add('hidden'); }
+
+// FUNCIONES DE INTERFAZ RECURRENCIA (MODALS)
+function toggleRecurrenceUI(mode) {
+    const checked = document.getElementById(`${mode}HasRecurrence`).checked;
+    document.getElementById(`${mode}RecurrenceContainer`).classList.toggle('hidden', !checked);
+    refreshRecurrenceUI(mode);
+}
+function toggleDay(mode, dayVal) {
+    const arr = mode === 'add' ? addSelectedDays : editSelectedDays;
+    if (arr.includes(dayVal)) { const idx = arr.indexOf(dayVal); arr.splice(idx, 1); } else { arr.push(dayVal); arr.sort((a, b) => a - b); }
+    for (let i=0; i<7; i++) {
+        const btn = document.getElementById(`${mode}-day-${i}`);
+        if (arr.includes(i)) { btn.classList.add('bg-brand-500', 'text-navy-900', 'border-brand-500', 'scale-110'); btn.classList.remove('bg-navy-800'); }
+        else { btn.classList.remove('bg-brand-500', 'text-navy-900', 'border-brand-500', 'scale-110'); btn.classList.add('bg-navy-800'); }
+    }
+    validateAndProjectRecurrence(mode);
+}
+function refreshRecurrenceUI(mode) {
+    const freq = document.getElementById(`${mode}Frequency`).value;
+    document.getElementById(`${mode}IntervalLabel`).innerText = freq === 'daily' ? 'días' : freq === 'weekly' ? 'semanas' : freq === 'monthly' ? 'meses' : freq === 'yearly' ? 'años' : freq === 'after_completion' ? 'días post-resolución' : 'meses';
+    document.getElementById(`${mode}WeeklyBlock`).classList.toggle('hidden', freq !== 'weekly');
+    document.getElementById(`${mode}MonthlyBlock`).classList.toggle('hidden', freq !== 'monthly');
+    document.getElementById(`${mode}YearlyBlock`).classList.toggle('hidden', freq !== 'yearly');
+    document.getElementById(`${mode}CustomBlock`).classList.toggle('hidden', freq !== 'custom');
+    document.getElementById(`${mode}CompletionBaseBlock`).classList.toggle('hidden', freq === 'after_completion');
+    if (freq === 'monthly') {
+        const isFixed = document.querySelector(`input[name="${mode}MonthlyMode"]:checked`).value === 'fixed';
+        document.getElementById(`${mode}MonthlyFixedBlock`).classList.toggle('hidden', !isFixed);
+        document.getElementById(`${mode}MonthlyBusinessBlock`).classList.toggle('hidden', isFixed);
+    }
+    validateAndProjectRecurrence(mode);
+}
+function buildRuleFromUI(mode) {
+    if (!document.getElementById(`${mode}HasRecurrence`).checked) return null;
+    const freq = document.getElementById(`${mode}Frequency`).value;
+    const interval = parseInt(document.getElementById(`${mode}Interval`).value) || 1;
+    const baseOnComp = freq === 'after_completion' ? true : document.getElementById(`${mode}BaseOnCompletion`).checked;
+    let rule = { frequency: freq, interval, baseOnCompletion: baseOnComp };
+    if (freq === 'weekly') rule.daysOfWeek = mode === 'add' ? [...addSelectedDays] : [...editSelectedDays];
+    else if (freq === 'monthly') {
+        const isFixed = document.querySelector(`input[name="${mode}MonthlyMode"]:checked`).value === 'fixed';
+        if (isFixed) rule.dayOfMonth = parseInt(document.getElementById(`${mode}DayOfMonth`).value) || 1;
+        else rule.nthBusinessDay = parseInt(document.getElementById(`${mode}NthBusinessDay`).value) || 5;
+    }
+    else if (freq === 'yearly') { rule.dayOfMonth = parseInt(document.getElementById(`${mode}YearDay`).value) || 1; rule.monthOfYear = parseInt(document.getElementById(`${mode}YearMonth`).value) || 1; }
+    else if (freq === 'custom') { rule.dayOfMonth = parseInt(document.getElementById(`${mode}CustomDay`).value) || 1; }
+    return rule;
+}
+function validateAndProjectRecurrence(mode) {
+    const rule = buildRuleFromUI(mode); const projEl = document.getElementById(`${mode}RecurrenceProjection`);
+    if (!rule) { projEl.innerText = ''; return; }
+    const tDate = document.getElementById(mode === 'add' ? 'dateInput' : 'editDateInput').value;
+    if (!tDate) { projEl.innerText = 'Seleccioná una fecha base para simular.'; return; }
+    if (rule.frequency === 'weekly' && (!rule.daysOfWeek || rule.daysOfWeek.length === 0)) { projEl.innerText = 'Seleccioná al menos un día.'; return; }
+    try { const simTask = { date: tDate, startDate: tDate, recurrenceRule: rule }; const nextDate = calculateNextOccurrence(simTask); projEl.innerText = nextDate ? `Próxima ejecución: ${nextDate}` : 'Configuración inválida.'; } 
+    catch (e) { projEl.innerText = 'Error algorítmico.'; }
+}
+// Exposición Global - Manipulación Visual Pura
+window.updateDateDisplay = updateDateDisplay;
+window.toggleConfigMenu = toggleConfigMenu;
+window.getContextStyles = getContextStyles;
+window.formatDateAR = formatDateAR;
+window.openSettingsModal = openSettingsModal;
+window.closeSettingsModal = closeSettingsModal;
+
+// Exposición Global - Ecosistema de Recurrencia
+window.toggleRecurrenceUI = toggleRecurrenceUI;
+window.toggleDay = toggleDay;
+window.refreshRecurrenceUI = refreshRecurrenceUI;
+window.buildRuleFromUI = buildRuleFromUI;
+window.validateAndProjectRecurrence = validateAndProjectRecurrence;
