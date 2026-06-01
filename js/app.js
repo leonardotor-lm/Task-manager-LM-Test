@@ -1042,3 +1042,42 @@ function initSpeechRecognition() {} function toggleVoiceCapture() { showNotice("
 function processOmnibarCommand() { showNotice("Comando procesado localmente (Simulación)."); document.getElementById('omnibarInput').value = ''; }
 function handleOmnibarKeydown(event) { if (event.key === 'Enter') processOmnibarCommand(); }
 function breakdownTaskWithAI() { showNotice("Funcionalidad de IA en desarrollo."); }
+function navigate(view, areaName = null, pushHistory = true, focusId = null) { 
+    if (pushHistory && typeof navHistory !== 'undefined') {
+        navHistory.push(JSON.parse(JSON.stringify(currentState))); 
+    }
+    
+    currentState.view = view; 
+    currentState.selectedArea = areaName; 
+    currentState.focusTargetId = focusId; 
+    
+    if (window.innerWidth < 768 && typeof toggleSidebar === 'function') {
+        toggleSidebar(false); 
+    }
+    
+    // Intervención Quirúrgica: Saneamiento de estado al cambiar de vista
+    // Previene la contaminación cruzada de filtros y asegura la visibilidad de completadas
+    if (window.currentFilters) {
+        window.currentFilters.search = '';
+        window.currentFilters.priority = 'all';
+        window.currentFilters.context = 'all';
+        
+        // Si ingresamos a la vista general, anulamos el filtro de pendientes
+        if (view === 'all') {
+            window.currentFilters.status = 'all';
+        } else {
+            window.currentFilters.status = 'pending';
+        }
+        
+        // Sincronización estricta del DOM para evitar desfasajes visuales con los selectores
+        if (document.getElementById('searchInput')) document.getElementById('searchInput').value = '';
+        if (document.getElementById('filterPriority')) document.getElementById('filterPriority').value = 'all';
+        if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all';
+        if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = window.currentFilters.status;
+    }
+    
+    if (typeof updateUI === 'function') updateUI(); 
+}
+
+// Exposición global indispensable para el funcionamiento del menú HTML
+window.navigate = navigate;
