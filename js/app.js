@@ -1133,8 +1133,6 @@ async function applyBulkMove() {
 }
 window.applyBulkMove = applyBulkMove;
 // POSTPONE ACTIONS
-function openPostponeModal(id, e) { if (e) e.stopPropagation(); postponeState = { id }; document.getElementById('postponeModal').classList.remove('hidden'); }
-function closePostponeModal() { document.getElementById('postponeModal').classList.add('hidden'); }
 async function postponeAction(type) { 
     let fd = ''; 
     
