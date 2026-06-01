@@ -65,3 +65,71 @@ function renderSidebarAreas() {
     }).join(''); 
 }
 window.renderSidebarAreas = renderSidebarAreas;
+function populateSelect(selectId, options, addEmpty = false, emptyText = 'Ninguno') {
+    const select = document.getElementById(selectId);
+    if (!select) return;
+    let html = '';
+    if (addEmpty) html += `<option value="">${emptyText}</option>`;
+    options.forEach(opt => {
+        const val = typeof opt === 'object' ? opt.name : opt;
+        const text = typeof opt === 'object' ? opt.name : opt;
+        html += `<option value="${val}">${text}</option>`;
+    });
+    select.innerHTML = html;
+}
+window.populateSelect = populateSelect;
+
+function refreshAllDropdowns() {
+    populateSelect('areaInput', customAreas);
+    populateSelect('editAreaInput', customAreas);
+    populateSelect('bulkAreaInput', customAreas, true, 'Mantener original');
+    populateSelect('contextInput', customContexts, true, 'Sin contexto');
+    populateSelect('editContextInput', customContexts, true, 'Sin contexto');
+    populateSelect('bulkContextInput', customContexts, true, 'Mantener original');
+    updateAddParentDropdown();
+}
+window.refreshAllDropdowns = refreshAllDropdowns;
+
+function refreshEditDropdowns(taskId) {
+    populateSelect('editAreaInput', customAreas);
+    populateSelect('editContextInput', customContexts, true, 'Sin contexto');
+    updateEditParentDropdown(taskId);
+}
+window.refreshEditDropdowns = refreshEditDropdowns;
+
+function updateAddParentDropdown() {
+    const parentInput = document.getElementById('parentInput');
+    if (!parentInput) return;
+    
+    // Se invoca a las funciones del motor
+    const flat = typeof flattenMatches === 'function' ? flattenMatches(pruneTree(tasks)) : [];
+    
+    let html = '<option value="root">Ninguna (Tarea principal)</option>';
+    flat.forEach(t => {
+        if (!t.isDeleted) {
+            const prefix = t._parentPath ? t._parentPath.map(() => '-').join('') : '';
+            html += `<option value="${t.id}">${prefix} ${t.name}</option>`;
+        }
+    });
+    parentInput.innerHTML = html;
+}
+window.updateAddParentDropdown = updateAddParentDropdown;
+
+function updateEditParentDropdown(taskId) {
+    const parentInput = document.getElementById('editParentInput');
+    if (!parentInput) return;
+    
+    const flat = typeof flattenMatches === 'function' ? flattenMatches(pruneTree(tasks)) : [];
+    
+    let html = '<option value="root">Ninguna (Tarea principal)</option>';
+    flat.forEach(t => {
+        // Regla visual: una tarea no puede ser padre de sí misma ni de sus descendientes
+        const valid = !t.isDeleted && t.id !== taskId && (typeof isDescendant === 'function' ? !isDescendant(taskId, t.id) : true);
+        if (valid) {
+            const prefix = t._parentPath ? t._parentPath.map(() => '-').join('') : '';
+            html += `<option value="${t.id}">${prefix} ${t.name}</option>`;
+        }
+    });
+    parentInput.innerHTML = html;
+}
+window.updateEditParentDropdown = updateEditParentDropdown;
