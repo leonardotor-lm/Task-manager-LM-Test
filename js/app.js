@@ -326,14 +326,24 @@ function importData(event) { const file = event.target.files[0]; if (!file) retu
     }
 window.refreshAllDropdowns = refreshAllDropdowns;
 // NAVIGATION & FILTERS CONTINUATION
-function updateFilters() { 
-    currentFilters = { 
-        search: document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '', 
-        status: document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'pending', 
-        priority: document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : 'all', 
-        context: document.getElementById('filterContext') ? document.getElementById('filterContext').value : 'all' 
-    }; 
-    if (typeof renderTasks === 'function') renderTasks(); 
+function updateFilters() {
+    if (!window.currentFilters) {
+        window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+    }
+    
+    const searchEl = document.getElementById('searchInput');
+    const statusEl = document.getElementById('filterStatus');
+    const priorityEl = document.getElementById('filterPriority');
+    const contextEl = document.getElementById('filterContext');
+
+    currentFilters = {
+        search: searchEl ? searchEl.value.trim() : currentFilters.search,
+        status: statusEl ? statusEl.value : currentFilters.status,
+        priority: priorityEl ? priorityEl.value : currentFilters.priority,
+        context: contextEl ? contextEl.value : currentFilters.context
+    };
+
+    if (typeof renderTasks === 'function') renderTasks();
 }
 
 function resetFilters() { 
@@ -344,7 +354,9 @@ function resetFilters() {
     
     if (document.getElementById('sortSelect')) {
         document.getElementById('sortSelect').value = 'date-asc'; 
-        currentSort = { by: 'date', order: 'asc' }; 
+        if (typeof currentSort !== 'undefined') {
+            currentSort = { by: 'date', order: 'asc' }; 
+        }
     }
     
     updateFilters(); 
