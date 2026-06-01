@@ -327,3 +327,32 @@ window.toggleDay = toggleDay;
 window.refreshRecurrenceUI = refreshRecurrenceUI;
 window.buildRuleFromUI = buildRuleFromUI;
 window.validateAndProjectRecurrence = validateAndProjectRecurrence;
+
+function renderSidebarCounters(counts) {
+    if (!counts) return;
+    
+    const updateBadge = (id, count) => {
+        const btn = document.getElementById(id);
+        if (!btn) return; 
+        
+        if (btn.classList.contains('justify-between')) {
+            btn.classList.remove('justify-between');
+        }
+
+        let badge = btn.querySelector('.nav-badge-counter');
+        if (!badge) {
+            badge = document.createElement('span');
+            badge.className = 'nav-badge-counter text-[10px] font-bold text-navy-400 bg-navy-800 px-1.5 py-0.5 rounded-md ml-auto';
+            btn.appendChild(badge);
+        }
+        badge.innerText = count;
+    };
+
+    updateBadge('nav-today', counts.today);
+    updateBadge('nav-tomorrow', counts.tomorrow);
+    updateBadge('nav-week', counts.week);
+    updateBadge('nav-fortnight', counts.fortnight);
+    updateBadge('nav-all', counts.all);
+    updateBadge('nav-trash', counts.trash);
+}
+window.renderSidebarCounters = renderSidebarCounters;
