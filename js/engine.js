@@ -108,3 +108,41 @@ function getAreaTaskCount(areaName) {
     return count;
 }
 window.getAreaTaskCount = getAreaTaskCount;
+
+function calculateSidebarCounters(tasksArray) {
+    if (!tasksArray || !Array.isArray(tasksArray)) return { today: 0, tomorrow: 0, week: 0, fortnight: 0, all: 0, trash: 0 };
+
+    let counts = { today: 0, tomorrow: 0, week: 0, fortnight: 0, all: 0, trash: 0 };
+    const today = new Date(); 
+    today.setHours(0, 0, 0, 0);
+
+    function countNodes(nodes) {
+        if (!nodes || !Array.isArray(nodes)) return;
+        nodes.forEach(t => {
+            if (t.isDeleted) {
+                counts.trash++;
+            } else if (t.status !== 'completed') {
+                counts.all++;
+                if (t.date) {
+                    try {
+                        const [year, month, day] = t.date.split('-').map(Number);
+                        const tDate = new Date(year, month - 1, day);
+                        const diffDays = Math.round((tDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+                        if (diffDays <= 0) counts.today++; 
+                        if (diffDays === 1) counts.tomorrow++;
+                        if (diffDays <= 7) counts.week++;
+                        if (diffDays <= 15) counts.fortnight++;
+                    } catch (e) {
+                        console.warn("Fallo de formato en fecha:", e);
+                    }
+                }
+            }
+            if (t.subtasks) countNodes(t.subtasks);
+        });
+    }
+    
+    countNodes(tasksArray);
+    return counts;
+}
+window.calculateSidebarCounters = calculateSidebarCounters;
