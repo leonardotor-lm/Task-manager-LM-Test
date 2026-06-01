@@ -40,3 +40,8 @@ function getBulkMoveFormData() {
     };
 }
 window.getBulkMoveFormData = getBulkMoveFormData;
+function getPostponeCustomDateValue() {
+    const input = document.getElementById('postponeCustomDate');
+    return input ? input.value : '';
+}
+window.getPostponeCustomDateValue = getPostponeCustomDateValue;
