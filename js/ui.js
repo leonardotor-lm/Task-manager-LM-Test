@@ -486,31 +486,56 @@ function buildTaskRows(nodes, path = []) {
 }
 
 function renderTasks() {
-    const list = document.getElementById('taskList'); const empty = document.getElementById('emptyState');
+    const list = document.getElementById('taskList'); 
+    const empty = document.getElementById('emptyState');
+    
+    // Intervención preventiva: Validación y consolidación de estado global
+    if (!window.currentState) window.currentState = { view: 'area', selectedArea: 'Inbox' };
+    if (!window.currentFilters) window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+
     let nodesToRender = [];
+    
     if (currentState.view === 'trash') {
         function collectDeleted(nodes) { nodes.forEach(n => { if (n.isDeleted) nodesToRender.push(n); else if (n.subtasks) collectDeleted(n.subtasks); }); }
-        collectDeleted(tasks); nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
+        if (typeof tasks !== 'undefined') collectDeleted(tasks); 
+        nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
-        const pruned = pruneTree(tasks);
-        const isFlatView = ['today', 'tomorrow', 'week', 'fortnight'].includes(currentState.view) || (currentFilters.search !== '' || currentFilters.priority !== 'all' || currentFilters.context !== 'all' || (currentFilters.status !== 'pending' && currentFilters.status !== 'all'));
+        const pruned = (typeof pruneTree === 'function' && typeof tasks !== 'undefined') ? pruneTree(tasks) : [];
+        
+        // Corrección algorítmica: Evaluación estricta de variables de aplanamiento
+        const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(currentState.view);
+        const hasActiveSearch = typeof currentFilters.search === 'string' && currentFilters.search.trim() !== '';
+        const hasActivePriority = currentFilters.priority && currentFilters.priority !== 'all';
+        const hasActiveContext = currentFilters.context && currentFilters.context !== 'all';
+        const hasActiveStatus = currentFilters.status && currentFilters.status !== 'pending' && currentFilters.status !== 'all';
+        
+        const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus;
+        
+        nodesToRender = isFlatView ? (typeof flattenMatches === 'function' ? flattenMatches(pruned) : []) : pruned;
 
-        // Intervención quirúrgica: Ordenamiento cronológico predeterminado para ventanas de corto y mediano plazo
         if (['week', 'fortnight'].includes(currentState.view)) {
             nodesToRender.sort((a, b) => {
-                // Las tareas sin fecha asignada se desplazan al final de la lista de renderizado
                 if (!a.date && !b.date) return 0;
                 if (!a.date) return 1;
                 if (!b.date) return -1;
-                
-                // Comparación de cadenas: funcional y exacta dado que las fechas operan bajo estándar ISO (YYYY-MM-DD)
                 return a.date.localeCompare(b.date);
             });
         }
     }
-    if (nodesToRender.length === 0) { list.innerHTML = ''; empty.innerText = currentState.view === 'trash' ? "La papelera está vacía." : "No se encontraron tareas bajo los criterios actuales."; empty.classList.remove('hidden'); return; }
-    empty.classList.add('hidden');
-    list.innerHTML = `<div id="taskList-root" class="flex flex-col min-h-[50px] pb-4">${buildTaskRows(nodesToRender)}</div>`;
+    
+    if (nodesToRender.length === 0) { 
+        if (list) list.innerHTML = ''; 
+        if (empty) {
+            empty.innerText = currentState.view === 'trash' ? "La papelera está vacía." : "No se encontraron tareas bajo los criterios actuales."; 
+            empty.classList.remove('hidden'); 
+        }
+        return; 
+    }
+    
+    if (empty) empty.classList.add('hidden');
+    if (list && typeof buildTaskRows === 'function') {
+        list.innerHTML = `<div id="taskList-root" class="flex flex-col min-h-[50px] pb-4">${buildTaskRows(nodesToRender)}</div>`;
+    }
 }
 
 window.buildTaskRows = buildTaskRows;
