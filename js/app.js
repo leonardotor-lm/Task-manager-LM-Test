@@ -412,31 +412,6 @@ function exportData() { const dataStr = "data:text/json;charset=utf-8," + encode
 function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { try { const importedTasks = JSON.parse(e.target.result); if (Array.isArray(importedTasks)) { tasks = importedTasks; migrateAndNormalizeTasks(); await saveData(); renderTasks(); renderCalendar(); showNotice("Datos importados correctamente"); } } catch (err) { showNotice("Error al leer el archivo"); } }; reader.readAsText(file); }
 
 // RENDERING
-function renderSidebarAreas() { 
-    const allAreas = typeof getAllAreasOrdered === 'function' ? getAllAreasOrdered() : []; 
-    const container = document.getElementById('sidebar-areas-list');
-    if (!container) return; // Blindaje contra nodos inexistentes
-
-    container.innerHTML = allAreas.map(area => {
-        let count = 0;
-        function countAreaTasks(nodes) {
-            if (!nodes || !Array.isArray(nodes)) return;
-            nodes.forEach(t => {
-                if (!t.isDeleted && t.status !== 'completed' && t.area === area) count++;
-                if (t.subtasks && Array.isArray(t.subtasks)) countAreaTasks(t.subtasks);
-            });
-        }
-        if (typeof tasks !== 'undefined') countAreaTasks(tasks);
-
-        return `<button onclick="navigate('area', '${area}')" data-area="${area}" class="sidebar-area-item w-full flex items-center justify-between px-3 py-2 rounded-md text-sm font-medium text-navy-300 transition-all border-r-2 border-transparent hover:bg-navy-700 hover:text-navy-50 focus:outline-none">
-            <div class="flex items-center space-x-3 overflow-hidden">
-                <span class="w-1.5 h-1.5 rounded-full flex-shrink-0 ${area === 'Inbox' ? 'bg-brand-500' : 'bg-navy-500'}"></span>
-                <span class="truncate">${area}</span>
-            </div>
-            <span class="text-[10px] font-bold text-navy-400 bg-navy-800 px-1.5 py-0.5 rounded-md ml-2">${count}</span>
-        </button>`;
-    }).join(''); 
-}
 function populateSelect(id, items, defaultLabel = null, defaultValue = "all") { const el = document.getElementById(id); if (!el) return; const currentVal = el.value; let html = defaultLabel !== null ? `<option value="${defaultValue}">${defaultLabel}</option>` : ''; html += items.map(item => `<option value="${item}">${item}</option>`).join(''); el.innerHTML = html; if (currentVal !== null && Array.from(el.options).some(o => o.value === currentVal)) { el.value = currentVal; } else if (defaultLabel !== null) { el.value = defaultValue; } }
 function refreshAllDropdowns() {
     if (typeof tasks === 'undefined' || !Array.isArray(tasks)) return;
