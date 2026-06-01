@@ -330,68 +330,6 @@ function updateFilters() { currentFilters = { search: document.getElementById('s
 function resetFilters() { document.getElementById('searchInput').value = ''; document.getElementById('filterStatus').value = 'pending'; document.getElementById('filterPriority').value = 'all'; document.getElementById('filterContext').value = 'all'; document.getElementById('sortSelect').value = 'date-asc'; currentSort = { by: 'date', order: 'asc' }; updateFilters(); showNotice("Filtros restablecidos"); }
 function updateSort() { const val = document.getElementById('sortSelect').value.split('-'); currentSort = { by: val[0], order: val[1] }; renderTasks(); }
 
-// Motor analítico independiente: cuantifica las tareas por ventana temporal
-function updateSidebarCounters() {
-    if (typeof tasks === 'undefined' || !Array.isArray(tasks)) return;
-
-    let counts = { today: 0, tomorrow: 0, week: 0, fortnight: 0, all: 0, trash: 0 };
-    const today = new Date(); 
-    today.setHours(0, 0, 0, 0);
-
-    function countNodes(nodes) {
-        if (!nodes || !Array.isArray(nodes)) return;
-        nodes.forEach(t => {
-            if (t.isDeleted) {
-                counts.trash++;
-            } else if (t.status !== 'completed') {
-                counts.all++;
-                if (t.date) {
-                    try {
-                        const [year, month, day] = t.date.split('-').map(Number);
-                        const tDate = new Date(year, month - 1, day);
-                        const diffDays = Math.round((tDate.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
-
-                        if (diffDays <= 0) counts.today++; 
-                        if (diffDays === 1) counts.tomorrow++;
-                        if (diffDays <= 7) counts.week++;
-                        if (diffDays <= 15) counts.fortnight++;
-                    } catch (e) {
-                        console.warn("Fallo de formato en fecha:", e);
-                    }
-                }
-            }
-            if (t.subtasks) countNodes(t.subtasks);
-        });
-    }
-    
-    countNodes(tasks);
-
-    const updateBadge = (id, count) => {
-        const btn = document.getElementById(id);
-        if (!btn) return; 
-        
-        // Intervención correctiva: se remueve la clase conflictiva si quedó fijada en el DOM
-        if (btn.classList.contains('justify-between')) {
-            btn.classList.remove('justify-between');
-        }
-
-        let badge = btn.querySelector('.nav-badge-counter');
-        if (!badge) {
-            badge = document.createElement('span');
-            badge.className = 'nav-badge-counter text-[10px] font-bold text-navy-400 bg-navy-800 px-1.5 py-0.5 rounded-md ml-auto';
-            btn.appendChild(badge);
-        }
-        badge.innerText = count;
-    };
-
-    updateBadge('nav-today', counts.today);
-    updateBadge('nav-tomorrow', counts.tomorrow);
-    updateBadge('nav-week', counts.week);
-    updateBadge('nav-fortnight', counts.fortnight);
-    updateBadge('nav-all', counts.all);
-    updateBadge('nav-trash', counts.trash);
-}
-
 // Orquestador de interfaz actualizado
 function updateUI() {
     const btnBack = document.getElementById('btnBack'); if (btnBack && typeof navHistory !== 'undefined' && navHistory.length > 0) btnBack.classList.remove('hidden'); else if (btnBack) btnBack.classList.add('hidden');
