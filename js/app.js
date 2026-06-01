@@ -470,7 +470,6 @@ function importData(event) { const file = event.target.files[0]; if (!file) retu
     if (typeof saveCategories === 'function') {
         saveCategories();
     }
-}
 window.refreshAllDropdowns = refreshAllDropdowns;
 // NAVIGATION & FILTERS CONTINUATION
 function updateFilters() { currentFilters = { search: document.getElementById('searchInput').value.trim(), status: document.getElementById('filterStatus').value, priority: document.getElementById('filterPriority').value, context: document.getElementById('filterContext').value }; renderTasks(); }
