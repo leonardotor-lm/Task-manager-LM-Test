@@ -1081,3 +1081,62 @@ function navigate(view, areaName = null, pushHistory = true, focusId = null) {
 
 // Exposición global indispensable para el funcionamiento del menú HTML
 window.navigate = navigate;
+window.updateFilters = function() {
+    window.currentFilters = {
+        search: document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '',
+        status: document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'pending',
+        priority: document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : 'all',
+        context: document.getElementById('filterContext') ? document.getElementById('filterContext').value : 'all'
+    };
+    if (typeof window.renderTasks === 'function') window.renderTasks();
+};
+
+window.resetFilters = function() {
+    if (document.getElementById('searchInput')) document.getElementById('searchInput').value = '';
+    
+    // Validación estricta: Si la vista es "Todas", el reseteo no debe ocultar las completadas
+    const defaultStatus = (window.currentState && window.currentState.view === 'all') ? 'all' : 'pending';
+    
+    if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = defaultStatus;
+    if (document.getElementById('filterPriority')) document.getElementById('filterPriority').value = 'all';
+    if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all';
+    
+    if (document.getElementById('sortSelect')) {
+        document.getElementById('sortSelect').value = 'date-asc';
+        if (typeof window.currentSort !== 'undefined') {
+            window.currentSort = { by: 'date', order: 'asc' };
+        }
+    }
+    
+    window.updateFilters();
+    if (typeof showNotice === 'function') showNotice("Filtros restablecidos");
+};
+
+window.navigate = function(view, areaName = null, pushHistory = true, focusId = null) {
+    if (!window.currentState) return;
+    
+    if (pushHistory && typeof navHistory !== 'undefined') {
+        navHistory.push(JSON.parse(JSON.stringify(window.currentState)));
+    }
+    
+    window.currentState.view = view;
+    window.currentState.selectedArea = areaName;
+    window.currentState.focusTargetId = focusId;
+    
+    if (window.innerWidth < 768 && typeof toggleSidebar === 'function') toggleSidebar(false);
+
+    // Saneamiento de filtros con directiva estricta de visibilidad
+    if (window.currentFilters) {
+        window.currentFilters.search = '';
+        window.currentFilters.priority = 'all';
+        window.currentFilters.context = 'all';
+        window.currentFilters.status = (view === 'all') ? 'all' : 'pending';
+        
+        if (document.getElementById('searchInput')) document.getElementById('searchInput').value = '';
+        if (document.getElementById('filterPriority')) document.getElementById('filterPriority').value = 'all';
+        if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all';
+        if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = window.currentFilters.status;
+    }
+    
+    if (typeof window.updateUI === 'function') window.updateUI();
+};
