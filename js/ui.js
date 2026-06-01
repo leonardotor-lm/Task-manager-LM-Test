@@ -145,8 +145,7 @@ function closeConfirmModal(accepted) { document.getElementById('confirmModal').c
 window.showNotice = showNotice;
 window.showSyncStatus = showSyncStatus;
 window.showConfirm = showConfirm;
-window.closeConfirm = closeConfirm;
-
+window.closeConfirmModal = closeConfirmModal;
 function openAddTaskModal() { 
     document.getElementById('taskInput').value = ''; 
     
