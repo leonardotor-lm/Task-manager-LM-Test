@@ -412,26 +412,6 @@ function exportData() { const dataStr = "data:text/json;charset=utf-8," + encode
 function importData(event) { const file = event.target.files[0]; if (!file) return; const reader = new FileReader(); reader.onload = async (e) => { try { const importedTasks = JSON.parse(e.target.result); if (Array.isArray(importedTasks)) { tasks = importedTasks; migrateAndNormalizeTasks(); await saveData(); renderTasks(); renderCalendar(); showNotice("Datos importados correctamente"); } } catch (err) { showNotice("Error al leer el archivo"); } }; reader.readAsText(file); }
 
 // RENDERING
-function populateSelect(id, items, defaultLabel = null, defaultValue = "all") { const el = document.getElementById(id); if (!el) return; const currentVal = el.value; let html = defaultLabel !== null ? `<option value="${defaultValue}">${defaultLabel}</option>` : ''; html += items.map(item => `<option value="${item}">${item}</option>`).join(''); el.innerHTML = html; if (currentVal !== null && Array.from(el.options).some(o => o.value === currentVal)) { el.value = currentVal; } else if (defaultLabel !== null) { el.value = defaultValue; } }
-function refreshAllDropdowns() {
-    if (typeof tasks === 'undefined' || !Array.isArray(tasks)) return;
-
-    // SANEAMIENTO DE EMERGENCIA: Limpia residuos de texto plano guardados en el almacenamiento histórico
-    if (typeof customContexts !== 'undefined' && Array.isArray(customContexts)) {
-        const sanitized = customContexts.map(c => {
-            if (!c) return null;
-            // Si quedó algún contexto como texto plano, lo transforma en un objeto válido con color por defecto
-            if (typeof c === 'string') return { name: c, color: '#64748b' };
-            // Si ya es un objeto estructurado correctamente, lo conserva
-            if (typeof c === 'object' && c.name) return c;
-            return null;
-        }).filter(c => c !== null);
-        
-        // Mutación segura de la matriz maestra (compatible con declaraciones const y let)
-        customContexts.length = 0; 
-        customContexts.push(...sanitized);
-    }
-
     // 1. Rastreo profundo (Algoritmo Recursivo): extrae datos de tareas y de todas sus subtareas
     function extractDeepValues(nodes, key) {
         let results = [];
