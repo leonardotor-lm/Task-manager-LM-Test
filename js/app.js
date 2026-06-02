@@ -354,6 +354,11 @@ window.updateFilters = function() {
     window.currentFilters.priority = document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : window.currentFilters.priority;
     window.currentFilters.context = document.getElementById('filterContext') ? document.getElementById('filterContext').value : window.currentFilters.context;
     if (typeof window.renderTasks === 'function') window.renderTasks();
+
+    console.log("--- AUDITORÍA DE ESTADO ---");
+    console.log("¿currentState === window.currentState?:", currentState === window.currentState);
+    console.log("¿currentFilters === window.currentFilters?:", currentFilters === window.currentFilters);
+    console.log("Valor de window.currentFilters:", JSON.stringify(window.currentFilters));
 };
 
 window.resetFilters = function() {
