@@ -366,11 +366,10 @@ window.resetFilters = function() {
     if (document.getElementById('filterPriority')) document.getElementById('filterPriority').value = 'all';
     if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all';
     
+    // Asignación directa y forzada para evitar variables no definidas
+    window.currentSort = { by: 'date', order: 'asc' };
     if (document.getElementById('sortSelect')) {
         document.getElementById('sortSelect').value = 'date-asc';
-        if (typeof window.currentSort !== 'undefined') {
-            window.currentSort = { by: 'date', order: 'asc' };
-        }
     }
     
     window.updateFilters();
