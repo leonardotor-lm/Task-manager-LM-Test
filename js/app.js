@@ -347,12 +347,12 @@ function updateFilters() {
 }
 
 window.updateFilters = function() {
-    window.currentFilters = {
-        search: document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '',
-        status: document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'pending',
-        priority: document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : 'all',
-        context: document.getElementById('filterContext') ? document.getElementById('filterContext').value : 'all'
-    };
+    if (!window.currentFilters) window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+    
+    window.currentFilters.search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : window.currentFilters.search;
+    window.currentFilters.status = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : window.currentFilters.status;
+    window.currentFilters.priority = document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : window.currentFilters.priority;
+    window.currentFilters.context = document.getElementById('filterContext') ? document.getElementById('filterContext').value : window.currentFilters.context;
     if (typeof window.renderTasks === 'function') window.renderTasks();
 };
 
@@ -367,8 +367,10 @@ window.resetFilters = function() {
     if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all';
     
     // Asignación directa y forzada para evitar variables no definidas
-    window.currentSort = { by: 'date', order: 'asc' };
-    if (document.getElementById('sortSelect')) {
+if (!window.currentSort) window.currentSort = { by: 'date', order: 'asc' };
+    window.currentSort.by = 'date';
+    window.currentSort.order = 'asc';
+        if (document.getElementById('sortSelect')) {
         document.getElementById('sortSelect').value = 'date-asc';
     }
     
