@@ -1082,63 +1082,35 @@ function renderAttachments() {
 window.renderAttachments = renderAttachments;
 
 // STUBS / SIMULATION IA
-function initSpeechRecognition() {} function toggleVoiceCapture() { showNotice("Voz no disponible."); } function toggleAIFilter() { document.getElementById('omnibar-container').classList.toggle('hidden'); }
+function initSpeechRecognition() {} 
+function toggleVoiceCapture() { showNotice("Voz no disponible."); } 
+function toggleAIFilter() { document.getElementById('omnibar-container').classList.toggle('hidden'); }
 function processOmnibarCommand() { showNotice("Comando procesado localmente (Simulación)."); document.getElementById('omnibarInput').value = ''; }
 function handleOmnibarKeydown(event) { if (event.key === 'Enter') processOmnibarCommand(); }
 function breakdownTaskWithAI() { showNotice("Funcionalidad de IA en desarrollo."); }
-function navigate(view, areaName = null, pushHistory = true, focusId = null) { 
-    if (pushHistory && typeof navHistory !== 'undefined') {
-        navHistory.push(JSON.parse(JSON.stringify(currentState))); 
-    }
-    
-    currentState.view = view; 
-    currentState.selectedArea = areaName; 
-    currentState.focusTargetId = focusId; 
-    
-    if (window.innerWidth < 768 && typeof toggleSidebar === 'function') {
-        toggleSidebar(false); 
-    }
-    
-    // Intervención Quirúrgica: Saneamiento de estado al cambiar de vista
-    // Previene la contaminación cruzada de filtros y asegura la visibilidad de completadas
-    if (window.currentFilters) {
-        window.currentFilters.search = '';
-        window.currentFilters.priority = 'all';
-        window.currentFilters.context = 'all';
-        
-        // Si ingresamos a la vista general, anulamos el filtro de pendientes
-        if (view === 'all') {
-            window.currentFilters.status = 'all';
-        } else {
-            window.currentFilters.status = 'pending';
-        }
-        
-        // Sincronización estricta del DOM para evitar desfasajes visuales con los selectores
-        if (document.getElementById('searchInput')) document.getElementById('searchInput').value = '';
-        if (document.getElementById('filterPriority')) document.getElementById('filterPriority').value = 'all';
-        if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all';
-        if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = window.currentFilters.status;
-    }
-    
-    if (typeof updateUI === 'function') updateUI(); 
+
+// --- ORQUESTACIÓN Y ESTADO GLOBAL UNIFICADO ---
+// Puente de sincronización: ata las variables léxicas al objeto global por referencia
+function syncGlobals() {
+    if (typeof currentState !== 'undefined' && !window.currentState) window.currentState = currentState;
+    if (typeof currentFilters !== 'undefined' && !window.currentFilters) window.currentFilters = currentFilters;
 }
 
-// Exposición global indispensable para el funcionamiento del menú HTML
-window.navigate = navigate;
 window.updateFilters = function() {
-    window.currentFilters = {
-        search: document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '',
-        status: document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'pending',
-        priority: document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : 'all',
-        context: document.getElementById('filterContext') ? document.getElementById('filterContext').value : 'all'
-    };
+    syncGlobals();
+    if (window.currentFilters) {
+        window.currentFilters.search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '';
+        window.currentFilters.status = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'pending';
+        window.currentFilters.priority = document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : 'all';
+        window.currentFilters.context = document.getElementById('filterContext') ? document.getElementById('filterContext').value : 'all';
+    }
     if (typeof window.renderTasks === 'function') window.renderTasks();
 };
 
 window.resetFilters = function() {
+    syncGlobals();
     if (document.getElementById('searchInput')) document.getElementById('searchInput').value = '';
     
-    // Validación estricta: Si la vista es "Todas", el reseteo no debe ocultar las completadas
     const defaultStatus = (window.currentState && window.currentState.view === 'all') ? 'all' : 'pending';
     
     if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = defaultStatus;
@@ -1147,9 +1119,7 @@ window.resetFilters = function() {
     
     if (document.getElementById('sortSelect')) {
         document.getElementById('sortSelect').value = 'date-asc';
-        if (typeof window.currentSort !== 'undefined') {
-            window.currentSort = { by: 'date', order: 'asc' };
-        }
+        if (typeof currentSort !== 'undefined') currentSort = { by: 'date', order: 'asc' };
     }
     
     window.updateFilters();
@@ -1157,6 +1127,7 @@ window.resetFilters = function() {
 };
 
 window.navigate = function(view, areaName = null, pushHistory = true, focusId = null) {
+    syncGlobals();
     if (!window.currentState) return;
     
     if (pushHistory && typeof navHistory !== 'undefined') {
@@ -1169,7 +1140,6 @@ window.navigate = function(view, areaName = null, pushHistory = true, focusId = 
     
     if (window.innerWidth < 768 && typeof toggleSidebar === 'function') toggleSidebar(false);
 
-    // Saneamiento de filtros con directiva estricta de visibilidad
     if (window.currentFilters) {
         window.currentFilters.search = '';
         window.currentFilters.priority = 'all';
@@ -1182,5 +1152,6 @@ window.navigate = function(view, areaName = null, pushHistory = true, focusId = 
         if (document.getElementById('filterStatus')) document.getElementById('filterStatus').value = window.currentFilters.status;
     }
     
-    if (typeof window.updateUI === 'function') window.updateUI();
+    // Invocamos updateUI (que está más arriba en app.js) para pintar la estructura
+    if (typeof updateUI === 'function') updateUI(); 
 };
