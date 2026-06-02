@@ -368,14 +368,14 @@ window.renderSidebarCounters = renderSidebarCounters;
 // BUILD TASK ROWS
 function buildTaskRows(nodes, path = []) {
     if (!nodes || nodes.length === 0) return '';
-    const isTrash = currentState.view === 'trash';
+    const isTrash = window.currentState.view === 'trash';
     const indentMap = { 1: 'pl-3 md:pl-5', 2: 'pl-8 md:pl-10', 3: 'pl-12 md:pl-14', 4: 'pl-16 md:pl-18', 5: 'pl-20 md:pl-22' };
-    const isFiltering = currentFilters.search !== '' || currentFilters.priority !== 'all' || currentFilters.context !== 'all' || currentFilters.status === 'in_progress' || currentFilters.status === 'completed';
+    const isFiltering = window.currentFilters.search !== '' || window.currentFilters.priority !== 'all' || window.currentFilters.context !== 'all' || window.currentFilters.status === 'in_progress' || window.currentFilters.status === 'completed';
     const todayStr = formatDateLocal(new Date());
 
     return nodes.map(task => {
         const hasChildren = task.subtasks && task.subtasks.length > 0;
-        const isExpanded = isTrash || (currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
+        const isExpanded = isTrash || (window.currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
         const logicalDepth = path.length + 1;
         const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-20 md:pl-22');
         const isCompleted = task.status === 'completed';
