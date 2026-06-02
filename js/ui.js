@@ -151,10 +151,10 @@ function openAddTaskModal() {
     
     // 1. ASIGNACIÓN DINÁMICA DE FECHA (Corregida para zona horaria local)
     const dateInput = document.getElementById('dateInput');
-    if (currentState && currentState.view === 'today') {
+    if (window.currentState && window.currentState.view === 'today') {
         const today = new Date();
         dateInput.value = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-    } else if (currentState && currentState.view === 'tomorrow') {
+    } else if (window.currentState && window.currentState.view === 'tomorrow') {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         dateInput.value = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0');
@@ -168,7 +168,7 @@ function openAddTaskModal() {
     
     // 2. ASIGNACIÓN DINÁMICA DE ÁREA
     const fallbackArea = customAreas.includes('Inbox') ? 'Inbox' : (customAreas[0] || '');
-    document.getElementById('areaInput').value = (currentState && currentState.selectedArea) ? currentState.selectedArea : fallbackArea; 
+    document.getElementById('areaInput').value = (window.currentState && window.currentState.selectedArea) ? window.currentState.selectedArea : fallbackArea;
     
     document.getElementById('contextInput').value = ''; 
     
