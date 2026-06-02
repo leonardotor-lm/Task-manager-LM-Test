@@ -500,7 +500,6 @@ window.renderTasks = function() {
         if (typeof tasks !== 'undefined') collectDeleted(tasks); 
         nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
-        // Uso del fallback algorítmico en caso de que pruneTree no esté expuesto globalmente
         const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'undefined') ? window.pruneTree(tasks) : (typeof pruneTree === 'function' ? pruneTree(tasks) : []);
         
         const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(state.view);
@@ -509,27 +508,40 @@ window.renderTasks = function() {
         const hasActiveContext = filters.context && filters.context !== 'all';
         const hasActiveStatus = filters.status && filters.status !== 'pending' && filters.status !== 'all';
         
-        const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus;
+        // CORRECCIÓN 1: Forzamos el aplanamiento en la vista 'Todas' para habilitar el ordenamiento global
+        const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus || state.view === 'all';
         
         nodesToRender = isFlatView ? (typeof window.flattenMatches === 'function' ? window.flattenMatches(pruned) : (typeof flattenMatches === 'function' ? flattenMatches(pruned) : [])) : pruned;
 
-        // 1. Ordenamiento temporal (semanal / quincenal)
-        if (['week', 'fortnight'].includes(state.view)) {
+        // CORRECCIÓN 2: Lógica unificada de ordenamiento de listas planas
+        if (filters.status === 'completed') {
+            // Filtro Histórico: Orden descendente estricto (Más reciente a más antigua)
+            nodesToRender.sort((a, b) => {
+                const getTimestamp = (t) => {
+                    if (t.completedAt) return new Date(t.completedAt).getTime();
+                    if (t.date) return new Date(t.date).getTime();
+                    return t.id || 0; // Fallback extremo: ID de creación (timestamp natural)
+                };
+                return getTimestamp(b) - getTimestamp(a);
+            });
+        } else if (state.view === 'all') {
+            // Vista "Todas las tareas": Pendientes arriba por urgencia, Completadas hundidas al fondo
+            nodesToRender.sort((a, b) => {
+                const aComp = a.status === 'completed' ? 1 : 0;
+                const bComp = b.status === 'completed' ? 1 : 0;
+                
+                if (aComp !== bComp) return aComp - bComp; 
+                
+                const timeA = a.date ? new Date(a.date).getTime() : 9999999999999;
+                const timeB = b.date ? new Date(b.date).getTime() : 9999999999999;
+                return timeA - timeB;
+            });
+        } else if (['week', 'fortnight'].includes(state.view)) {
             nodesToRender.sort((a, b) => {
                 if (!a.date && !b.date) return 0;
                 if (!a.date) return 1;
                 if (!b.date) return -1;
                 return a.date.localeCompare(b.date);
-            });
-        }
-        
-        // 2. NUEVA INTERVENCIÓN: Ordenamiento histórico para completadas
-        // Ordena las tareas extraídas forzando a las más recientes a subir, eliminando la ilusión de omisión.
-        if (filters.status === 'completed') {
-            nodesToRender.sort((a, b) => {
-                const dateA = a.completedAt || a.date || '1970-01-01';
-                const dateB = b.completedAt || b.date || '1970-01-01';
-                return dateB.localeCompare(dateA); // Criterio descendente
             });
         }
     }
@@ -545,7 +557,7 @@ window.renderTasks = function() {
     
     if (empty) empty.classList.add('hidden');
     if (list) {
-        const renderFn = typeof window.buildTaskRows === 'function' ? window.buildTaskRows : buildTaskRows;
+        const renderFn = typeof window.buildTaskRows === 'function' ? window.buildTaskRows : (typeof buildTaskRows === 'function' ? buildTaskRows : () => '');
         list.innerHTML = `<div id="taskList-root" class="flex flex-col min-h-[50px] pb-4">${renderFn(nodesToRender)}</div>`;
     }
 };
