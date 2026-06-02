@@ -12,9 +12,10 @@ let customAreas = safeParse('leo_custom_areas', ["Inbox", "Trabajo", "Personal",
 let customContexts = safeParse('leo_custom_contexts', [{ name: "@casa", color: "purple" }, { name: "@oficina", color: "blue" }, { name: "@online", color: "teal" }]);
 let expandedStates = safeParse('leo_expanded_states', {});
 
-let currentState = { view: 'today', selectedArea: null, focusTargetId: null };
-let currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
-let currentSort = { by: 'date', order: 'asc' }; // Orden predeterminado por fecha de vencimiento
+window.currentState = { view: 'today', selectedArea: null, focusTargetId: null };
+window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+window.currentSort = { by: 'date', order: 'asc' }; // Orden predeterminado por fecha de vencimiento
+
 let navHistory = [];
 
 let isBulkMode = false;
