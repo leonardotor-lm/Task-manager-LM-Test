@@ -406,7 +406,17 @@ window.navigate = function(view, areaName = null, pushHistory = true, focusId = 
     if (typeof window.updateUI === 'function') window.updateUI();
 };
 
-function updateSort() { const val = document.getElementById('sortSelect').value.split('-'); currentSort = { by: val[0], order: val[1] }; renderTasks(); }
+window.updateSort = function() { 
+    const select = document.getElementById('sortSelect');
+    const val = select ? select.value.split('-') : ['date', 'asc']; 
+    window.currentSort = { by: val[0], order: val[1] }; 
+    if (typeof window.renderTasks === 'function') window.renderTasks(); 
+};
+
+// Aliasing de compatibilidad por si el HTML intenta invocar la versión antigua
+if (typeof updateSort === 'undefined') {
+    var updateSort = window.updateSort;
+}
 
 // Orquestador de interfaz actualizado
 function updateUI() {
