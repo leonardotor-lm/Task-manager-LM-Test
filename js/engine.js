@@ -45,8 +45,9 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
     if (!Array.isArray(nodeList)) return [];
     
     // Sincronización de estado global
-    const state = window.currentState || { view: 'all' };
-    const filters = window.currentFilters || { search: '', status: 'pending', priority: 'all', context: 'all' };
+    
+    const state = window.currentState;
+    const filters = window.currentFilters;
     
     // Horizontes temporales
     const todayStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(new Date()) : new Date().toISOString().split('T')[0];
