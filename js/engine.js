@@ -45,40 +45,70 @@ function sortTasks(taskList) { if (currentSort.by === 'none') return taskList; c
 
 function pruneTree(nodeList, inFocusedSubtree = false) {
     if (!Array.isArray(nodeList)) return [];
-    const todayStr = formatDateLocal(new Date());
-    const tomorrowObj = new Date(); tomorrowObj.setDate(tomorrowObj.getDate() + 1); const tomorrowStr = formatDateLocal(tomorrowObj);
     
-    // CORRECCIÓN: Proyección de ventana móvil de 7 días exactos en lugar de límite de domingo
-    const nextWeekObj = new Date(); nextWeekObj.setDate(nextWeekObj.getDate() + 7); const nextWeekStr = formatDateLocal(nextWeekObj);
+    // Sincronización de estado para lectura inequívoca
+    const state = window.currentState || { view: 'all' };
+    const filters = window.currentFilters || { search: '', status: 'pending', priority: 'all', context: 'all' };
     
-    const fortnightObj = new Date(); fortnightObj.setDate(fortnightObj.getDate() + 15); const fortnightStr = formatDateLocal(fortnightObj);
+    const todayStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(new Date()) : new Date().toISOString().split('T')[0];
+    const tomorrowObj = new Date(); tomorrowObj.setDate(tomorrowObj.getDate() + 1); 
+    const tomorrowStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(tomorrowObj) : tomorrowObj.toISOString().split('T')[0];
+    const nextWeekObj = new Date(); nextWeekObj.setDate(nextWeekObj.getDate() + 7); 
+    const nextWeekStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(nextWeekObj) : nextWeekObj.toISOString().split('T')[0];
+    const fortnightObj = new Date(); fortnightObj.setDate(fortnightObj.getDate() + 15); 
+    const fortnightStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(fortnightObj) : fortnightObj.toISOString().split('T')[0];
     
     let filtered = nodeList.map(node => {
         if (node.isDeleted) return null; 
+        
         let matches = true;
-        if (currentFilters.search !== '') { const sTerm = currentFilters.search.toLowerCase(); const textMatch = node.name.toLowerCase().includes(sTerm) || (node.area || '').toLowerCase().includes(sTerm) || (node.context || '').toLowerCase().includes(sTerm); if (!textMatch) matches = false; }
-        if (currentFilters.status === 'pending' && node.status === 'completed') matches = false; 
-        if (currentFilters.status === 'in_progress' && node.status !== 'in_progress') matches = false; 
-        if (currentFilters.status === 'completed' && node.status !== 'completed') matches = false; 
-        if (currentFilters.priority !== 'all' && node.priority !== currentFilters.priority) matches = false; 
-        if (currentFilters.context !== 'all' && node.context !== currentFilters.context) matches = false;
         
-        if (currentState.view === 'today') { if (!node.date || node.date > todayStr) matches = false; }
-        else if (currentState.view === 'tomorrow') { if (!node.date || node.date !== tomorrowStr) matches = false; }
-        // Se aplica el nuevo horizonte temporal en la evaluación de la vista semanal
-        else if (currentState.view === 'week') { if (!node.date || node.date > nextWeekStr) matches = false; }
-        else if (currentState.view === 'fortnight') { if (!node.date || node.date > fortnightStr) matches = false; }
-        else if (currentState.view === 'area') { if (node.area !== currentState.selectedArea) matches = false; }
-        else if (currentState.view === 'focus') { if (!inFocusedSubtree && !containsFocusNode(node, currentState.focusTargetId)) matches = false; }
+        if (filters.search !== '') { 
+            const sTerm = filters.search.toLowerCase(); 
+            const textMatch = node.name.toLowerCase().includes(sTerm) || 
+                              (node.area || '').toLowerCase().includes(sTerm) || 
+                              (node.context || '').toLowerCase().includes(sTerm); 
+            if (!textMatch) matches = false; 
+        }
         
-        const isNowFocused = inFocusedSubtree || (currentState.view === 'focus' && node.id === currentState.focusTargetId);
-        const prunedSubtasks = pruneTree(node.subtasks || [], isNowFocused);
-        if (matches || prunedSubtasks.length > 0) return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
+        if (filters.status === 'pending' && node.status === 'completed') matches = false; 
+        if (filters.status === 'in_progress' && node.status !== 'in_progress') matches = false; 
+        if (filters.status === 'completed' && node.status !== 'completed') matches = false; 
+        if (filters.priority !== 'all' && node.priority !== filters.priority) matches = false; 
+        if (filters.context !== 'all' && node.context !== filters.context) matches = false;
+        
+        // Excepción histórica: Bypass de barreras temporales y de área.
+        // Si el filtro exige completadas, se suspende la poda por vista para mostrar el historial completo.
+        const isHistoricalCompleted = filters.status === 'completed';
+
+        if (!isHistoricalCompleted) {
+            if (state.view === 'today') { if (!node.date || node.date > todayStr) matches = false; }
+            else if (state.view === 'tomorrow') { if (!node.date || node.date !== tomorrowStr) matches = false; }
+            else if (state.view === 'week') { if (!node.date || node.date > nextWeekStr) matches = false; }
+            else if (state.view === 'fortnight') { if (!node.date || node.date > fortnightStr) matches = false; }
+            else if (state.view === 'area') { if (node.area !== state.selectedArea) matches = false; }
+        }
+        
+        if (state.view === 'focus') { 
+            if (!inFocusedSubtree && !(typeof containsFocusNode === 'function' && containsFocusNode(node, state.focusTargetId))) matches = false; 
+        }
+        
+        const isNowFocused = inFocusedSubtree || (state.view === 'focus' && node.id === state.focusTargetId);
+        
+        // Invocación recursiva (conservando el contexto global)
+        const prunedSubtasks = typeof window.pruneTree === 'function' ? window.pruneTree(node.subtasks || [], isNowFocused) : pruneTree(node.subtasks || [], isNowFocused);
+        
+        if (matches || prunedSubtasks.length > 0) {
+            return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
+        }
         return null;
     }).filter(Boolean);
     
-    return sortTasks(filtered);
+    return typeof sortTasks === 'function' ? sortTasks(filtered) : filtered;
 }
+
+// Anclaje preventivo por si otras funciones dependen del objeto window
+window.pruneTree = pruneTree;
 
 // FLATTEN MATCHES
 function flattenMatches(prunedNodes, path = []) {
