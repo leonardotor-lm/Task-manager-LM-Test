@@ -485,7 +485,6 @@ function buildTaskRows(nodes, path = []) {
     }).join('');
 }
 
-
 window.renderTasks = function() {
     const list = document.getElementById('taskList'); 
     const empty = document.getElementById('emptyState');
@@ -501,7 +500,8 @@ window.renderTasks = function() {
         if (typeof tasks !== 'undefined') collectDeleted(tasks); 
         nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
-        const pruned = (typeof pruneTree === 'function' && typeof tasks !== 'undefined') ? pruneTree(tasks) : [];
+        // Uso del fallback algorítmico en caso de que pruneTree no esté expuesto globalmente
+        const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'undefined') ? window.pruneTree(tasks) : (typeof pruneTree === 'function' ? pruneTree(tasks) : []);
         
         const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(state.view);
         const hasActiveSearch = typeof filters.search === 'string' && filters.search.trim() !== '';
@@ -511,14 +511,25 @@ window.renderTasks = function() {
         
         const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus;
         
-        nodesToRender = isFlatView ? (typeof flattenMatches === 'function' ? flattenMatches(pruned) : []) : pruned;
+        nodesToRender = isFlatView ? (typeof window.flattenMatches === 'function' ? window.flattenMatches(pruned) : (typeof flattenMatches === 'function' ? flattenMatches(pruned) : [])) : pruned;
 
+        // 1. Ordenamiento temporal (semanal / quincenal)
         if (['week', 'fortnight'].includes(state.view)) {
             nodesToRender.sort((a, b) => {
                 if (!a.date && !b.date) return 0;
                 if (!a.date) return 1;
                 if (!b.date) return -1;
                 return a.date.localeCompare(b.date);
+            });
+        }
+        
+        // 2. NUEVA INTERVENCIÓN: Ordenamiento histórico para completadas
+        // Ordena las tareas extraídas forzando a las más recientes a subir, eliminando la ilusión de omisión.
+        if (filters.status === 'completed') {
+            nodesToRender.sort((a, b) => {
+                const dateA = a.completedAt || a.date || '1970-01-01';
+                const dateB = b.completedAt || b.date || '1970-01-01';
+                return dateB.localeCompare(dateA); // Criterio descendente
             });
         }
     }
@@ -533,8 +544,9 @@ window.renderTasks = function() {
     }
     
     if (empty) empty.classList.add('hidden');
-    if (list && typeof window.buildTaskRows === 'function') {
-        list.innerHTML = `<div id="taskList-root" class="flex flex-col min-h-[50px] pb-4">${window.buildTaskRows(nodesToRender)}</div>`;
+    if (list) {
+        const renderFn = typeof window.buildTaskRows === 'function' ? window.buildTaskRows : buildTaskRows;
+        list.innerHTML = `<div id="taskList-root" class="flex flex-col min-h-[50px] pb-4">${renderFn(nodesToRender)}</div>`;
     }
 };
 
