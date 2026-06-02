@@ -41,15 +41,14 @@ function calculateNextOccurrence(task, completionDateStr = null) {
 
 // TREE AND LIST RENDER LOGIC
 function containsFocusNode(node, targetId) { if (node.id === targetId) return true; if (!node.subtasks) return false; return node.subtasks.some(s => containsFocusNode(s, targetId)); }
-function sortTasks(taskList) { if (currentSort.by === 'none') return taskList; const priorityWeight = { urgente: 4, alta: 3, media: 2, baja: 1 }; return taskList.sort((a, b) => { let valA, valB; if (currentSort.by === 'priority') { valA = priorityWeight[a.priority] || 0; valB = priorityWeight[b.priority] || 0; } else if (currentSort.by === 'date') { valA = a.date || '9999-12-31'; valB = b.date || '9999-12-31'; } else if (currentSort.by === 'name') { valA = (a.name || '').toLowerCase(); valB = (b.name || '').toLowerCase(); } else if (currentSort.by === 'context') { valA = (a.context || '\uFFFF').toLowerCase(); valB = (b.context || '\uFFFF').toLowerCase(); } let comparison = 0; if (valA < valB) comparison = -1; if (valA > valB) comparison = 1; return currentSort.order === 'desc' ? -comparison : comparison; }); }
-
-function pruneTree(nodeList, inFocusedSubtree = false) {
+window.pruneTree = function(nodeList, inFocusedSubtree = false) {
     if (!Array.isArray(nodeList)) return [];
     
-    // Sincronización de estado para lectura inequívoca
+    // Sincronización de estado global
     const state = window.currentState || { view: 'all' };
     const filters = window.currentFilters || { search: '', status: 'pending', priority: 'all', context: 'all' };
     
+    // Horizontes temporales
     const todayStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(new Date()) : new Date().toISOString().split('T')[0];
     const tomorrowObj = new Date(); tomorrowObj.setDate(tomorrowObj.getDate() + 1); 
     const tomorrowStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(tomorrowObj) : tomorrowObj.toISOString().split('T')[0];
@@ -63,22 +62,23 @@ function pruneTree(nodeList, inFocusedSubtree = false) {
         
         let matches = true;
         
+        // Filtro de búsqueda
         if (filters.search !== '') { 
             const sTerm = filters.search.toLowerCase(); 
-            const textMatch = node.name.toLowerCase().includes(sTerm) || 
+            const textMatch = (node.name || '').toLowerCase().includes(sTerm) || 
                               (node.area || '').toLowerCase().includes(sTerm) || 
                               (node.context || '').toLowerCase().includes(sTerm); 
             if (!textMatch) matches = false; 
         }
         
+        // Filtros cruzados estandarizados
         if (filters.status === 'pending' && node.status === 'completed') matches = false; 
         if (filters.status === 'in_progress' && node.status !== 'in_progress') matches = false; 
         if (filters.status === 'completed' && node.status !== 'completed') matches = false; 
         if (filters.priority !== 'all' && node.priority !== filters.priority) matches = false; 
         if (filters.context !== 'all' && node.context !== filters.context) matches = false;
         
-        // Excepción histórica: Bypass de barreras temporales y de área.
-        // Si el filtro exige completadas, se suspende la poda por vista para mostrar el historial completo.
+        // Excepción histórica: Bypass temporal y espacial para tareas completadas
         const isHistoricalCompleted = filters.status === 'completed';
 
         if (!isHistoricalCompleted) {
@@ -95,8 +95,8 @@ function pruneTree(nodeList, inFocusedSubtree = false) {
         
         const isNowFocused = inFocusedSubtree || (state.view === 'focus' && node.id === state.focusTargetId);
         
-        // Invocación recursiva (conservando el contexto global)
-        const prunedSubtasks = typeof window.pruneTree === 'function' ? window.pruneTree(node.subtasks || [], isNowFocused) : pruneTree(node.subtasks || [], isNowFocused);
+        // Invocación recursiva consolidada en el ámbito global
+        const prunedSubtasks = window.pruneTree(node.subtasks || [], isNowFocused);
         
         if (matches || prunedSubtasks.length > 0) {
             return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
@@ -104,21 +104,21 @@ function pruneTree(nodeList, inFocusedSubtree = false) {
         return null;
     }).filter(Boolean);
     
-    return typeof sortTasks === 'function' ? sortTasks(filtered) : filtered;
-}
+    // Eliminada la llamada a sortTasks. El ordenamiento ahora es jurisdicción de ui.js
+    return filtered;
+};
 
-// Anclaje preventivo por si otras funciones dependen del objeto window
-window.pruneTree = pruneTree;
-
-// FLATTEN MATCHES
-function flattenMatches(prunedNodes, path = []) {
-    let flat = []; if (!Array.isArray(prunedNodes)) return flat;
+// FLATTEN MATCHES UNIFICADO
+window.flattenMatches = function(prunedNodes, path = []) {
+    let flat = []; 
+    if (!Array.isArray(prunedNodes)) return flat;
     prunedNodes.forEach(node => {
         const currentPath = [...path, { id: node.id, name: node.name }];
         if (node._explicitMatch) flat.push({ ...node, _parentPath: path, subtasks: [] });
-        if (node.subtasks && node.subtasks.length > 0) flat = flat.concat(flattenMatches(node.subtasks, currentPath));
-    }); return flat;
-}
+        if (node.subtasks && node.subtasks.length > 0) flat = flat.concat(window.flattenMatches(node.subtasks, currentPath));
+    }); 
+    return flat;
+};
 function getAreaTaskCount(areaName) {
     let count = 0;
     if (typeof tasks === 'undefined' || !Array.isArray(tasks)) return count;
