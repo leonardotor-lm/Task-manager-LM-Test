@@ -502,6 +502,8 @@ window.renderTasks = function() {
         nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
         const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'undefined') ? window.pruneTree(tasks) : (typeof pruneTree === 'function' ? pruneTree(tasks) : []);
+        console.log("PRUNED:", pruned.length);
+        console.log(pruned);
         
         const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(state.view);
         const hasActiveSearch = typeof filters.search === 'string' && filters.search.trim() !== '';
