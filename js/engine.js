@@ -103,6 +103,14 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
         
         // Invocación recursiva consolidada en el ámbito global
         const prunedSubtasks = window.pruneTree(node.subtasks || [], isNowFocused);
+        console.log(
+    "Nodo evaluado:",
+    node.name,
+    "| matches:",
+    matches,
+    "| subtareas sobrevivientes:",
+    prunedSubtasks.length
+);
         
         if (matches || prunedSubtasks.length > 0) {
             return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
