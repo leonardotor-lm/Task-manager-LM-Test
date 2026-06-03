@@ -355,6 +355,8 @@ window.updateFilters = function() {
     window.currentFilters.status = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : window.currentFilters.status;
     window.currentFilters.priority = document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : window.currentFilters.priority;
     window.currentFilters.context = document.getElementById('filterContext') ? document.getElementById('filterContext').value : window.currentFilters.context;
+    console.log("DESPUÉS:", JSON.stringify(window.currentFilters));
+    console.log("STATE:", JSON.stringify(window.currentState));
     if (typeof window.renderTasks === 'function') window.renderTasks();
 
     console.log("--- AUDITORÍA DE ESTADO ---");
