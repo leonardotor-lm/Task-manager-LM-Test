@@ -354,10 +354,21 @@ window.updateFilters = function() {
     window.currentFilters.search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : window.currentFilters.search;
     window.currentFilters.status = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : window.currentFilters.status;
     window.currentFilters.priority = document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : window.currentFilters.priority;
+    console.log(
+    "VALOR REAL DEL SELECT CONTEXT:",
+    document.getElementById('filterContext'),
+    "| value:",
+    document.getElementById('filterContext')?.value
+);
+
     window.currentFilters.context = document.getElementById('filterContext') ? document.getElementById('filterContext').value : window.currentFilters.context;
     console.log(
         "UPDATE FILTERS CONTEXT:",
         document.getElementById('filterContext')?.value
+);
+    console.log(
+    "CONTEXT GUARDADO EN currentFilters:",
+    window.currentFilters.context
 );
     console.log("DESPUÉS:", JSON.stringify(window.currentFilters));
     console.log("STATE:", JSON.stringify(window.currentState));
