@@ -548,6 +548,8 @@ window.renderTasks = function() {
             return sortState.order === 'desc' ? -result : result;
         });
     }
+    console.log("--- RENDERTASKS (Paso final) ---");
+    console.log("Tareas listas para pintar en pantalla:", nodesToRender.length);
     
     if (nodesToRender.length === 0) { 
         if (list) list.innerHTML = ''; 
