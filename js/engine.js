@@ -88,6 +88,13 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
         const isHistoricalCompleted = filters.status === 'completed';
 
         if (!isHistoricalCompleted) {
+            console.log(
+                "CHECK TODAY:",
+                node.name,
+                "| date:", node.date,
+                "| today:", todayStr,
+                "| resultado:", (!node.date || node.date > todayStr)
+            );
             if (state.view === 'today') { if (!node.date || node.date > todayStr) matches = false; }
             else if (state.view === 'tomorrow') { if (!node.date || node.date !== tomorrowStr) matches = false; }
             else if (state.view === 'week') { if (!node.date || node.date > nextWeekStr) matches = false; }
