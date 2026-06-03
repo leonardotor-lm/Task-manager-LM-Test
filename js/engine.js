@@ -107,6 +107,11 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
     
     // Eliminada la llamada a sortTasks. El ordenamiento ahora es jurisdicción de ui.js
     return filtered;
+// Antes del map
+console.log("--- INICIO DE PRUNETREE ---");
+console.log("Tareas entrando a filtrar:", nodeList.length);
+console.log("Estado actual (window.currentState):", JSON.stringify(window.currentState));
+console.log("Filtros actuales (window.currentFilters):", JSON.stringify(window.currentFilters));
 };
 
 // FLATTEN MATCHES UNIFICADO
