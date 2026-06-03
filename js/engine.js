@@ -84,6 +84,17 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
         if (filters.priority !== 'all' && node.priority !== filters.priority) matches = false; 
         if (filters.context !== 'all' && node.context !== filters.context) matches = false;
         
+        console.log(
+            "PRE-FILTRO:",
+            node.name,
+            "| status:", node.status,
+            "| filtro status:", filters.status,
+            "| priority:", node.priority,
+            "| filtro priority:", filters.priority,
+            "| context:", node.context,
+            "| filtro context:", filters.context,
+            "| matches:", matches
+);
         // Excepción histórica: Bypass temporal y espacial para tareas completadas
         const isHistoricalCompleted = filters.status === 'completed';
 
