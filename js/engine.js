@@ -43,6 +43,11 @@ function calculateNextOccurrence(task, completionDateStr = null) {
 function containsFocusNode(node, targetId) { if (node.id === targetId) return true; if (!node.subtasks) return false; return node.subtasks.some(s => containsFocusNode(s, targetId)); }
 window.pruneTree = function(nodeList, inFocusedSubtree = false) {
     if (!Array.isArray(nodeList)) return [];
+    // INSERCIÓN DE TRAZA PARA AUDITORÍA
+    console.log("--- INICIO DE PRUNETREE ---");
+    console.log("Tareas entrando a filtrar:", nodeList.length);
+    console.log("Estado actual (window.currentState):", JSON.stringify(window.currentState));
+    console.log("Filtros actuales (window.currentFilters):", JSON.stringify(window.currentFilters));
     
     // Sincronización de estado global
     
@@ -104,14 +109,10 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
         }
         return null;
     }).filter(Boolean);
-    
+    // AQUÍ INSERTAS EL LOG DE SALIDA
+    console.log("Tareas saliendo de filtrar (después de pruneTree):", filtered.length);
     // Eliminada la llamada a sortTasks. El ordenamiento ahora es jurisdicción de ui.js
     return filtered;
-// Antes del map
-console.log("--- INICIO DE PRUNETREE ---");
-console.log("Tareas entrando a filtrar:", nodeList.length);
-console.log("Estado actual (window.currentState):", JSON.stringify(window.currentState));
-console.log("Filtros actuales (window.currentFilters):", JSON.stringify(window.currentFilters));
 };
 
 // FLATTEN MATCHES UNIFICADO
