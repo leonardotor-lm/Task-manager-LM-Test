@@ -1132,6 +1132,8 @@ function syncGlobals() {
 }
 
 window.updateFilters = function() {
+    console.log("=== UPDATEFILTERS EJECUTADO ===");
+
     syncGlobals();
     if (window.currentFilters) {
         window.currentFilters.search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '';
