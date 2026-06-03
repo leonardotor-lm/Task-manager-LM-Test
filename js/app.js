@@ -347,6 +347,8 @@ function updateFilters() {
 }
 
 window.updateFilters = function() {
+    console.log("=== UPDATE FILTERS ===");
+    console.log("ANTES:", JSON.stringify(window.currentFilters));
     if (!window.currentFilters) window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
     
     window.currentFilters.search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : window.currentFilters.search;
