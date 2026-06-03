@@ -486,6 +486,7 @@ function buildTaskRows(nodes, path = []) {
 }
 
 window.renderTasks = function() {
+        console.log("=== RENDERTASKS NUEVA VERSION ===");
     const list = document.getElementById('taskList'); 
     const empty = document.getElementById('emptyState');
     
