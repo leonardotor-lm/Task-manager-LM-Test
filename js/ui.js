@@ -516,6 +516,9 @@ window.renderTasks = function() {
         
         nodesToRender = isFlatView ? (typeof window.flattenMatches === 'function' ? window.flattenMatches(pruned) : (typeof flattenMatches === 'function' ? flattenMatches(pruned) : [])) : pruned;
 
+        console.log("FLATVIEW:", isFlatView);
+        console.log("NODES TO RENDER:", nodesToRender.length);
+        console.log(nodesToRender);
         // MOTOR DE ORDENAMIENTO JERÁRQUICO
         nodesToRender.sort((a, b) => {
             // 1. Gravedad Estructural: Las tareas completadas se hunden, salvo si el usuario filtra explícitamente por ellas
