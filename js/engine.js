@@ -43,11 +43,7 @@ function calculateNextOccurrence(task, completionDateStr = null) {
 function containsFocusNode(node, targetId) { if (node.id === targetId) return true; if (!node.subtasks) return false; return node.subtasks.some(s => containsFocusNode(s, targetId)); }
 window.pruneTree = function(nodeList, state, filters, inFocusedSubtree = false) {
 if (!Array.isArray(nodeList)) return [];
-    
-    // Sincronización de estado global
-    const state = window.currentState || { view: 'all' };
-    const filters = window.currentFilters || { search: '', status: 'pending', priority: 'all', context: 'all' };
-    
+      
     // Horizontes temporales
     const todayStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(new Date()) : new Date().toISOString().split('T')[0];
     const tomorrowObj = new Date(); tomorrowObj.setDate(tomorrowObj.getDate() + 1); 
