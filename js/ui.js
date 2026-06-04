@@ -502,7 +502,7 @@ window.renderTasks = function() {
         if (typeof tasks !== 'undefined') collectDeleted(tasks); 
         nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
-        const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'undefined') ? window.pruneTree(tasks) : (typeof pruneTree === 'function' ? pruneTree(tasks) : []);
+const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'undefined') ? window.pruneTree(tasks, window.currentState, window.currentFilters) : (typeof pruneTree === 'function' ? pruneTree(tasks, window.currentState, window.currentFilters) : []);        
         
         const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(state.view);
         const hasActiveSearch = typeof filters.search === 'string' && filters.search.trim() !== '';
