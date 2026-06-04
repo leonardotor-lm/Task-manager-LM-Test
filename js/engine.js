@@ -43,16 +43,10 @@ function calculateNextOccurrence(task, completionDateStr = null) {
 function containsFocusNode(node, targetId) { if (node.id === targetId) return true; if (!node.subtasks) return false; return node.subtasks.some(s => containsFocusNode(s, targetId)); }
 window.pruneTree = function(nodeList, inFocusedSubtree = false) {
     if (!Array.isArray(nodeList)) return [];
-    // INSERCIÓN DE TRAZA PARA AUDITORÍA
-    console.log("--- INICIO DE PRUNETREE ---");
-    console.log("Tareas entrando a filtrar:", nodeList.length);
-    console.log("Estado actual (window.currentState):", JSON.stringify(window.currentState));
-    console.log("Filtros actuales (window.currentFilters):", JSON.stringify(window.currentFilters));
     
     // Sincronización de estado global
-    
-    const state = window.currentState;
-    const filters = window.currentFilters;
+    const state = window.currentState || { view: 'all' };
+    const filters = window.currentFilters || { search: '', status: 'pending', priority: 'all', context: 'all' };
     
     // Horizontes temporales
     const todayStr = typeof window.formatDateLocal === 'function' ? window.formatDateLocal(new Date()) : new Date().toISOString().split('T')[0];
@@ -84,28 +78,10 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
         if (filters.priority !== 'all' && node.priority !== filters.priority) matches = false; 
         if (filters.context !== 'all' && node.context !== filters.context) matches = false;
         
-        console.log(
-            "PRE-FILTRO:",
-            node.name,
-            "| status:", node.status,
-            "| filtro status:", filters.status,
-            "| priority:", node.priority,
-            "| filtro priority:", filters.priority,
-            "| context:", node.context,
-            "| filtro context:", filters.context,
-            "| matches:", matches
-);
         // Excepción histórica: Bypass temporal y espacial para tareas completadas
         const isHistoricalCompleted = filters.status === 'completed';
 
         if (!isHistoricalCompleted) {
-            console.log(
-                "CHECK TODAY:",
-                node.name,
-                "| date:", node.date,
-                "| today:", todayStr,
-                "| resultado:", (!node.date || node.date > todayStr)
-            );
             if (state.view === 'today') { if (!node.date || node.date > todayStr) matches = false; }
             else if (state.view === 'tomorrow') { if (!node.date || node.date !== tomorrowStr) matches = false; }
             else if (state.view === 'week') { if (!node.date || node.date > nextWeekStr) matches = false; }
@@ -121,22 +97,13 @@ window.pruneTree = function(nodeList, inFocusedSubtree = false) {
         
         // Invocación recursiva consolidada en el ámbito global
         const prunedSubtasks = window.pruneTree(node.subtasks || [], isNowFocused);
-        console.log(
-    "Nodo evaluado:",
-    node.name,
-    "| matches:",
-    matches,
-    "| subtareas sobrevivientes:",
-    prunedSubtasks.length
-);
         
         if (matches || prunedSubtasks.length > 0) {
             return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
         }
         return null;
     }).filter(Boolean);
-    // AQUÍ INSERTAS EL LOG DE SALIDA
-    console.log("Tareas saliendo de filtrar (después de pruneTree):", filtered.length);
+    
     // Eliminada la llamada a sortTasks. El ordenamiento ahora es jurisdicción de ui.js
     return filtered;
 };

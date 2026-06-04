@@ -151,10 +151,10 @@ function openAddTaskModal() {
     
     // 1. ASIGNACIÓN DINÁMICA DE FECHA (Corregida para zona horaria local)
     const dateInput = document.getElementById('dateInput');
-    if (window.currentState && window.currentState.view === 'today') {
+    if (currentState && currentState.view === 'today') {
         const today = new Date();
         dateInput.value = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-    } else if (window.currentState && window.currentState.view === 'tomorrow') {
+    } else if (currentState && currentState.view === 'tomorrow') {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         dateInput.value = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0');
@@ -168,7 +168,7 @@ function openAddTaskModal() {
     
     // 2. ASIGNACIÓN DINÁMICA DE ÁREA
     const fallbackArea = customAreas.includes('Inbox') ? 'Inbox' : (customAreas[0] || '');
-    document.getElementById('areaInput').value = (window.currentState && window.currentState.selectedArea) ? window.currentState.selectedArea : fallbackArea;
+    document.getElementById('areaInput').value = (currentState && currentState.selectedArea) ? currentState.selectedArea : fallbackArea; 
     
     document.getElementById('contextInput').value = ''; 
     
@@ -368,14 +368,14 @@ window.renderSidebarCounters = renderSidebarCounters;
 // BUILD TASK ROWS
 function buildTaskRows(nodes, path = []) {
     if (!nodes || nodes.length === 0) return '';
-    const isTrash = window.currentState.view === 'trash';
+    const isTrash = currentState.view === 'trash';
     const indentMap = { 1: 'pl-3 md:pl-5', 2: 'pl-8 md:pl-10', 3: 'pl-12 md:pl-14', 4: 'pl-16 md:pl-18', 5: 'pl-20 md:pl-22' };
-    const isFiltering = window.currentFilters.search !== '' || window.currentFilters.priority !== 'all' || window.currentFilters.context !== 'all' || window.currentFilters.status === 'in_progress' || window.currentFilters.status === 'completed';
+    const isFiltering = currentFilters.search !== '' || currentFilters.priority !== 'all' || currentFilters.context !== 'all' || currentFilters.status === 'in_progress' || currentFilters.status === 'completed';
     const todayStr = formatDateLocal(new Date());
 
     return nodes.map(task => {
         const hasChildren = task.subtasks && task.subtasks.length > 0;
-        const isExpanded = isTrash || (window.currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
+        const isExpanded = isTrash || (currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
         const logicalDepth = path.length + 1;
         const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-20 md:pl-22');
         const isCompleted = task.status === 'completed';
@@ -486,7 +486,6 @@ function buildTaskRows(nodes, path = []) {
 }
 
 window.renderTasks = function() {
-        console.log("=== RENDERTASKS NUEVA VERSION ===");
     const list = document.getElementById('taskList'); 
     const empty = document.getElementById('emptyState');
     
@@ -503,8 +502,6 @@ window.renderTasks = function() {
         nodesToRender.sort((a,b) => (b.deletedAt || 0) - (a.deletedAt || 0));
     } else {
         const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'undefined') ? window.pruneTree(tasks) : (typeof pruneTree === 'function' ? pruneTree(tasks) : []);
-        console.log("PRUNED:", pruned.length);
-        console.log(pruned);
         
         const isTemporalView = ['today', 'tomorrow', 'week', 'fortnight'].includes(state.view);
         const hasActiveSearch = typeof filters.search === 'string' && filters.search.trim() !== '';
@@ -517,9 +514,6 @@ window.renderTasks = function() {
         
         nodesToRender = isFlatView ? (typeof window.flattenMatches === 'function' ? window.flattenMatches(pruned) : (typeof flattenMatches === 'function' ? flattenMatches(pruned) : [])) : pruned;
 
-        console.log("FLATVIEW:", isFlatView);
-        console.log("NODES TO RENDER:", nodesToRender.length);
-        console.log(nodesToRender);
         // MOTOR DE ORDENAMIENTO JERÁRQUICO
         nodesToRender.sort((a, b) => {
             // 1. Gravedad Estructural: Las tareas completadas se hunden, salvo si el usuario filtra explícitamente por ellas
@@ -554,8 +548,6 @@ window.renderTasks = function() {
             return sortState.order === 'desc' ? -result : result;
         });
     }
-    console.log("--- RENDERTASKS (Paso final) ---");
-    console.log("Tareas listas para pintar en pantalla:", nodesToRender.length);
     
     if (nodesToRender.length === 0) { 
         if (list) list.innerHTML = ''; 

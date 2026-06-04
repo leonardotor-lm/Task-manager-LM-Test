@@ -347,37 +347,13 @@ function updateFilters() {
 }
 
 window.updateFilters = function() {
-    console.log("=== UPDATE FILTERS ===");
-    console.log("ANTES:", JSON.stringify(window.currentFilters));
-    if (!window.currentFilters) window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
-    
-    window.currentFilters.search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : window.currentFilters.search;
-    window.currentFilters.status = document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : window.currentFilters.status;
-    window.currentFilters.priority = document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : window.currentFilters.priority;
-    console.log(
-    "VALOR REAL DEL SELECT CONTEXT:",
-    document.getElementById('filterContext'),
-    "| value:",
-    document.getElementById('filterContext')?.value
-);
-
-    window.currentFilters.context = document.getElementById('filterContext') ? document.getElementById('filterContext').value : window.currentFilters.context;
-    console.log(
-        "UPDATE FILTERS CONTEXT:",
-        document.getElementById('filterContext')?.value
-);
-    console.log(
-    "CONTEXT GUARDADO EN currentFilters:",
-    window.currentFilters.context
-);
-    console.log("DESPUÉS:", JSON.stringify(window.currentFilters));
-    console.log("STATE:", JSON.stringify(window.currentState));
+    window.currentFilters = {
+        search: document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '',
+        status: document.getElementById('filterStatus') ? document.getElementById('filterStatus').value : 'pending',
+        priority: document.getElementById('filterPriority') ? document.getElementById('filterPriority').value : 'all',
+        context: document.getElementById('filterContext') ? document.getElementById('filterContext').value : 'all'
+    };
     if (typeof window.renderTasks === 'function') window.renderTasks();
-
-    console.log("--- AUDITORÍA DE ESTADO ---");
-    console.log("¿currentState === window.currentState?:", currentState === window.currentState);
-    console.log("¿currentFilters === window.currentFilters?:", currentFilters === window.currentFilters);
-    console.log("Valor de window.currentFilters:", JSON.stringify(window.currentFilters));
 };
 
 window.resetFilters = function() {
@@ -391,10 +367,8 @@ window.resetFilters = function() {
     if (document.getElementById('filterContext')) document.getElementById('filterContext').value = 'all';
     
     // Asignación directa y forzada para evitar variables no definidas
-if (!window.currentSort) window.currentSort = { by: 'date', order: 'asc' };
-    window.currentSort.by = 'date';
-    window.currentSort.order = 'asc';
-        if (document.getElementById('sortSelect')) {
+    window.currentSort = { by: 'date', order: 'asc' };
+    if (document.getElementById('sortSelect')) {
         document.getElementById('sortSelect').value = 'date-asc';
     }
     
@@ -1132,8 +1106,6 @@ function syncGlobals() {
 }
 
 window.updateFilters = function() {
-    console.log("=== UPDATEFILTERS EJECUTADO ===");
-
     syncGlobals();
     if (window.currentFilters) {
         window.currentFilters.search = document.getElementById('searchInput') ? document.getElementById('searchInput').value.trim() : '';
