@@ -102,8 +102,9 @@ function updateAddParentDropdown() {
     if (!parentInput) return;
     
     // Se invoca a las funciones del motor
-    const flat = typeof flattenMatches === 'function' ? flattenMatches(pruneTree(tasks)) : [];
     
+const flat = typeof flattenMatches === 'function' ? flattenMatches(pruneTree(tasks, window.currentState, window.currentFilters)) : [];    
+   
     let html = '<option value="root">Ninguna (Tarea principal)</option>';
     flat.forEach(t => {
         if (!t.isDeleted) {
@@ -119,7 +120,7 @@ function updateEditParentDropdown(taskId) {
     const parentInput = document.getElementById('editParentInput');
     if (!parentInput) return;
     
-    const flat = typeof flattenMatches === 'function' ? flattenMatches(pruneTree(tasks)) : [];
+const flat = typeof flattenMatches === 'function' ? flattenMatches(pruneTree(tasks, window.currentState, window.currentFilters)) : [];
     
     let html = '<option value="root">Ninguna (Tarea principal)</option>';
     flat.forEach(t => {
