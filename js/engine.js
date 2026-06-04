@@ -92,7 +92,7 @@ if (!Array.isArray(nodeList)) return [];
         const isNowFocused = inFocusedSubtree || (state.view === 'focus' && node.id === state.focusTargetId);
         
         // Invocación recursiva consolidada en el ámbito global
-        const prunedSubtasks = window.pruneTree(node.subtasks || [], isNowFocused);
+const prunedSubtasks = window.pruneTree(node.subtasks || [], state, filters, isNowFocused);
         
         if (matches || prunedSubtasks.length > 0) {
             return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
