@@ -41,8 +41,8 @@ function calculateNextOccurrence(task, completionDateStr = null) {
 
 // TREE AND LIST RENDER LOGIC
 function containsFocusNode(node, targetId) { if (node.id === targetId) return true; if (!node.subtasks) return false; return node.subtasks.some(s => containsFocusNode(s, targetId)); }
-window.pruneTree = function(nodeList, inFocusedSubtree = false) {
-    if (!Array.isArray(nodeList)) return [];
+window.pruneTree = function(nodeList, state, filters, inFocusedSubtree = false) {
+if (!Array.isArray(nodeList)) return [];
     
     // Sincronización de estado global
     const state = window.currentState || { view: 'all' };
