@@ -310,9 +310,9 @@ function importData(event) { const file = event.target.files[0]; if (!file) retu
     if (typeof populateSelect === 'function') {
         if (document.getElementById('areaInput')) populateSelect('areaInput', allAreas);
         if (document.getElementById('editAreaInput')) populateSelect('editAreaInput', allAreas);
-        if (document.getElementById('contextInput')) populateSelect('contextInput', allContexts, "Sin contexto", "");
-        if (document.getElementById('editContextInput')) populateSelect('editContextInput', allContexts, "Sin contexto", "");
-        if (document.getElementById('filterContext')) populateSelect('filterContext', allContexts, "Contexto (Todos)", "all"); 
+        if (document.getElementById('contextInput')) populateSelect('contextInput', allContexts, true, "Sin contexto", "");
+        if (document.getElementById('editContextInput')) populateSelect('editContextInput', allContexts, true, "Sin contexto", "");
+        if (document.getElementById('filterContext')) populateSelect('filterContext', allContexts, true, "Contexto (Todos)", "all"); 
     }
 
     // 5. Renderizado de interfaz periférica
