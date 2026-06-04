@@ -65,11 +65,11 @@ function renderSidebarAreas() {
     }).join(''); 
 }
 window.renderSidebarAreas = renderSidebarAreas;
-function populateSelect(selectId, options, addEmpty = false, emptyText = 'Ninguno') {
+function populateSelect(selectId, options, addEmpty = false, emptyText = 'Ninguno', emptyValue = '') {
     const select = document.getElementById(selectId);
     if (!select) return;
     let html = '';
-    if (addEmpty) html += `<option value="">${emptyText}</option>`;
+    if (addEmpty) html += `<option value="${emptyValue}">${emptyText}</option>`;
     options.forEach(opt => {
         const val = typeof opt === 'object' ? opt.name : opt;
         const text = typeof opt === 'object' ? opt.name : opt;
