@@ -95,8 +95,8 @@ if (!Array.isArray(nodeList)) return [];
 const prunedSubtasks = window.pruneTree(node.subtasks || [], state, filters, isNowFocused);
         
         if (matches || prunedSubtasks.length > 0) {
-            return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches }; 
-        }
+return { ...node, subtasks: prunedSubtasks, _explicitMatch: matches, _subCount: node.subtasks ? node.subtasks.length : 0 };
+                    }
         return null;
     }).filter(Boolean);
     
