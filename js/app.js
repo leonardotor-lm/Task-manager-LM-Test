@@ -903,7 +903,7 @@ window.updateBulkButtonsState = function() {
 window.bulkDelete = function() { 
     if (selectedTaskIds.size === 0) return; 
 
-    // 1. Aislamos la lógica de mutación en una constante asíncrona
+    // 1. Aislamos la lógica de mutación
     const executeBulkDeletion = async () => {
         selectedTaskIds.forEach(id => {
             findAndMutateTask(id, (nodes, i) => { 
@@ -917,15 +917,15 @@ window.bulkDelete = function() {
         await saveData(); 
     };
 
-    // 2. Delegamos el control al modal de la aplicación
-    if (typeof openConfirmModal === 'function') {
-        openConfirmModal(
+    // 2. Delegamos el control usando el nombre correcto de tu UI
+    if (typeof showConfirm === 'function') {
+        showConfirm(
             "Eliminar tareas", 
             `¿Seguro que querés enviar ${selectedTaskIds.size} tareas a la papelera?`, 
             executeBulkDeletion
         );
     } else {
-        console.error("Fallo de acoplamiento: openConfirmModal no está definida en el entorno global.");
+        console.error("Fallo de acoplamiento: showConfirm no está definida en el entorno global.");
     }
 };
 window.bulkComplete = async function() { 
