@@ -58,7 +58,13 @@ window.onload = async () => {
         await saveData();
     }
 
-    refreshAllDropdowns(); 
+    refreshAllDropdowns();
+    
+    // 1. Forzamos el estado global a "Hoy"
+    window.currentState = { view: 'today' }; 
+    window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+    
+    // 2. Disparamos el renderizado
     updateUI(); 
 };
 
