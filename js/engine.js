@@ -110,8 +110,8 @@ window.flattenMatches = function(prunedNodes, path = []) {
     if (!Array.isArray(prunedNodes)) return flat;
     prunedNodes.forEach(node => {
         const currentPath = [...path, { id: node.id, name: node.name }];
-if (node._explicitMatch) flat.push({ ...node, _parentPath: path, subtasks: [], _subCount: node.subtasks ? node.subtasks.length : 0 });
-        if (node.subtasks && node.subtasks.length > 0) flat = flat.concat(window.flattenMatches(node.subtasks, currentPath));
+if (node._explicitMatch) flat.push({ ...node, _parentPath: path, subtasks: [] });
+                if (node.subtasks && node.subtasks.length > 0) flat = flat.concat(window.flattenMatches(node.subtasks, currentPath));
     }); 
     return flat;
 };
