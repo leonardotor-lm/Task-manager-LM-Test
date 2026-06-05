@@ -900,9 +900,11 @@ window.updateBulkButtonsState = function() {
         }
     });
 };
-window.bulkDelete = async function() { 
+window.bulkDelete = function() { 
     if (selectedTaskIds.size === 0) return; 
-    if (confirm(`¿Seguro que querés enviar ${selectedTaskIds.size} tareas a la papelera?`)) {
+
+    // 1. Aislamos la lógica de mutación en una constante asíncrona
+    const executeBulkDeletion = async () => {
         selectedTaskIds.forEach(id => {
             findAndMutateTask(id, (nodes, i) => { 
                 nodes[i].isDeleted = true; 
@@ -913,9 +915,19 @@ window.bulkDelete = async function() {
         renderTasks(); 
         showNotice("Tareas eliminadas"); 
         await saveData(); 
+    };
+
+    // 2. Delegamos el control al modal de la aplicación
+    if (typeof openConfirmModal === 'function') {
+        openConfirmModal(
+            "Eliminar tareas", 
+            `¿Seguro que querés enviar ${selectedTaskIds.size} tareas a la papelera?`, 
+            executeBulkDeletion
+        );
+    } else {
+        console.error("Fallo de acoplamiento: openConfirmModal no está definida en el entorno global.");
     }
 };
-
 window.bulkComplete = async function() { 
     if (selectedTaskIds.size === 0) return; 
     selectedTaskIds.forEach(id => toggleTaskUniversal(id)); 
