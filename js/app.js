@@ -238,8 +238,16 @@ async function toggleTaskUniversal(id) {
             function resetCompletion(task) { task.status = 'pending'; if (task.subtasks) task.subtasks.forEach(resetCompletion); }
             if(t.subtasks) t.subtasks.forEach(resetCompletion);
             nodes.splice(i, 0, historicalCopy);
-        } else { t.status = t.status === 'completed' ? 'pending' : 'completed'; }
-    });
+            } else { 
+                if (t.status === 'completed') {
+                    t.status = 'pending';
+                    delete t.completedAt; // Purgamos la fecha si se destilda por error
+                } else {
+                    t.status = 'completed';
+                    t.completedAt = Date.now(); // Sellado con precisión de milisegundos
+                }
+            }
+            });
     renderTasks(); renderCalendar(); await saveData();
 }
 async function deleteTaskUniversal(id) { const task = getTaskById(id); if (!task) return; const performDelete = async () => { if (findAndMutateTask(id, (nodes, i) => { nodes[i].isDeleted = true; nodes[i].deletedAt = Date.now(); })) { refreshAllDropdowns(); renderTasks(); renderCalendar(); showNotice("Enviada a papelera"); await saveData(); } }; if (task.subtasks && task.subtasks.length > 0) { showConfirm("Eliminar con subtareas", `¿Enviar a papelera con sus ${task.subtasks.length} subtareas?`, performDelete, true); } else { await performDelete(); } }
