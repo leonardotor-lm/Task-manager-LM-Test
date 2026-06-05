@@ -64,10 +64,7 @@ window.onload = async () => {
     
     // 2. Despliegue visual DESPUÉS
     refreshAllDropdowns();
-    
-    // Testigo de ejecución
-    console.log("AUDITORÍA: onload finalizado. Tareas en memoria:", typeof tasks !== 'undefined' ? tasks.length : 'no definido');
-    
+      
     // Invocación explícita de la función de dibujado
     if (typeof renderTasks === 'function') {
         renderTasks();
