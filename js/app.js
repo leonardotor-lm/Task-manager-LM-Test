@@ -60,12 +60,21 @@ window.onload = async () => {
 
     refreshAllDropdowns();
     
-    // 1. Forzamos el estado global a "Hoy"
-    window.currentState = { view: 'today' }; 
+   window.currentState = { view: 'today' }; 
     window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
     
-    // 2. Disparamos el renderizado
-    updateUI(); 
+    // Testigo de ejecución
+    console.log("AUDITORÍA: onload finalizado. Tareas en memoria:", typeof tasks !== 'undefined' ? tasks.length : 'no definido');
+    
+    // Invocación explícita de la función de dibujado
+    if (typeof renderTasks === 'function') {
+        renderTasks();
+    }
+    
+    // Mantenemos updateUI por si dibuja otras partes (como contadores)
+    if (typeof updateUI === 'function') {
+        updateUI();
+    }
 };
 
 function saveCategories() {
