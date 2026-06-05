@@ -58,10 +58,12 @@ window.onload = async () => {
         await saveData();
     }
 
-    refreshAllDropdowns();
-    
-   window.currentState = { view: 'today' }; 
+   // 1. Definición en memoria PRIMERO
+    window.currentState = { view: 'today' }; 
     window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+    
+    // 2. Despliegue visual DESPUÉS
+    refreshAllDropdowns();
     
     // Testigo de ejecución
     console.log("AUDITORÍA: onload finalizado. Tareas en memoria:", typeof tasks !== 'undefined' ? tasks.length : 'no definido');
