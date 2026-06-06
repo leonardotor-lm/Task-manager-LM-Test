@@ -18,9 +18,15 @@
                 <option value="all">Todas las tareas</option>
             </select>
         </div>
+
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <input type="text" id="mobileTaskInput" placeholder="Nueva tarea..." style="flex: 1; padding: 12px; background-color: #1D313C; color: #f8fafc; border: 1px solid #4A5B6D; border-radius: 6px; font-size: 16px; outline: none;">
+            <button onclick="window.addMobileTask()" style="background-color: #F6723A; color: #0A1318; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; font-size: 20px; cursor: pointer;">+</button>
+        </div>
+
         <div id="mobileTaskList"></div>
     </main>
-
+    
     <div style="display: none;">
         <input type="hidden" id="settingsDbUrlInput">
         <input type="hidden" id="settingsApiKeyInput">
