@@ -1,66 +1,40 @@
-// js/ui-mobile.js
-// Capa de presentación exclusiva para el MVP móvil
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tareas - MVP Móvil</title>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; margin: 0; padding: 16px; }
+    </style>
+</head>
+<body>
 
-// STUBS: Contención para funciones de escritorio
-window.initSpeechRecognition = function() {};
-window.updateDateDisplay = function() {};
-window.showSyncStatus = function(status) { console.log("Sincronización móvil:", status); };
-window.showNotice = function(mensaje) { console.log("Notificación móvil:", mensaje); };
-window.refreshAllDropdowns = function() {};
-window.renderCalendar = function() {}; // Stub protector para el toggle
+    <main id="mobile-root">
+        <div style="margin-bottom: 16px;">
+            <select id="mobileViewSelector" onchange="window.changeMobileView(this.value)" style="width: 100%; padding: 12px; background-color: #1D313C; color: #f8fafc; border: 1px solid #4A5B6D; border-radius: 6px; font-size: 16px; outline: none;">
+                <option value="today">Hoy y atrasadas</option>
+                <option value="tomorrow">Mañana</option>
+                <option value="week">Esta semana</option>
+                <option value="all">Todas las tareas</option>
+            </select>
+        </div>
 
-// Interceptamos la orden de actualización del controlador
-window.updateUI = function() { 
-    window.renderTasks(); 
-};
+        <div id="mobileTaskList"></div>
+    </main>
 
-// RENDERIZADO MVP: Filtrado dinámico a través del motor lógico
-window.renderTasks = function() {
-    const container = document.getElementById('mobileTaskList');
-    if (!container) return;
+    <div style="display: none;">
+        <input type="hidden" id="settingsDbUrlInput">
+        <input type="hidden" id="settingsApiKeyInput">
+    </div>
 
-    if (typeof tasks === 'undefined' || !Array.isArray(tasks) || tasks.length === 0) {
-        container.innerHTML = '<div style="padding: 16px; color: #8A9DB5; text-align: center;">No hay tareas en el sistema.</div>';
-        return;
-    }
+    <script src="js/config.js"></script>
+    <script src="js/cloud.js"></script>
+    <script src="js/model.js"></script>
+    <script src="js/engine.js"></script>
 
-    // 1. Procesamiento de la estructura según el estado
-    const processedTree = window.pruneTree(tasks, window.currentState, window.currentFilters);
-    
-    // 2. Aplanamiento topológico para la vista móvil (MVP)
-    const viewList = window.flattenMatches(processedTree);
+    <script src="js/ui-mobile.js"></script>
 
-    if (viewList.length === 0) {
-        container.innerHTML = '<div style="padding: 16px; color: #8A9DB5; text-align: center;">No hay tareas para esta vista.</div>';
-        return;
-    }
-
-    let htmlMarkup = '';
-    
-    // 3. Renderizado de las tareas procesadas con interactividad
-    viewList.forEach(task => {
-        const subCount = task._subCount !== undefined ? task._subCount : 0;
-        const subTag = subCount > 0 ? ` <span style="color: #F88D5D; font-weight: 600;">[+${subCount} sub.]</span>` : '';
-        
-        // Determinamos el aspecto del botón según el estado actual
-        const isCompleted = task.status === 'completed';
-        const btnText = isCompleted ? 'Deshacer' : 'Completar';
-        const btnColor = isCompleted ? '#4A5B6D' : '#F6723A';
-
-        htmlMarkup += `
-        <div style="background-color: #1D313C; margin-bottom: 8px; padding: 12px; border-radius: 6px; border-left: 4px solid ${isCompleted ? '#4A5B6D' : '#F6723A'}; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-weight: 600; font-size: 16px; color: ${isCompleted ? '#8A9DB5' : '#f8fafc'}; text-decoration: ${isCompleted ? 'line-through' : 'none'};">${task.name}</div>
-                <div style="font-size: 12px; color: #8A9DB5; margin-top: 6px;">
-                    Área: ${task.area || 'Inbox'} | Estado: ${task.status}${subTag}
-                </div>
-            </div>
-            <button onclick="window.toggleTaskUniversal(${task.id})" style="background-color: ${btnColor}; color: #0A1318; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">
-                ${btnText}
-            </button>
-        </div>`;
-    });
-
-    // Esta era la asignación final que faltaba en la sintaxis rota
-    container.innerHTML = htmlMarkup;
-};
+    <script src="js/app.js"></script>
+</body>
+</html>
