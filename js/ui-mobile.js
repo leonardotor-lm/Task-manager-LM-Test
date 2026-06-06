@@ -11,6 +11,17 @@ window.renderCalendar = function() {};
 window.updateUI = function() { 
     window.renderTasks(); 
 };
+// CONTROL DE TEMAS
+window.toggleTheme = function() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('mobileTheme', isLight ? 'light' : 'dark');
+};
+
+// Carga inicial del tema guardado
+if (localStorage.getItem('mobileTheme') === 'light') {
+    document.body.classList.add('light-theme');
+}
 
 window.changeMobileView = function(viewName) {
     if (!window.currentState) window.currentState = {};
