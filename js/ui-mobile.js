@@ -2,12 +2,12 @@
 // Capa de presentación exclusiva para el MVP móvil
 
 // STUBS: Contención para funciones de escritorio
-window.renderCalendar = function() {};
 window.initSpeechRecognition = function() {};
 window.updateDateDisplay = function() {};
 window.showSyncStatus = function(status) { console.log("Sincronización móvil:", status); };
 window.showNotice = function(mensaje) { console.log("Notificación móvil:", mensaje); };
 window.refreshAllDropdowns = function() {};
+window.renderCalendar = function() {}; // Stub protector para el toggle
 
 // Interceptamos la orden de actualización del controlador
 window.updateUI = function() { 
@@ -24,7 +24,7 @@ window.renderTasks = function() {
         return;
     }
 
-    // 1. Procesamiento de la estructura según el estado (ej. view: 'today')
+    // 1. Procesamiento de la estructura según el estado
     const processedTree = window.pruneTree(tasks, window.currentState, window.currentFilters);
     
     // 2. Aplanamiento topológico para la vista móvil (MVP)
@@ -37,7 +37,7 @@ window.renderTasks = function() {
 
     let htmlMarkup = '';
     
-    // 3. Renderizado de las tareas procesadas
+    // 3. Renderizado de las tareas procesadas con interactividad
     viewList.forEach(task => {
         const subCount = task._subCount !== undefined ? task._subCount : 0;
         const subTag = subCount > 0 ? ` <span style="color: #F88D5D; font-weight: 600;">[+${subCount} sub.]</span>` : '';
@@ -60,3 +60,7 @@ window.renderTasks = function() {
             </button>
         </div>`;
     });
+
+    // Esta era la asignación final que faltaba en la sintaxis rota
+    container.innerHTML = htmlMarkup;
+};
