@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Tareas - MVP Móvil</title>
+    <style>
+        body { background-color: #0f172a; color: #f8fafc; font-family: sans-serif; margin: 0; padding: 16px; }
+    </style>
+</head>
+<body>
+
+    <main id="mobile-root">
+        <p style="color: #94a3b8; text-align: center; margin-top: 50px;">
+            Iniciando MVP Móvil... Revisar consola (F12).
+        </p>
+        <div id="mobileTaskList"></div>
+    </main>
+
+    <div style="display: none;">
+        <input type="hidden" id="settingsDbUrlInput">
+        <input type="hidden" id="settingsApiKeyInput">
+    </div>
+
+    <script src="js/config.js"></script>
+    <script src="js/cloud.js"></script>
+    <script src="js/model.js"></script>
+    <script src="js/engine.js"></script>
+
+    <script>
+        // Stubs para evitar ReferenceError síncrono en app.js
+        window.initSpeechRecognition = function() {};
+        window.updateDateDisplay = function() {};
+        window.showSyncStatus = function(status) { console.log("Sincronización:", status); };
+        window.refreshAllDropdowns = function() {};
+        window.updateUI = function() { console.log("updateUI ejecutado. Inicialización completada."); };
+        
+        window.renderTasks = function() {
+            const list = document.getElementById('mobileTaskList');
+            const qty = typeof tasks !== 'undefined' ? tasks.length : 0;
+            list.innerHTML = `<div style="padding: 10px; background: #1e293b; border-radius: 8px;">Tareas en memoria: ${qty}</div>`;
+        };
+    </script>
+
+    <script src="js/app.js"></script>
+</body>
+</html>
