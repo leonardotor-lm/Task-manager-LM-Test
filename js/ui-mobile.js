@@ -18,6 +18,51 @@ window.changeMobileView = function(viewName) {
     window.renderTasks();
 };
 
+// INYECCIÓN DE DATOS: Adaptador para la creación de tareas desde el móvil
+window.addMobileTask = async function() {
+    const input = document.getElementById('mobileTaskInput');
+    const taskName = input.value.trim();
+    
+    if (!taskName) return; // Evita inyectar tareas vacías
+
+    // Formateo de la fecha actual (YYYY-MM-DD) para estandarización del modelo
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+
+    // Construcción del objeto garantizando compatibilidad estructural
+    const newTask = {
+        id: Date.now(),
+        name: taskName,
+        area: 'Inbox',
+        context: '',
+        priority: 'medium',
+        date: dateStr,
+        startDate: dateStr,
+        time: '',
+        notes: '',
+        reminder: null,
+        status: 'pending',
+        attachments: [],
+        subtasks: [],
+        recurrenceRule: null
+    };
+
+    // Inserción directa en la raíz del árbol
+    tasks.unshift(newTask);
+
+    // Refresco de interfaz y limpieza del campo
+    input.value = '';
+    window.renderTasks();
+
+    // Persistencia en GitHub
+    if (typeof window.saveData === 'function') {
+        await window.saveData();
+    }
+};
+
 window.renderTasks = function() {
     const container = document.getElementById('mobileTaskList');
     if (!container) return;
