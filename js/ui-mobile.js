@@ -2,6 +2,7 @@
 // Capa de presentación exclusiva para el MVP móvil
 
 // STUBS: Contención para funciones de escritorio
+window.renderCalendar = function() {};
 window.initSpeechRecognition = function() {};
 window.updateDateDisplay = function() {};
 window.showSyncStatus = function(status) { console.log("Sincronización móvil:", status); };
