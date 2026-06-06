@@ -43,3 +43,12 @@ body { background-color: var(--bg-main); color: var(--text-main); font-family: -
 .btn-action.pending { background-color: var(--accent); color: #0A1318; }
 .btn-action.completed { background-color: var(--accent-muted); color: var(--text-main); }
 .btn-action:active { transform: scale(0.92); }
+/* Paleta de Tema Claro */
+body.light-theme {
+    --bg-main: #f8fafc;
+    --bg-card: #ffffff;
+    --text-main: #0f172a;
+    --text-muted: #64748b;
+    --accent: #F6723A;
+    --accent-muted: #cbd5e1;
+}
