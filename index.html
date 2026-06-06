@@ -674,26 +674,6 @@
 <script src="js/model.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/ui.js"></script>
-    <script>
-        // Stubs para evitar ReferenceError síncrono en app.js
-        window.initSpeechRecognition = function() {};
-        window.updateDateDisplay = function() {};
-        window.showSyncStatus = function(status) { console.log("Sincronización:", status); };
-        
-        // Inyección para evitar el quiebre de cloud.js
-        window.showNotice = function(mensaje) { console.log("Notificación del sistema:", mensaje); };
-        
-        window.refreshAllDropdowns = function() {};
-        window.updateUI = function() { console.log("updateUI ejecutado. Inicialización completada."); };
-        
-        window.renderTasks = function() {
-            const list = document.getElementById('mobileTaskList');
-            const qty = typeof tasks !== 'undefined' ? tasks.length : 0;
-            if (list) {
-                list.innerHTML = `<div style="padding: 10px; background: #1e293b; border-radius: 8px;">Tareas en memoria: ${qty}</div>`;
-            }
-        };
-    </script>
 <script src="js/app.js"></script>
 </body>
 </html>
