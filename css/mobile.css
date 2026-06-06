@@ -1,1 +1,45 @@
+/* css/mobile.css */
+/* Variables de sistema base (Tema Oscuro por defecto) */
+:root {
+    --bg-main: #0f172a;
+    --bg-card: #1D313C;
+    --text-main: #f8fafc;
+    --text-muted: #8A9DB5;
+    --accent: #F6723A;
+    --accent-muted: #4A5B6D;
+}
 
+/* Reseteo y tipografía base */
+body { background-color: var(--bg-main); color: var(--text-main); font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+/* Contenedor de controles fijo en la parte superior */
+.sticky-header { position: sticky; top: 0; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); padding: 16px; z-index: 10; border-bottom: 1px solid var(--accent-muted); }
+.control-group { margin-bottom: 12px; }
+.control-group:last-child { margin-bottom: 0; }
+.flex-row { display: flex; gap: 8px; }
+
+/* Controles de formulario táctiles */
+.input-base { width: 100%; box-sizing: border-box; padding: 14px; background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--accent-muted); border-radius: 8px; font-size: 16px; outline: none; appearance: none; }
+.input-base:focus { border-color: var(--accent); }
+
+.btn-add { background-color: var(--accent); color: #0A1318; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; font-size: 24px; cursor: pointer; transition: transform 0.1s; }
+.btn-add:active { transform: scale(0.92); }
+
+/* Contenedor de lista */
+.task-list { padding: 16px; padding-bottom: 40px; }
+
+/* Tarjetas de tarea y sus estados */
+.task-card { background-color: var(--bg-card); margin-bottom: 12px; padding: 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; }
+.task-card.pending { border-left: 5px solid var(--accent); }
+.task-card.completed { border-left: 5px solid var(--accent-muted); opacity: 0.6; }
+
+.task-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; transition: color 0.2s; }
+.task-card.completed .task-title { color: var(--text-muted); text-decoration: line-through; }
+.task-meta { font-size: 13px; color: var(--text-muted); }
+.sub-tag { color: #F88D5D; font-weight: 600; }
+
+/* Botón de acción contextual */
+.btn-action { border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: transform 0.1s; }
+.btn-action.pending { background-color: var(--accent); color: #0A1318; }
+.btn-action.completed { background-color: var(--accent-muted); color: var(--text-main); }
+.btn-action:active { transform: scale(0.92); }
