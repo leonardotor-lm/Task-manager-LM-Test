@@ -8,23 +8,24 @@
 </head>
 <body>
     <main id="mobile-root">
-        <div style="margin-bottom: 16px;">
-            <select id="mobileViewSelector" onchange="window.changeMobileView(this.value)" style="width: 100%; padding: 12px; background-color: #1D313C; color: #f8fafc; border: 1px solid #4A5B6D; border-radius: 6px; font-size: 16px; outline: none;">
-                <option value="today">Hoy y atrasadas</option>
-                <option value="tomorrow">Mañana</option>
-                <option value="week">Esta semana</option>
-                <option value="all">Todas las tareas</option>
-            </select>
+        <div class="sticky-header">
+            <div class="control-group flex-row">
+                <select id="mobileViewSelector" class="input-base" onchange="window.changeMobileView(this.value)">
+                    <option value="today">Hoy y atrasadas</option>
+                    <option value="tomorrow">Mañana</option>
+                    <option value="week">Esta semana</option>
+                    <option value="all">Todas las tareas</option>
+                </select>
+                <button onclick="window.toggleTheme()" class="input-base" style="width: auto; font-weight: bold;">Tema</button>
+            </div>
+            <div class="control-group flex-row">
+                <input type="text" id="mobileTaskInput" class="input-base" placeholder="Nueva tarea rápida...">
+                <button onclick="window.addMobileTask()" class="btn-add">+</button>
+            </div>
         </div>
 
-        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
-            <input type="text" id="mobileTaskInput" placeholder="Nueva tarea..." style="flex: 1; padding: 12px; background-color: #1D313C; color: #f8fafc; border: 1px solid #4A5B6D; border-radius: 6px; font-size: 16px; outline: none;">
-            <button onclick="window.addMobileTask()" style="background-color: #F6723A; color: #0A1318; border: none; padding: 0 16px; border-radius: 6px; font-weight: bold; font-size: 20px; cursor: pointer;">+</button>
-        </div>
-
-        <div id="mobileTaskList"></div>
-    </main>
-    
+        <div id="mobileTaskList" class="task-list"></div>
+    </main>    
     <div style="display: none;">
         <input type="hidden" id="settingsDbUrlInput">
         <input type="hidden" id="settingsApiKeyInput">
