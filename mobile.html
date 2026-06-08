@@ -10,7 +10,15 @@
 </head>
 <body class="dark-theme">
 
-    <main id="mobile-root">
+    <main id="mobile-root">      
+        <div style="display: none;">
+            <input type="text" id="settingsDbUrlInput">
+            <input type="password" id="settingsApiKeyInput">
+            <input type="text" id="taskInput">
+            <select id="viewSelect"></select>
+            <select id="projectFilter"></select>
+        </div>
+        <header style="padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; gap: 10px; background: var(--bg-main);">
         <header style="padding: 15px; border-bottom: 1px solid var(--border-color); display: flex; gap: 10px; background: var(--bg-main);">
             <input type="text" id="mobileTaskInput" placeholder="Añadir nueva tarea..." style="flex: 1; padding: 12px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--bg-secondary); color: var(--text-main);">
             <button onclick="window.addMobileTask()" style="background: var(--accent-color); border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; font-size: 18px; cursor: pointer;">+</button>
