@@ -15,29 +15,78 @@ window.updateUI = function() {
     
     window.renderTasks(); 
 };
+
 // Control de visibilidad del panel de vistas
 window.toggleViewMenu = function() {
     const modal = document.getElementById('viewMenuModal');
-    if (modal) {
-        modal.classList.toggle('hidden');
+    if (!modal) return;
+    
+    if (modal.classList.contains('hidden')) {
+        window.buildViewMenu(); // Genera los botones antes de mostrar
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
     }
 };
 
-// Modificación del estado y actualización secuencial
+// Generación dinámica de botones (Tiempo y Áreas)
+window.buildViewMenu = function() {
+    const container = document.getElementById('modalDynamicContent');
+    if (!container) return;
+
+    // 1. Vistas de Tiempo
+    let html = `<h3 class="menu-section-title">Tiempo</h3>`;
+    const timeViews = [
+        { id: 'today', label: 'Hoy y atrasadas' },
+        { id: 'tomorrow', label: 'Mañana' },
+        { id: 'week', label: 'Esta semana' },
+        { id: 'all', label: 'Todas las tareas' }
+    ];
+    timeViews.forEach(v => {
+        html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
+    });
+
+    // 2. Extracción de Taxonomía Única (Áreas)
+    const taxonomias = [...new Set(window.allTasks.map(t => t.area).filter(a => a && a.trim() !== ''))];
+    
+    if (taxonomias.length > 0) {
+        html += `<h3 class="menu-section-title">Áreas</h3>`;
+        taxonomias.forEach(item => {
+            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${item}')">${item}</button>`;
+        });
+    }
+
+    container.innerHTML = html;
+};
+
+// Selección de vista temporal (purga la taxonomía)
 window.selectMobileView = function(viewType) {
     if (!window.currentState) window.currentState = {};
-    
-    // Mutación del estado central
     window.currentState.view = viewType;
     
-    // Invocación al motor de renderizado
+    // Eliminamos el filtro de área para que la vista de tiempo sea absoluta
+    delete window.currentState.area;
+    
     if (typeof window.renderTasks === 'function') {
         window.renderTasks();
     }
-    
-    // Retracción automática del panel para restaurar el foco visual
     window.toggleViewMenu();
 };
+
+// Selección de taxonomía (purga la vista temporal)
+window.filterByTaxonomy = function(type, value) {
+    if (!window.currentState) window.currentState = {};
+    
+    // Forzamos vista 'all' para que el motor temporal no bloquee la búsqueda
+    window.currentState.view = 'all'; 
+    window.currentState[type] = value;
+    
+    if (typeof window.renderTasks === 'function') {
+        window.renderTasks();
+    }
+    window.toggleViewMenu();
+};
+
 // CONTROL DE TEMAS
 window.toggleTheme = function() {
     document.body.classList.toggle('light-theme');
