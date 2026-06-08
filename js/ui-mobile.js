@@ -20,19 +20,20 @@ window.toggleTheme = function() {
     document.body.classList.toggle('light-theme');
     const isLight = document.body.classList.contains('light-theme');
     localStorage.setItem('mobileTheme', isLight ? 'light' : 'dark');
+    
+    // Sincronización de la barra nativa de Android
+    const metaTheme = document.getElementById('themeColorMeta');
+    if (metaTheme) {
+        metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#0f172a');
+    }
 };
 
 // Carga inicial del tema guardado
 if (localStorage.getItem('mobileTheme') === 'light') {
     document.body.classList.add('light-theme');
+    const metaTheme = document.getElementById('themeColorMeta');
+    if (metaTheme) metaTheme.setAttribute('content', '#f8fafc');
 }
-
-window.changeMobileView = function(viewName) {
-    if (!window.currentState) window.currentState = {};
-    window.currentState.view = viewName;
-    window.renderTasks();
-};
-
 // INYECCIÓN DE DATOS: Adaptador para la creación de tareas desde el móvil
 window.addMobileTask = async function() {
     const input = document.getElementById('mobileTaskInput');
