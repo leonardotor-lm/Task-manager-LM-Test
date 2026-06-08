@@ -59,3 +59,46 @@ body.light-theme {
     --accent: #F6723A;
     --accent-muted: #cbd5e1;
 }
+/* Arquitectura de la barra inferior */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--bg-main);
+    border-top: 1px solid var(--border-color);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 12px 0 16px 0; /* Espaciado extra inferior para pantallas curvas */
+    z-index: 1000;
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 12px;
+    gap: 4px;
+    cursor: pointer;
+}
+
+.btn-primary-nav {
+    background-color: var(--accent-color);
+    color: #0A1318;
+    border-radius: 50%;
+    width: 48px;
+    height: 48px;
+    font-size: 24px;
+    justify-content: center;
+    transform: translateY(-10px); /* Elevación jerárquica del botón de adición */
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* Compensación de la lista de tareas */
+.task-list {
+    padding-bottom: 90px; 
+}
