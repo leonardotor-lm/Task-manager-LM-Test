@@ -15,14 +15,10 @@
         <h2>Seleccionar Vista</h2>
         <button class="btn-close" onclick="window.toggleViewMenu()">X</button>
     </div>
-    <div class="modal-content">
-        <button class="btn-menu-option" onclick="window.selectMobileView('today')">Hoy y atrasadas</button>
-        <button class="btn-menu-option" onclick="window.selectMobileView('tomorrow')">Mañana</button>
-        <button class="btn-menu-option" onclick="window.selectMobileView('week')">Esta semana</button>
-        <button class="btn-menu-option" onclick="window.selectMobileView('all')">Todas las tareas</button>
+    <div class="modal-content" id="modalDynamicContent">
     </div>
 </div>
-        <nav class="bottom-nav">
+                <nav class="bottom-nav">
         <button class="nav-btn" onclick="window.toggleViewMenu()">
             <span class="nav-icon">📅</span>
             <span class="nav-label">Vistas</span>
