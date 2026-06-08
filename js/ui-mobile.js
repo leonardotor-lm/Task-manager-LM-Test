@@ -1,40 +1,101 @@
-// js/ui-mobile.js
-// Capa de presentación exclusiva para el MVP móvil
-
+// 1. STUBS: Neutralización de dependencias de escritorio
 window.initSpeechRecognition = function() {};
 window.updateDateDisplay = function() {};
 window.showSyncStatus = function(status) { console.log("Sincronización:", status); };
 window.showNotice = function(mensaje) { console.log("Notificación:", mensaje); };
 window.refreshAllDropdowns = function() {};
-window.renderCalendar = function() {}; 
+window.renderCalendar = function() {};
 
-// Interceptamos la orden de actualización e inicializamos el estado si está vacío
+// 2. MOTOR DE INTERFAZ MÓVIL
 window.updateUI = function() { 
     if (!window.currentState) window.currentState = {};
-    if (!window.currentState.view) window.currentState.view = 'today'; // Fallback arquitectónico
-    
+    if (!window.currentState.view) window.currentState.view = 'today';
     window.renderTasks(); 
 };
 
-// Control de visibilidad del panel de vistas
+window.renderTasks = function() {
+    const container = document.getElementById('mobileTaskList');
+    if (!container) return;
+
+    // Obtenemos tareas procesadas por el motor de engine.js
+    const tasks = window.getFilteredTasks ? window.getFilteredTasks() : [];
+    
+    if (tasks.length === 0) {
+        container.innerHTML = `<div style="padding: 20px; text-align: center; color: var(--text-secondary);">No hay tareas para esta vista.</div>`;
+        return;
+    }
+
+    container.innerHTML = tasks.map(task => `
+        <div class="task-card ${task.completed ? 'completed' : ''}">
+            <div style="flex: 1;">
+                <div style="font-weight: 500; margin-bottom: 4px;">${task.text}</div>
+                <div style="font-size: 12px; color: var(--text-secondary);">
+                    ${task.area ? `<span class="tag">${task.area}</span>` : ''} 
+                    ${task.date || ''}
+                </div>
+            </div>
+            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
+                ${task.completed ? '✓' : ''}
+            </button>
+        </div>
+    `).join('');
+};
+
+// 3. ACCIONES DE TAREAS
+window.addMobileTask = function() {
+    const input = document.getElementById('mobileTaskInput');
+    if (!input || !input.value.trim()) return;
+
+    const newTask = {
+        id: Date.now().toString(),
+        text: input.value.trim(),
+        completed: false,
+        date: new Date().toISOString().split('T')[0],
+        area: window.currentState.area || ''
+    };
+
+    if (window.allTasks) {
+        window.allTasks.push(newTask);
+        input.value = '';
+        if (window.saveTasks) window.saveTasks();
+        window.renderTasks();
+    }
+};
+
+window.toggleMobileTask = function(id) {
+    const task = window.allTasks.find(t => t.id === id);
+    if (task) {
+        task.completed = !task.completed;
+        if (window.saveTasks) window.saveTasks();
+        window.renderTasks();
+    }
+};
+
+// 4. CONTROL DE TEMAS Y BARRA NATIVA
+window.toggleTheme = function() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('mobileTheme', isLight ? 'light' : 'dark');
+    const metaTheme = document.getElementById('themeColorMeta');
+    if (metaTheme) metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#0f172a');
+};
+
+// 5. NAVEGACIÓN DINÁMICA (VISTAS Y ÁREAS)
 window.toggleViewMenu = function() {
     const modal = document.getElementById('viewMenuModal');
     if (!modal) return;
-    
     if (modal.classList.contains('hidden')) {
-        window.buildViewMenu(); // Genera los botones antes de mostrar
+        window.buildViewMenu();
         modal.classList.remove('hidden');
     } else {
         modal.classList.add('hidden');
     }
 };
 
-// Generación dinámica de botones (Tiempo y Áreas)
 window.buildViewMenu = function() {
     const container = document.getElementById('modalDynamicContent');
     if (!container) return;
 
-    // 1. Vistas de Tiempo
     let html = `<h3 class="menu-section-title">Tiempo</h3>`;
     const timeViews = [
         { id: 'today', label: 'Hoy y atrasadas' },
@@ -46,150 +107,30 @@ window.buildViewMenu = function() {
         html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
     });
 
-    // 2. Extracción de Taxonomía Única (Áreas)
-    const taxonomias = [...new Set(window.allTasks.map(t => t.area).filter(a => a && a.trim() !== ''))];
+    // Extraer áreas de las tareas cargadas
+    const areas = [...new Set((window.allTasks || []).map(t => t.area).filter(a => a && a.trim() !== ''))];
     
-    if (taxonomias.length > 0) {
+    if (areas.length > 0) {
         html += `<h3 class="menu-section-title">Áreas</h3>`;
-        taxonomias.forEach(item => {
-            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${item}')">${item}</button>`;
+        areas.forEach(area => {
+            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
         });
     }
-
     container.innerHTML = html;
 };
 
-// Selección de vista temporal (purga la taxonomía)
 window.selectMobileView = function(viewType) {
-    if (!window.currentState) window.currentState = {};
+    window.currentState = window.currentState || {};
     window.currentState.view = viewType;
-    
-    // Eliminamos el filtro de área para que la vista de tiempo sea absoluta
     delete window.currentState.area;
-    
-    if (typeof window.renderTasks === 'function') {
-        window.renderTasks();
-    }
+    window.renderTasks();
     window.toggleViewMenu();
 };
 
-// Selección de taxonomía (purga la vista temporal)
 window.filterByTaxonomy = function(type, value) {
-    if (!window.currentState) window.currentState = {};
-    
-    // Forzamos vista 'all' para que el motor temporal no bloquee la búsqueda
+    window.currentState = window.currentState || {};
     window.currentState.view = 'all'; 
     window.currentState[type] = value;
-    
-    if (typeof window.renderTasks === 'function') {
-        window.renderTasks();
-    }
-    window.toggleViewMenu();
-};
-
-// CONTROL DE TEMAS
-window.toggleTheme = function() {
-    document.body.classList.toggle('light-theme');
-    const isLight = document.body.classList.contains('light-theme');
-    localStorage.setItem('mobileTheme', isLight ? 'light' : 'dark');
-    
-    // Sincronización de la barra nativa de Android
-    const metaTheme = document.getElementById('themeColorMeta');
-    if (metaTheme) {
-        metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#0f172a');
-    }
-};
-
-// Carga inicial del tema guardado
-if (localStorage.getItem('mobileTheme') === 'light') {
-    document.body.classList.add('light-theme');
-    const metaTheme = document.getElementById('themeColorMeta');
-    if (metaTheme) metaTheme.setAttribute('content', '#f8fafc');
-}
-// INYECCIÓN DE DATOS: Adaptador para la creación de tareas desde el móvil
-window.addMobileTask = async function() {
-    const input = document.getElementById('mobileTaskInput');
-    const taskName = input.value.trim();
-    
-    if (!taskName) return; // Evita inyectar tareas vacías
-
-    // Formateo de la fecha actual (YYYY-MM-DD) para estandarización del modelo
-    const today = new Date();
-    const year = today.getFullYear();
-    const month = String(today.getMonth() + 1).padStart(2, '0');
-    const day = String(today.getDate()).padStart(2, '0');
-    const dateStr = `${year}-${month}-${day}`;
-
-    // Construcción del objeto garantizando compatibilidad estructural
-    const newTask = {
-        id: Date.now(),
-        name: taskName,
-        area: 'Inbox',
-        context: '',
-        priority: 'medium',
-        date: dateStr,
-        startDate: dateStr,
-        time: '',
-        notes: '',
-        reminder: null,
-        status: 'pending',
-        attachments: [],
-        subtasks: [],
-        recurrenceRule: null
-    };
-
-    // Inserción directa en la raíz del árbol
-    tasks.unshift(newTask);
-
-    // Refresco de interfaz y limpieza del campo
-    input.value = '';
     window.renderTasks();
-
-    // Persistencia en GitHub
-    if (typeof window.saveData === 'function') {
-        await window.saveData();
-    }
-};
-
-window.renderTasks = function() {
-    const container = document.getElementById('mobileTaskList');
-    if (!container) return;
-
-    if (typeof tasks === 'undefined' || !Array.isArray(tasks) || tasks.length === 0) {
-        container.innerHTML = '<div style="padding: 16px; color: #8A9DB5; text-align: center;">No hay tareas.</div>';
-        return;
-    }
-
-    const processedTree = window.pruneTree(tasks, window.currentState, window.currentFilters);
-    const viewList = window.flattenMatches(processedTree);
-
-    if (viewList.length === 0) {
-        container.innerHTML = '<div style="padding: 16px; color: #8A9DB5; text-align: center;">Vista vacía.</div>';
-        return;
-    }
-
-    let htmlMarkup = '';
-    
-    viewList.forEach(task => {
-        const subCount = task._subCount !== undefined ? task._subCount : 0;
-        const subTag = subCount > 0 ? ` <span style="color: #F88D5D; font-weight: 600;">[+${subCount} sub.]</span>` : '';
-        const isCompleted = task.status === 'completed';
-        const btnText = isCompleted ? 'Deshacer' : 'Completar';
-        const btnColor = isCompleted ? '#4A5B6D' : '#F6723A';
-
-        htmlMarkup += `
-        <div style="background-color: #1D313C; margin-bottom: 8px; padding: 12px; border-radius: 6px; border-left: 4px solid ${isCompleted ? '#4A5B6D' : '#F6723A'}; display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <div style="font-weight: 600; font-size: 16px; color: ${isCompleted ? '#8A9DB5' : '#f8fafc'}; text-decoration: ${isCompleted ? 'line-through' : 'none'};">${task.name}</div>
-                <div style="font-size: 12px; color: #8A9DB5; margin-top: 6px;">
-                    Área: ${task.area || 'Inbox'} | Estado: ${task.status}${subTag}
-                </div>
-            </div>
-            <button onclick="window.toggleTaskUniversal(${task.id})" style="background-color: ${btnColor}; color: #0A1318; border: none; padding: 8px 12px; border-radius: 4px; font-weight: bold; cursor: pointer;">
-                ${btnText}
-            </button>
-        </div>`;
-    });
-
-    container.innerHTML = htmlMarkup;
+    window.toggleViewMenu();
 };
