@@ -1,4 +1,5 @@
 {
+  "id": "/Task-manager-LM-Test/mobile.html",
   "name": "Gestor de Tareas",
   "short_name": "Tareas",
   "start_url": "./mobile.html",
