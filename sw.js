@@ -1,5 +1,5 @@
 // sw.js
-const CACHE_NAME = 'tareas-pwa-v1';
+const CACHE_NAME = 'tareas-pwa-v2';
 const urlsToCache = [
     './mobile.html',
     './css/mobile.css',
