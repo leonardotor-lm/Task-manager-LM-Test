@@ -1,5 +1,4 @@
-// sw.js
-const CACHE_NAME = 'tareas-pwa-v2';
+const CACHE_NAME = 'tareas-pwa-v3';
 const urlsToCache = [
     './mobile.html',
     './css/mobile.css',
@@ -11,20 +10,38 @@ const urlsToCache = [
     './js/app.js'
 ];
 
+// Instalación: Se fuerza la toma de control inmediata
 self.addEventListener('install', event => {
+    self.skipWaiting();
     event.waitUntil(
-        caches.open(CACHE_NAME)
-        .then(cache => {
-            return cache.addAll(urlsToCache);
-        })
+        caches.open(CACHE_NAME).then(cache => cache.addAll(urlsToCache))
     );
 });
 
+// Activación: Destrucción de cachés de versiones anteriores
+self.addEventListener('activate', event => {
+    event.waitUntil(
+        caches.keys().then(cacheNames => {
+            return Promise.all(
+                cacheNames.map(cacheName => {
+                    if (cacheName !== CACHE_NAME) {
+                        return caches.delete(cacheName);
+                    }
+                })
+            );
+        }).then(() => self.clients.claim())
+    );
+});
+
+// Interceptación de red: Aislamiento de datos externos
 self.addEventListener('fetch', event => {
+    // Si la petición NO es hacia tus archivos locales (ej. API de GitHub), pasa de largo
+    if (!event.request.url.startsWith(self.location.origin)) {
+        return;
+    }
+
     event.respondWith(
-        caches.match(event.request)
-        .then(response => {
-            // Retorna el recurso desde el caché si existe, caso contrario acude a la red
+        caches.match(event.request).then(response => {
             return response || fetch(event.request);
         })
     );
