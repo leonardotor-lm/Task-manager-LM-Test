@@ -15,6 +15,29 @@ window.updateUI = function() {
     
     window.renderTasks(); 
 };
+// Control de visibilidad del panel de vistas
+window.toggleViewMenu = function() {
+    const modal = document.getElementById('viewMenuModal');
+    if (modal) {
+        modal.classList.toggle('hidden');
+    }
+};
+
+// Modificación del estado y actualización secuencial
+window.selectMobileView = function(viewType) {
+    if (!window.currentState) window.currentState = {};
+    
+    // Mutación del estado central
+    window.currentState.view = viewType;
+    
+    // Invocación al motor de renderizado
+    if (typeof window.renderTasks === 'function') {
+        window.renderTasks();
+    }
+    
+    // Retracción automática del panel para restaurar el foco visual
+    window.toggleViewMenu();
+};
 // CONTROL DE TEMAS
 window.toggleTheme = function() {
     document.body.classList.toggle('light-theme');
