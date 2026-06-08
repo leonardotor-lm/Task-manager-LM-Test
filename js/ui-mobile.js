@@ -1,8 +1,16 @@
 // ==========================================
-// CONTROL DE INTERFAZ MÓVIL (ARQUITECTURA V10)
+// CONTROL DE INTERFAZ MÓVIL (ARQUITECTURA V11)
 // ==========================================
 
-// Buscador defensivo de la base de datos global de tareas
+// 1. NEUTRALIZADORES DE ESCRITORIO (VITALES PARA EVITAR EL COLAPSO DE APP.JS)
+window.initSpeechRecognition = function() {};
+window.updateDateDisplay = function() {};
+window.showSyncStatus = function(status) { console.log("Sync:", status); };
+window.showNotice = function(mensaje) { console.log("Notice:", mensaje); };
+window.refreshAllDropdowns = function() {};
+window.renderCalendar = function() {};
+
+// 2. BUSCADOR DEFENSIVO DE TAREAS
 function obtenerTareasGlobales() {
     return window.allTasks || window.tasks || [];
 }
@@ -17,7 +25,6 @@ window.renderTasks = function() {
     const container = document.getElementById('mobileTaskList');
     if (!container) return;
 
-    // CORRECCIÓN DEL ERROR FATAL DE SINTAXIS
     let tareasAProcesar = [];
 
     if (window.getFilteredTasks) {
@@ -63,7 +70,7 @@ window.addMobileTask = function() {
         area: window.currentState?.area || ''
     };
 
-    const listaGlobal = window.allTasks || window.tasks;
+    const listaGlobal = obtenerTareasGlobales();
     if (listaGlobal) {
         listaGlobal.push(newTask);
         input.value = '';
@@ -73,7 +80,7 @@ window.addMobileTask = function() {
 };
 
 window.toggleMobileTask = function(id) {
-    const listaGlobal = window.allTasks || window.tasks;
+    const listaGlobal = obtenerTareasGlobales();
     if (listaGlobal) {
         const task = listaGlobal.find(t => t.id === id);
         if (task) {
