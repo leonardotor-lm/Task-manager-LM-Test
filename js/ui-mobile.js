@@ -1,5 +1,5 @@
 // ==========================================
-// CONTROL DE INTERFAZ MÓVIL (ARQUITECTURA V9)
+// CONTROL DE INTERFAZ MÓVIL (ARQUITECTURA V10)
 // ==========================================
 
 // Buscador defensivo de la base de datos global de tareas
@@ -17,17 +17,15 @@ window.renderTasks = function() {
     const container = document.getElementById('mobileTaskList');
     if (!container) return;
 
-    let tareas A Procesar = [];
+    // CORRECCIÓN DEL ERROR FATAL DE SINTAXIS
+    let tareasAProcesar = [];
 
-    // Si existe el motor de filtrado de engine.js, lo usamos como base
     if (window.getFilteredTasks) {
         tareasAProcesar = window.getFilteredTasks();
     } else {
         tareasAProcesar = obtenerTareasGlobales();
     }
     
-    // Si el usuario seleccionó un Área específica en el modal móvil,
-    // forzamos el filtrado taxonómico de forma manual y directa
     if (window.currentState && window.currentState.area) {
         tareasAProcesar = obtenerTareasGlobales().filter(t => t.area === window.currentState.area);
     }
@@ -53,7 +51,6 @@ window.renderTasks = function() {
     `).join('');
 };
 
-// ACCIONES SOBRE TAREAS
 window.addMobileTask = function() {
     const input = document.getElementById('mobileTaskInput');
     if (!input || !input.value.trim()) return;
@@ -87,7 +84,6 @@ window.toggleMobileTask = function(id) {
     }
 };
 
-// INTERFAZ DINÁMICA DEL MODAL DE VISTAS Y ÁREAS
 window.toggleViewMenu = function() {
     const modal = document.getElementById('viewMenuModal');
     if (!modal) return;
@@ -103,7 +99,6 @@ window.buildViewMenu = function() {
     const container = document.getElementById('modalDynamicContent');
     if (!container) return;
 
-    // 1. Inyección de Vistas Temporales
     let html = `<h3 class="menu-section-title">Tiempo</h3>`;
     const timeViews = [
         { id: 'today', label: 'Hoy y atrasadas' },
@@ -115,7 +110,6 @@ window.buildViewMenu = function() {
         html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
     });
 
-    // 2. Extracción Dinámica de Áreas (Personal, Casa, Docencia, etc.)
     const tareasParaEscanear = obtenerTareasGlobales();
     const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
     
@@ -131,23 +125,20 @@ window.buildViewMenu = function() {
 window.selectMobileView = function(viewType) {
     window.currentState = window.currentState || {};
     window.currentState.view = viewType;
-    delete window.currentState.area; // Desactiva el filtro de área al volver al tiempo
+    delete window.currentState.area;
     window.renderTasks();
     window.toggleViewMenu();
 };
 
 window.filterByTaxonomy = function(type, value) {
     window.currentState = window.currentState || {};
-    window.currentState.view = 'all'; // Forzamos vista completa para que no recorte por fecha
-    window.currentState[type] = value; // Setea el área activa (ej: currentState.area = 'Docencia')
+    window.currentState.view = 'all'; 
+    window.currentState[type] = value; 
     window.renderTasks();
     window.toggleViewMenu();
 };
 
-// ACCIÓN DE AJUSTES (VÍA TRANSITORIA)
 window.toggleSettingsMenu = function() {
-    // Para resolver el botón muerto de forma inmediata y elegante,
-    // vinculamos este comando al interruptor alternador de temas.
     window.toggleTheme();
 };
 
