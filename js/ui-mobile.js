@@ -1,8 +1,7 @@
 // ==========================================
-// CONTROL DE INTERFAZ MÓVIL (ARQUITECTURA V11)
+// CONTROL MÓVIL (ARQUITECTURA V14 - AISLAMIENTO TOTAL)
 // ==========================================
 
-// 1. NEUTRALIZADORES DE ESCRITORIO (VITALES PARA EVITAR EL COLAPSO DE APP.JS)
 window.initSpeechRecognition = function() {};
 window.updateDateDisplay = function() {};
 window.showSyncStatus = function(status) { console.log("Sync:", status); };
@@ -10,7 +9,6 @@ window.showNotice = function(mensaje) { console.log("Notice:", mensaje); };
 window.refreshAllDropdowns = function() {};
 window.renderCalendar = function() {};
 
-// 2. BUSCADOR DEFENSIVO DE TAREAS
 function obtenerTareasGlobales() {
     return window.allTasks || window.tasks || [];
 }
@@ -25,16 +23,26 @@ window.renderTasks = function() {
     const container = document.getElementById('mobileTaskList');
     if (!container) return;
 
-    let tareasAProcesar = [];
+    let todasLasTareas = obtenerTareasGlobales();
+    let tareasAProcesar = todasLasTareas;
 
-    if (window.getFilteredTasks) {
-        tareasAProcesar = window.getFilteredTasks();
-    } else {
-        tareasAProcesar = obtenerTareasGlobales();
-    }
-    
+    // MOTOR DE FILTRADO MÓVIL AUTÓNOMO (Ignora a engine.js por completo)
     if (window.currentState && window.currentState.area) {
-        tareasAProcesar = obtenerTareasGlobales().filter(t => t.area === window.currentState.area);
+        tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
+    } else {
+        const vista = window.currentState?.view || 'today';
+        const hoyStr = new Date().toISOString().split('T')[0];
+
+        if (vista === 'today') {
+            tareasAProcesar = todasLasTareas.filter(t => !t.completed && (!t.date || t.date <= hoyStr));
+        } else if (vista === 'tomorrow') {
+            let manana = new Date();
+            manana.setDate(manana.getDate() + 1);
+            const mananaStr = manana.toISOString().split('T')[0];
+            tareasAProcesar = todasLasTareas.filter(t => !t.completed && t.date === mananaStr);
+        } else if (vista === 'week') {
+            tareasAProcesar = todasLasTareas.filter(t => !t.completed); 
+        }
     }
     
     if (!tareasAProcesar || tareasAProcesar.length === 0) {
@@ -106,7 +114,7 @@ window.buildViewMenu = function() {
     const container = document.getElementById('modalDynamicContent');
     if (!container) return;
 
-    let html = `<h3 class="menu-section-title">Tiempo</h3>`;
+    let html = `<h3 class="menu-section-title" style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Tiempo</h3>`;
     const timeViews = [
         { id: 'today', label: 'Hoy y atrasadas' },
         { id: 'tomorrow', label: 'Mañana' },
@@ -114,16 +122,16 @@ window.buildViewMenu = function() {
         { id: 'all', label: 'Todas las tareas' }
     ];
     timeViews.forEach(v => {
-        html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
+        html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')" style="background-color: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; font-size: 16px; text-align: left; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 100%; margin-bottom: 8px;">${v.label}</button>`;
     });
 
     const tareasParaEscanear = obtenerTareasGlobales();
     const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
     
     if (areasUnicas.length > 0) {
-        html += `<h3 class="menu-section-title">Áreas Disponibles</h3>`;
+        html += `<h3 class="menu-section-title" style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Áreas</h3>`;
         areasUnicas.forEach(area => {
-            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
+            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')" style="background-color: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; font-size: 16px; text-align: left; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 100%; margin-bottom: 8px;">${area}</button>`;
         });
     }
     container.innerHTML = html;
