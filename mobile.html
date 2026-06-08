@@ -10,17 +10,22 @@
 </head>
 <body>
     <main id="mobile-root">
-        <div class="sticky-header">
-            <div class="control-group flex-row">
-                <select id="mobileViewSelector" class="input-base" onchange="window.changeMobileView(this.value)">
-                    <option value="today">Hoy y atrasadas</option>
-                    <option value="tomorrow">Mañana</option>
-                    <option value="week">Esta semana</option>
-                    <option value="all">Todas las tareas</option>
-                </select>
-                <button onclick="window.toggleTheme()" class="input-base" style="width: auto; font-weight: bold;">Tema</button>
-            </div>
-            <div class="control-group flex-row">
+        <nav class="bottom-nav">
+        <button class="nav-btn" onclick="window.toggleViewMenu()">
+            <span class="nav-icon">📅</span>
+            <span class="nav-label">Vistas</span>
+        </button>
+        
+        <button class="nav-btn btn-primary-nav" onclick="window.addMobileTask()">
+            <span class="nav-icon">+</span>
+        </button>
+        
+        <button class="nav-btn" onclick="window.toggleSettingsMenu()">
+            <span class="nav-icon">⚙️</span>
+            <span class="nav-label">Ajustes</span>
+        </button>
+    </nav>
+        <div class="control-group flex-row">
                 <input type="text" id="mobileTaskInput" class="input-base" placeholder="Nueva tarea rápida...">
                 <button onclick="window.addMobileTask()" class="btn-add">+</button>
             </div>
