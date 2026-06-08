@@ -8,7 +8,11 @@ window.showNotice = function(mensaje) { console.log("Notificación:", mensaje); 
 window.refreshAllDropdowns = function() {};
 window.renderCalendar = function() {}; 
 
+// Interceptamos la orden de actualización e inicializamos el estado si está vacío
 window.updateUI = function() { 
+    if (!window.currentState) window.currentState = {};
+    if (!window.currentState.view) window.currentState.view = 'today'; // Fallback arquitectónico
+    
     window.renderTasks(); 
 };
 // CONTROL DE TEMAS
