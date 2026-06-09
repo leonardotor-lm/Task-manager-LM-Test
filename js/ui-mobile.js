@@ -62,8 +62,14 @@ window.renderTasks = function() {
                 const tieneFechaValida = fecha && fecha.trim() !== '' && !fecha.includes('0000');
 
                 if (vista === 'today') {
-                    // Exigimos que la fecha sea válida, menor o igual a hoy, y posterior a 2025
-                    return tieneFechaValida && fecha <= hoyStr && fecha >= "2025-01-01";
+                    // Conversión estricta a milisegundos matemáticos para evitar sesgos de texto
+                    const tiempoTarea = new Date(fecha).getTime();
+                    const tiempoHoy = new Date(hoyStr).getTime();
+                    
+                    return tieneFechaValida && 
+                           !isNaN(tiempoTarea) && 
+                           tiempoTarea > 0 && 
+                           tiempoTarea <= tiempoHoy;
                 }
                 if (vista === 'tomorrow') {
                     return tieneFechaValida && fecha === mananaStr;
