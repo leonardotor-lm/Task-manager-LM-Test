@@ -336,3 +336,23 @@ container.innerHTML = tareasAProcesar.map(task => {
 .nav-btn svg, .mobile-modal-close svg {
     pointer-events: none !important;
 }
+/* Forzar visibilidad absoluta */
+#viewMenuModal.hidden {
+    display: none !important;
+}
+
+#viewMenuModal {
+    display: flex !important; /* Sobrescribe cualquier 'hidden' */
+    z-index: 9999 !important; /* Lo trae al frente de todo */
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+}
+
+.mobile-modal-content {
+    min-height: 200px !important; /* Asegura que no se colapse a 0px */
+    width: 100% !important;
+    pointer-events: auto !important;
+}
