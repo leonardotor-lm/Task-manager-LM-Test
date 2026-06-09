@@ -26,18 +26,113 @@
     gap: 12px !important;
 }
 
-/* Botón de acción */
-.btn-check {
+/* --- CABECERA DE VISTA (Estilo Escritorio) --- */
+.mobile-header-view {
+    padding: 24px 16px 16px 16px !important;
+    background-color: var(--bg-main) !important;
+    border-bottom: 1px solid transparent !important; /* Mantiene la métrica sin mostrar línea */
+}
+
+.view-title {
+    font-size: 28px !important;
+    font-weight: 700 !important;
+    color: var(--text-main) !important;
+    margin: 0 0 4px 0 !important;
+    line-height: 1.2 !important;
+}
+
+.view-subtitle {
+    font-size: 11px !important;
+    font-weight: 600 !important;
+    color: #11caa0 !important; /* Verde menta del escritorio */
+    margin: 0 !important;
+    letter-spacing: 0.5px !important;
+}
+
+/* --- LISTA PLANA DE TAREAS --- */
+.mobile-task-list-container {
+    padding: 0 16px 80px 16px !important; /* El 80px inferior protege el contenido del FAB */
+}
+
+.task-row {
+    display: flex !important;
+    align-items: center !important;
+    padding: 16px 0 !important;
+    border-bottom: 1px solid #1e293b !important; /* Línea divisoria muy tenue */
+    background: transparent !important;
+}
+
+/* --- CHECKBOX (El ancla interactiva) --- */
+.btn-check-square {
     width: 24px !important;
     height: 24px !important;
-    border-radius: 50% !important;
-    border: 1px solid var(--text-sec) !important;
+    flex-shrink: 0 !important;
+    margin-right: 14px !important;
+    border: 2px solid #64748b !important;
+    border-radius: 4px !important;
     background: transparent !important;
-    color: var(--accent) !important;
-    cursor: pointer !important;
+    color: transparent !important; /* Oculta el ✓ hasta completarlo */
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.task-row.completed .btn-check-square {
+    background-color: var(--text-sec) !important;
+    border-color: var(--text-sec) !important;
+    color: var(--bg-main) !important; /* El ✓ se vuelve del color del fondo */
+}
+
+/* --- CONTENIDO TEXTUAL --- */
+.task-content {
+    flex: 1 !important;
+    min-width: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.task-title {
+    font-size: 15px !important;
+    font-weight: 400 !important;
+    color: var(--text-main) !important;
+    line-height: 1.4 !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+}
+
+.task-row.completed .task-title {
+    text-decoration: line-through !important;
+    color: var(--text-sec) !important;
+}
+
+/* --- METADATOS (Área, Contexto, Fecha) --- */
+.task-subtext {
+    font-size: 12px !important;
+    color: var(--text-sec) !important;
+    margin-top: 4px !important;
+}
+
+.meta-dot {
+    margin: 0 4px !important;
+    opacity: 0.5 !important;
+}
+
+.meta-context {
+    color: #c084fc !important; /* Violeta/Magenta replicado del escritorio */
+}
+
+.task-meta-right {
+    margin-left: 12px !important;
+    flex-shrink: 0 !important;
+}
+
+.meta-date {
+    font-size: 12px !important;
+    color: #f97316 !important; /* Naranja/Coral replicado del escritorio */
+    font-weight: 500 !important;
 }
 container.innerHTML = tareasAProcesar.map(task => {
         const esCompletada = task.completed ? 'completed' : '';
