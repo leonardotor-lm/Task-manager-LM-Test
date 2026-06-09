@@ -189,7 +189,11 @@ window.toggleMobileTask = function(id) {
 
 window.toggleViewMenu = function() {
     const modal = document.getElementById('viewMenuModal');
-    if (!modal) return;
+    if (!modal) {
+        console.error("Diagnóstico: El contenedor 'viewMenuModal' no existe en el HTML.");
+        return;
+    }
+    
     if (modal.classList.contains('hidden')) {
         window.buildViewMenu();
         modal.classList.remove('hidden');
@@ -200,7 +204,10 @@ window.toggleViewMenu = function() {
 
 window.buildViewMenu = function() {
     const container = document.getElementById('modalDynamicContent');
-    if (!container) return;
+    if (!container) {
+        console.error("Diagnóstico: El contenedor 'modalDynamicContent' no existe en el HTML.");
+        return;
+    }
 
     let html = '<h3 class="menu-section-title">Tiempo</h3>';
     const timeViews = [
@@ -211,18 +218,20 @@ window.buildViewMenu = function() {
     ];
     
     timeViews.forEach(v => {
-    html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
-});
+        html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
+    });
 
     const tareasParaEscanear = obtenerTareasGlobales();
+    // Filtra áreas, evitando nulos y vacíos
     const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
     
     if (areasUnicas.length > 0) {
-        html += '<h3 class="menu-section-title" style="margin-top:20px;">Áreas</h3>';
+        html += '<h3 class="menu-section-title" style="margin-top:20px;">Áreas y Contextos</h3>';
         areasUnicas.forEach(area => {
-    html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
-});
+            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
+        });
     }
+    
     container.innerHTML = html;
 };
 
