@@ -170,8 +170,8 @@ window.buildViewMenu = function() {
     if (areasUnicas.length > 0) {
         html += '<h3 class="menu-section-title" style="margin-top:20px;">Áreas</h3>';
         areasUnicas.forEach(area => {
-            html += '<button class="btn-menu-option" onclick="window.filterByTaxonomy(\\'area\\', \\'' + area + '\\')">' + area + '</button>';
-        });
+    html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
+});
     }
     container.innerHTML = html;
 };
