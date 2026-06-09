@@ -246,3 +246,89 @@ container.innerHTML = tareasAProcesar.map(task => {
     height: calc(100vh - 160px); /* Ajuste dinámico */
     overflow-y: auto;
 }
+/* --- MODAL BOTTOM SHEET (Menú de Vistas) --- */
+.mobile-modal {
+    position: fixed;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end; /* Lo ancla abajo */
+}
+
+.mobile-modal.hidden {
+    display: none !important;
+}
+
+.mobile-modal-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(10, 19, 24, 0.7); /* navy-900 con opacidad */
+    backdrop-filter: blur(2px); /* Desenfoca la lista de fondo */
+}
+
+.mobile-modal-content {
+    position: relative;
+    background: var(--bg-secondary); /* navy-700 */
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    padding: 24px 20px;
+    max-height: 80vh;
+    overflow-y: auto;
+    border-top: 1px solid var(--border-color);
+    animation: slideUp 0.3s ease-out forwards;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+}
+
+.mobile-modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 12px;
+}
+
+.mobile-modal-title {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-main);
+}
+
+.mobile-modal-close {
+    background: transparent;
+    border: none;
+    color: var(--text-sec);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilos para los elementos que inyecta JS (buildViewMenu) */
+.menu-section-title {
+    color: var(--text-sec) !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin: 16px 0 8px 0 !important;
+    border: none !important;
+}
+
+.btn-menu-option {
+    width: 100% !important;
+    text-align: left !important;
+    background: var(--bg-main) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 14px 16px !important;
+    border-radius: 8px !important;
+    margin-bottom: 8px !important;
+    font-size: 15px !important;
+    cursor: pointer !important;
+}
