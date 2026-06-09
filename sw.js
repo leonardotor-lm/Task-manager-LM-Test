@@ -1,4 +1,4 @@
-const CACHE_NAME = 'tareas-pwa-v30';
+const CACHE_NAME = 'tareas-pwa-v31';
 const urlsToCache = [
     './mobile.html',
     './css/mobile.css',
