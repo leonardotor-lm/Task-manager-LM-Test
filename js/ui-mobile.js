@@ -38,8 +38,8 @@ window.renderTasks = function() {
         const vista = window.currentState?.view || 'today';
         
         // Obtenemos el string de hoy en formato YYYY-MM-DD
-        const hoyStr = new Date().toISOString().split('T')[0];
-
+        const hoyStr = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD
+        
         if (vista !== 'all') {
             tareasAProcesar = todasLasTareas.filter(t => {
                 if (t.completed) return false;
