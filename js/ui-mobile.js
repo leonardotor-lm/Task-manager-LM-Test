@@ -97,7 +97,7 @@ window.renderTasks = function() {
                     ${checked}
                 </button>
                 <div class="task-content">
-                        <div class="task-title" onclick="if(typeof openEditModal === 'function') { openEditModal('${task.id}'); } else if (typeof editTask === 'function') { editTask('${task.id}'); }" style="cursor: pointer;">${titulo}</div>
+<div class="task-title" onclick="openEditModal('${task.id}')" style="cursor: pointer;">${titulo}</div>
                                         <div class="task-subtext">${subtext}</div>
                 </div>
                 <div class="task-meta-right">
