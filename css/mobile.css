@@ -246,71 +246,94 @@ container.innerHTML = tareasAProcesar.map(task => {
     height: calc(100vh - 160px); /* Ajuste dinámico */
     overflow-y: auto;
 }
-/* --- MODAL BOTTOM SHEET (Menú de Vistas) --- */
-.mobile-modal {
-    position: fixed;
-    inset: 0;
-    z-index: 100;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-end; /* Lo ancla abajo */
+
+    /* --- PANTALLA COMPLETA: MENÚ DE VISTAS --- */
+.mobile-fullscreen-view {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    background-color: var(--bg-main) !important; /* Fondo sólido, opaco */
+    z-index: 9999 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
-.mobile-modal.hidden {
+.mobile-fullscreen-view.hidden {
     display: none !important;
 }
 
-.mobile-modal-overlay {
-    position: absolute;
-    inset: 0;
-    background: rgba(10, 19, 24, 0.7); /* navy-900 con opacidad */
-    backdrop-filter: blur(2px); /* Desenfoca la lista de fondo */
+/* Encabezado de la pantalla de navegación */
+.fullscreen-header {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 16px !important;
+    background-color: var(--bg-secondary) !important;
+    border-bottom: 1px solid var(--border-color) !important;
 }
 
-.mobile-modal-content {
-    position: relative;
-    background: var(--bg-secondary); /* navy-700 */
-    border-top-left-radius: 16px;
-    border-top-right-radius: 16px;
-    padding: 24px 20px;
-    max-height: 80vh;
-    overflow-y: auto;
-    border-top: 1px solid var(--border-color);
-    animation: slideUp 0.3s ease-out forwards;
+.fullscreen-close {
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-main) !important;
+    cursor: pointer !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 8px !important;
+    margin-left: -8px !important;
 }
 
-@keyframes slideUp {
-    from { transform: translateY(100%); }
-    to { transform: translateY(0); }
+/* Evita el secuestro del clic por el SVG */
+.fullscreen-close svg {
+    pointer-events: none !important;
 }
 
-.mobile-modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 20px;
-    border-bottom: 1px solid var(--border-color);
-    padding-bottom: 12px;
+.fullscreen-title {
+    margin: 0 !important;
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: var(--text-main) !important;
 }
 
-.mobile-modal-title {
-    margin: 0;
-    font-size: 16px;
-    font-weight: 700;
-    color: var(--text-main);
+/* Área de contenido para la lista de vistas */
+.fullscreen-body {
+    flex: 1 !important;
+    padding: 20px 16px !important;
+    overflow-y: auto !important;
 }
 
-.mobile-modal-close {
-    background: transparent;
-    border: none;
-    color: var(--text-sec);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+/* Estilos aplicados a los botones inyectados por JS */
+.menu-section-title {
+    color: var(--text-sec) !important;
+    font-size: 12px !important;
+    text-transform: uppercase !important;
+    letter-spacing: 1px !important;
+    margin: 24px 0 12px 0 !important;
+    border: none !important;
+    display: block !important;
 }
 
-/* Estilos para los elementos que inyecta JS (buildViewMenu) */
+.fullscreen-body .menu-section-title:first-child {
+    margin-top: 0 !important;
+}
+
+.btn-menu-option {
+    width: 100% !important;
+    text-align: left !important;
+    background: transparent !important;
+    color: var(--text-main) !important;
+    border: none !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding: 16px 8px !important;
+    border-radius: 0 !important;
+    font-size: 16px !important;
+    cursor: pointer !important;
+}
+    
+    /* Estilos para los elementos que inyecta JS (buildViewMenu) */
 .menu-section-title {
     color: var(--text-sec) !important;
     font-size: 11px !important;
