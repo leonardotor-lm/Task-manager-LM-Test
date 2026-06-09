@@ -97,8 +97,7 @@ window.renderTasks = function() {
                     ${checked}
                 </button>
                 <div class="task-content">
-<div class="task-title" onclick="openEditModal('${task.id}')" style="cursor: pointer;">${titulo}</div>
-                                        <div class="task-subtext">${subtext}</div>
+<div class="task-title" onclick="try { tasks = obtenerTareasGlobales(); } catch(e) {} console.log('Ejecutando openEditModal para:', '${task.id}'); openEditModal('${task.id}');" style="cursor: pointer;">${titulo}</div>                                        <div class="task-subtext">${subtext}</div>
                 </div>
                 <div class="task-meta-right">
                     ${fechaHtml}
