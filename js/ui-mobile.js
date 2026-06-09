@@ -1,5 +1,5 @@
 // ==========================================
-// CONTROL MÓVIL (ARQUITECTURA V21 - FILTRADO ESTRICTO)
+// CONTROL MÓVIL (ARQUITECTURA V22 - SANEADA)
 // ==========================================
 
 window.initSpeechRecognition = function() {};
@@ -36,7 +36,7 @@ window.renderTasks = function() {
     if (window.currentState && window.currentState.area) {
         tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
     } 
-    // 2. FILTRADO TEMPORAL ESTRICTO
+    // 2. FILTRADO TEMPORAL CON LÍMITE INFERIOR SANITARIO
     else {
         const vista = window.currentState?.view || 'all';
         
@@ -58,39 +58,40 @@ window.renderTasks = function() {
                 
                 const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
 
+                // Validación de que la fecha sea un string utilizable y no un espacio
+                const tieneFechaValida = fecha && fecha.trim() !== '' && !fecha.includes('0000');
+
                 if (vista === 'today') {
-                    // Debe tener fecha y ser <= a hoy
-                    return fecha && fecha <= hoyStr;
+                    // Exigimos que la fecha sea válida, menor o igual a hoy, y posterior a 2025
+                    return tieneFechaValida && fecha <= hoyStr && fecha >= "2025-01-01";
                 }
                 if (vista === 'tomorrow') {
-                    // Debe tener fecha y ser exactamente mañana
-                    return fecha && fecha === mananaStr;
+                    return tieneFechaValida && fecha === mananaStr;
                 }
                 if (vista === 'week') {
-                    // Debe tener fecha y estar en el rango de los próximos 7 días
-                    return fecha && fecha >= hoyStr && fecha <= semanaStr;
+                    return tieneFechaValida && fecha >= hoyStr && fecha <= semanaStr;
                 }
-                return true; // Solo si se agregara otra vista por error
+                return true;
             });
         }
     }
     
     if (!tareasAProcesar || tareasAProcesar.length === 0) {
-        container.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-secondary); font-size: 15px;">No hay tareas para esta vista.</div>';
+        container.innerHTML = '<div class="no-tasks-notice">No hay tareas para esta vista.</div>';
         return;
     }
 
     container.innerHTML = tareasAProcesar.map(task => `
         <div class="task-card ${task.completed ? 'completed' : ''}">
             <div class="task-content">
-                <div class="task-title">${task.name || task.text || 'Tarea sin título'}</div>
-                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                <div class="task-title">${task.name || task.text || 'Tarea sin titulo'}</div>
+                <div class="task-subtext">
                     ${task.area ? `<span class="task-tag">${task.area}</span>` : ''} 
-                    ${(task.date || task.dueDate || task.fecha) ? `<span style="font-size: 12px; color: var(--text-secondary);">📅 ${task.date || task.dueDate || task.fecha}</span>` : ''}
+                    ${(task.date || task.dueDate || task.fecha) ? `<span class="task-date-text">${task.date || task.dueDate || task.fecha}</span>` : ''}
                 </div>
             </div>
             <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
-                ${task.completed ? '✓' : ''}
+                ${task.completed ? 'X' : ''}
             </button>
         </div>
     `).join('');
@@ -144,7 +145,7 @@ window.buildViewMenu = function() {
     const container = document.getElementById('modalDynamicContent');
     if (!container) return;
 
-    let html = '<h3 style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Tiempo</h3>';
+    let html = '<h3 class="menu-section-title">Tiempo</h3>';
     const timeViews = [
         { id: 'today', label: 'Hoy y atrasadas' },
         { id: 'tomorrow', label: 'Mañana' },
@@ -159,7 +160,7 @@ window.buildViewMenu = function() {
     const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
     
     if (areasUnicas.length > 0) {
-        html += '<h3 style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Áreas</h3>';
+        html += '<h3 class="menu-section-title" style="margin-top: 20px;">Áreas</h3>';
         areasUnicas.forEach(area => {
             html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
         });
