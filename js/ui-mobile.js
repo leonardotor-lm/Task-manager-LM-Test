@@ -1,5 +1,5 @@
 // ==========================================
-// CONTROL MÓVIL (SINTAXIS BLINDADA)
+// CONTROL MÓVIL (V28 - SINTAXIS BLINDADA)
 // ==========================================
 
 window.initSpeechRecognition = function() {};
@@ -55,11 +55,9 @@ window.renderTasks = function() {
                 
                 const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
                 
-                // Muro de contención: si no hay fecha, se excluye de vistas temporales
                 if (!fecha || typeof fecha !== 'string' || fecha.trim() === '') return false;
 
                 if (vista === 'today') {
-                    // Evaluación alfabética estricta: "2026-06-08" <= "2026-06-09" -> true
                     return fecha <= hoyStr;
                 }
                 if (vista === 'tomorrow') {
@@ -74,24 +72,33 @@ window.renderTasks = function() {
     }
     
     if (!tareasAProcesar || tareasAProcesar.length === 0) {
-        container.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-secondary); font-size: 15px;">No hay tareas para esta vista.</div>';
+        container.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-secondary);">No hay tareas para esta vista.</div>';
         return;
     }
 
-    container.innerHTML = tareasAProcesar.map(task => `
-        <div class="task-card ${task.completed ? 'completed' : ''}" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
-            <div class="task-content" style="flex: 1; min-width: 0;">
-                <div class="task-title" style="font-size: 15px; font-weight: 500; color: var(--text-main); line-height: 1.4; ${task.completed ? 'text-decoration: line-through;' : ''}">${task.name || task.text || 'Tarea sin título'}</div>
-                <div class="task-subtext" style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
-                    ${task.area ? `<span class="task-tag" style="background-color: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 2px 6px; border-radius: 4px; font-size: 11px;">${task.area}</span>` : ''} 
-                    <span class="task-date-text" style="font-size: 11px; color: var(--text-secondary);">📅 ${task.date || task.dueDate || task.fecha}</span>
+    container.innerHTML = tareasAProcesar.map(task => {
+        const esCompletada = task.completed ? 'completed' : '';
+        const titulo = task.name || task.text || 'Tarea sin título';
+        const area = task.area ? `<span class="task-tag">${task.area}</span>` : '';
+        const fechaVal = task.date || task.dueDate || task.fecha;
+        const fecha = fechaVal ? `<span class="task-date-text">📅 ${fechaVal}</span>` : '';
+        const checked = task.completed ? '✓' : '';
+        
+        return `
+        <div class="task-card ${esCompletada}">
+            <div class="task-content">
+                <div class="task-title">${titulo}</div>
+                <div class="task-subtext">
+                    ${area} 
+                    ${fecha}
                 </div>
             </div>
-            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')" style="width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--text-secondary); background: ${task.completed ? 'var(--accent-color)' : 'transparent'}; color: ${task.completed ? '#0f172a' : 'var(--text-main)'}; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;">
-                ${task.completed ? '✓' : ''}
+            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
+                ${checked}
             </button>
         </div>
-    `).join('');
+        `;
+    }).join('');
 };
 
 window.addMobileTask = function() {
@@ -111,4 +118,95 @@ window.addMobileTask = function() {
 
     const listaGlobal = obtenerTareasGlobales();
     if (listaGlobal && Array.isArray(listaGlobal)) {
-        listaGlobal
+        listaGlobal.unshift(newTask);
+        input.value = '';
+        if (window.saveTasks) window.saveTasks();
+        window.renderTasks();
+    }
+};
+
+window.toggleMobileTask = function(id) {
+    const listaGlobal = obtenerTareasGlobales();
+    if (listaGlobal && Array.isArray(listaGlobal)) {
+        const task = listaGlobal.find(t => t.id.toString() === id.toString());
+        if (task) {
+            task.completed = !task.completed;
+            if (window.saveTasks) window.saveTasks();
+            window.renderTasks();
+        }
+    }
+};
+
+window.toggleViewMenu = function() {
+    const modal = document.getElementById('viewMenuModal');
+    if (!modal) return;
+    if (modal.classList.contains('hidden')) {
+        window.buildViewMenu();
+        modal.classList.remove('hidden');
+    } else {
+        modal.classList.add('hidden');
+    }
+};
+
+window.buildViewMenu = function() {
+    const container = document.getElementById('modalDynamicContent');
+    if (!container) return;
+
+    let html = '<h3 class="menu-section-title">Tiempo</h3>';
+    const timeViews = [
+        { id: 'today', label: 'Hoy y atrasadas' },
+        { id: 'tomorrow', label: 'Mañana' },
+        { id: 'week', label: 'Esta semana' },
+        { id: 'all', label: 'Todas las tareas' }
+    ];
+    
+    timeViews.forEach(v => {
+        html += '<button class="btn-menu-option" onclick="window.selectMobileView(\\'' + v.id + '\\')">' + v.label + '</button>';
+    });
+
+    const tareasParaEscanear = obtenerTareasGlobales();
+    const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
+    
+    if (areasUnicas.length > 0) {
+        html += '<h3 class="menu-section-title" style="margin-top:20px;">Áreas</h3>';
+        areasUnicas.forEach(area => {
+            html += '<button class="btn-menu-option" onclick="window.filterByTaxonomy(\\'area\\', \\'' + area + '\\')">' + area + '</button>';
+        });
+    }
+    container.innerHTML = html;
+};
+
+window.selectMobileView = function(viewType) {
+    window.currentState = window.currentState || {};
+    window.currentState.view = viewType;
+    delete window.currentState.area;
+    window.renderTasks();
+    window.toggleViewMenu();
+};
+
+window.filterByTaxonomy = function(type, value) {
+    window.currentState = window.currentState || {};
+    window.currentState.view = 'all'; 
+    window.currentState[type] = value; 
+    window.renderTasks();
+    window.toggleViewMenu();
+};
+
+window.toggleSettingsMenu = function() {
+    window.toggleTheme();
+};
+
+window.toggleTheme = function() {
+    document.body.classList.toggle('light-theme');
+    const isLight = document.body.classList.contains('light-theme');
+    localStorage.setItem('mobileTheme', isLight ? 'light' : 'dark');
+    const metaTheme = document.getElementById('themeColorMeta');
+    if (metaTheme) metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#0f172a');
+};
+
+setInterval(() => {
+    const tareasActuales = obtenerTareasGlobales();
+    if (tareasActuales.length !== ultimoLargoTareas) {
+        window.renderTasks();
+    }
+}, 1000);
