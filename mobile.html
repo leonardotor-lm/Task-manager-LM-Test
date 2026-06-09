@@ -95,13 +95,13 @@
         window.showNotice = function(mensaje) {};
         window.refreshAllDropdowns = function() {};
         window.renderCalendar = function() {};
-    </script>
 
+        </script>
     <script src="js/app.js"></script>
-
+    <script src="js/ui.js"></script> 
     <script src="js/ui-mobile.js"></script>
-    
     <script>
+    
         document.addEventListener('DOMContentLoaded', () => {
             setTimeout(() => { if(window.renderTasks) window.renderTasks(); }, 800);
         });
