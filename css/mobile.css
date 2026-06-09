@@ -1,217 +1,231 @@
 /* ========================================== */
-/* ARQUITECTURA VISUAL MÓVIL PWA              */
+/* HOJA DE ESTILOS MÓVIL AISLADA (ANTI-LEAK)   */
 /* ========================================== */
 
 :root {
-    --bg-main: #0f172a;
-    --bg-secondary: #1e293b;
-    --text-main: #f8fafc;
-    --text-secondary: #94a3b8;
-    --border-color: #334155;
-    --accent-color: #11caa0;
+    --bg-main: #0f172a !important;
+    --bg-secondary: #1e293b !important;
+    --text-main: #f8fafc !important;
+    --text-secondary: #94a3b8 !important;
+    --border-color: #334155 !important;
+    --accent-color: #11caa0 !important;
 }
 
 body.light-theme {
-    --bg-main: #f8fafc;
-    --bg-secondary: #ffffff;
-    --text-main: #0f172a;
-    --text-secondary: #64748b;
-    --border-color: #e2e8f0;
-    --accent-color: #0d9488;
+    --bg-main: #f8fafc !important;
+    --bg-secondary: #ffffff !important;
+    --text-main: #0f172a !important;
+    --text-secondary: #64748b !important;
+    --border-color: #e2e8f0 !important;
+    --accent-color: #0d9488 !important;
 }
 
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+/* Forzamos un reseteo espacial absoluto en el entorno móvil */
+#mobile-root, #mobile-root * {
+    box-sizing: border-box !important;
+    margin: 0 !important;
+    padding: 0 !important;
 }
 
-body {
-    background-color: var(--bg-main);
-    color: var(--text-main);
-    overflow-x: hidden;
-}
-
-/* --- CONTENEDOR MAESTRO --- */
 #mobile-root {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    height: 100dvh; /* Soporte exacto para pantallas de iOS/Android */
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    position: fixed !important; /* Evita desplazamientos elásticos del navegador */
+    top: 0 !important;
+    left: 0 !important;
 }
 
-/* --- CABECERA Y CREACIÓN DE TAREAS --- */
+/* --- CABECERA --- */
 .mobile-header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background-color: var(--bg-main);
-    padding: 16px;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    gap: 12px;
+    display: flex !important;
+    gap: 12px !important;
+    padding: 14px !important;
+    background-color: var(--bg-main) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    width: 100% !important;
 }
 
 .mobile-header input {
-    flex: 1;
-    padding: 12px 16px;
-    border-radius: 8px;
-    border: 1px solid var(--border-color);
-    background-color: var(--bg-secondary);
-    color: var(--text-main);
-    font-size: 16px;
-    outline: none;
+    flex: 1 !important;
+    padding: 12px !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-main) !important;
+    font-size: 16px !important;
 }
 
 .mobile-header button {
-    background-color: var(--accent-color);
-    color: #0f172a;
-    border: none;
-    border-radius: 8px;
-    width: 48px;
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    background-color: var(--accent-color) !important;
+    color: #0f172a !important;
+    border: none !important;
+    border-radius: 8px !important;
+    width: 46px !important;
+    font-size: 22px !important;
+    font-weight: bold !important;
+    cursor: pointer !important;
 }
 
-/* --- LISTA CENTRAL DE TAREAS --- */
+/* --- ÁREA CENTRAL DE DESPLAZAMIENTO --- */
 .task-list {
-    flex: 1;
-    overflow-y: auto;
-    padding: 16px;
-    padding-bottom: 100px; /* Evita que la última tarea quede debajo de la barra */
+    flex: 1 !important;
+    overflow-y: auto !important;
+    padding: 14px !important;
+    padding-bottom: 90px !important; /* Espacio de resguardo para no solapar la barra baja */
 }
 
 .task-card {
-    background-color: var(--bg-secondary);
-    border: 1px solid var(--border-color);
-    border-radius: 12px;
-    padding: 16px;
-    margin-bottom: 12px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+    background-color: var(--bg-secondary) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 10px !important;
+    padding: 14px !important;
+    margin-bottom: 10px !important; /* Control estricto de la separación entre tarjetas */
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
 }
 
 .task-card.completed {
-    opacity: 0.5;
-}
-
-.task-card.completed .task-title {
-    text-decoration: line-through;
-    color: var(--text-secondary);
+    opacity: 0.4 !important;
 }
 
 .task-content {
-    flex: 1;
-    min-width: 0;
+    flex: 1 !important;
+    min-width: 0 !important;
 }
 
 .task-title {
-    font-size: 16px;
-    font-weight: 500;
-    margin-bottom: 6px;
-    word-break: break-word;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: var(--text-main) !important;
+    line-height: 1.4 !important;
+}
+
+.task-card.completed .task-title {
+    text-decoration: line-through !important;
+}
+
+.task-subtext {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    margin-top: 6px !important;
 }
 
 .task-tag {
-    display: inline-block;
-    background-color: var(--border-color);
-    color: var(--text-main);
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 500;
+    background-color: var(--bg-main) !important;
+    border: 1px solid var(--border-color) !important;
+    color: var(--text-secondary) !important;
+    padding: 2px 6px !important;
+    border-radius: 4px !important;
+    font-size: 11px !important;
+}
+
+.task-date-text {
+    font-size: 11px !important;
+    color: var(--text-secondary) !important;
 }
 
 .btn-check {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    border: 2px solid var(--text-secondary);
-    background: transparent;
-    color: var(--bg-main);
-    font-weight: bold;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    cursor: pointer;
+    width: 26px !important;
+    height: 26px !important;
+    border-radius: 50% !important;
+    border: 2px solid var(--text-secondary) !important;
+    background: transparent !important;
+    color: var(--text-main) !important;
+    font-size: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    cursor: pointer !important;
 }
 
 .task-card.completed .btn-check {
-    background-color: var(--accent-color);
-    border-color: var(--accent-color);
+    background-color: var(--accent-color) !important;
+    border-color: var(--accent-color) !important;
+    color: #0f172a !important;
 }
 
-/* --- BARRA INFERIOR DE NAVEGACIÓN --- */
+/* --- BARRA INFERIOR --- */
 .bottom-nav {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: var(--bg-main);
-    border-top: 1px solid var(--border-color);
-    display: flex;
-    justify-content: space-around;
-    padding: 12px 0 24px 0; /* Padding extra para gestos del SO */
-    z-index: 1000;
+    position: absolute !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    background-color: var(--bg-main) !important;
+    border-top: 1px solid var(--border-color) !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    padding: 12px 0 20px 0 !important;
 }
 
 .nav-btn {
-    background: transparent;
-    border: none;
-    color: var(--text-secondary);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    font-size: 12px;
-    cursor: pointer;
+    background: transparent !important;
+    border: none !important;
+    color: var(--text-secondary) !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    cursor: pointer !important;
 }
 
-/* --- MODAL PANTALLA COMPLETA --- */
+/* --- MENÚ MODAL INTERNO --- */
 .modal-fullscreen {
-    position: fixed;
-    top: 0; left: 0; width: 100%; height: 100%;
-    background-color: var(--bg-main);
-    z-index: 2000;
-    display: flex;
-    flex-direction: column;
+    position: absolute !important;
+    top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important;
+    background-color: var(--bg-main) !important;
+    z-index: 2000 !important;
+    display: flex !important;
+    flex-direction: column !important;
 }
 
 .modal-fullscreen.hidden {
-    display: none;
+    display: none !important;
 }
 
 .modal-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 20px;
-    border-bottom: 1px solid var(--border-color);
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 16px !important;
+    border-bottom: 1px solid var(--border-color) !important;
 }
 
 .modal-content {
-    padding: 20px;
-    overflow-y: auto;
+    padding: 16px !important;
+    overflow-y: auto !important;
+}
+
+.menu-section-title {
+    color: var(--accent-color) !important;
+    font-size: 13px !important;
+    text-transform: uppercase !important;
+    margin-bottom: 8px !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    padding-bottom: 4px !important;
 }
 
 .btn-menu-option {
-    background-color: var(--bg-secondary);
-    color: var(--text-main);
-    border: 1px solid var(--border-color);
-    padding: 16px;
-    border-radius: 8px;
-    font-size: 16px;
-    text-align: left;
-    width: 100%;
-    margin-bottom: 10px;
-    cursor: pointer;
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-main) !important;
+    border: 1px solid var(--border-color) !important;
+    padding: 14px !important;
+    border-radius: 6px !important;
+    font-size: 15px !important;
+    text-align: left !important;
+    width: 100% !important;
+    margin-bottom: 8px !important;
+    cursor: pointer !important;
+}
+
+.no-tasks-notice {
+    padding: 30px !important;
+    text-align: center !important;
+    color: var(--text-secondary) !important;
+    font-size: 14px !important;
 }
