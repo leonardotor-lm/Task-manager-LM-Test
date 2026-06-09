@@ -332,3 +332,7 @@ container.innerHTML = tareasAProcesar.map(task => {
     font-size: 15px !important;
     cursor: pointer !important;
 }
+/* Obliga al clic a traspasar el SVG e impactar en el botón */
+.nav-btn svg, .mobile-modal-close svg {
+    pointer-events: none !important;
+}
