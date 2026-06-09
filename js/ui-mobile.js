@@ -62,16 +62,17 @@ window.renderTasks = function() {
                 const tieneFechaValida = fecha && fecha.trim() !== '' && !fecha.includes('0000');
 
                 if (vista === 'today') {
-                    // Conversión estricta a milisegundos matemáticos para evitar sesgos de texto
+                    // FILTRO DE HIELO: Si no hay fecha, NO entra en la vista Hoy.
+                    // Si hay fecha, DEBE ser hoy o anterior, y mayor a 2025.
+                    const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
+                    
+                    if (!fecha) return false; 
+                    
                     const tiempoTarea = new Date(fecha).getTime();
                     const tiempoHoy = new Date(hoyStr).getTime();
                     
-                    return tieneFechaValida && 
-                           !isNaN(tiempoTarea) && 
-                           tiempoTarea > 0 && 
-                           tiempoTarea <= tiempoHoy;
-                }
-                if (vista === 'tomorrow') {
+                    return !isNaN(tiempoTarea) && tiempoTarea <= tiempoHoy && tiempoTarea >= new Date("2025-01-01").getTime();
+                }                if (vista === 'tomorrow') {
                     return tieneFechaValida && fecha === mananaStr;
                 }
                 if (vista === 'week') {
