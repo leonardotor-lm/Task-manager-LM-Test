@@ -1,5 +1,5 @@
 // ==========================================
-// CONTROL MÓVIL (ARQUITECTURA V22 - SANEADA)
+// CONTROL MÓVIL (SINTAXIS BLINDADA)
 // ==========================================
 
 window.initSpeechRecognition = function() {};
@@ -35,59 +35,59 @@ window.renderTasks = function() {
     if (window.currentState && window.currentState.area) {
         tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
     } else {
-        const vista = window.currentState?.view || 'today';
-        
-        // Obtenemos el string de hoy en formato YYYY-MM-DD
-        const hoyStr = new Date().toLocaleDateString('en-CA'); // Formato YYYY-MM-DD
+        const vista = window.currentState?.view || 'all';
         
         if (vista !== 'all') {
+            const hoy = new Date();
+            hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+            const hoyStr = hoy.toISOString().split('T')[0];
+
+            let manana = new Date(hoy);
+            manana.setDate(manana.getDate() + 1);
+            const mananaStr = manana.toISOString().split('T')[0];
+
+            let semana = new Date(hoy);
+            semana.setDate(semana.getDate() + 7);
+            const semanaStr = semana.toISOString().split('T')[0];
+
             tareasAProcesar = todasLasTareas.filter(t => {
                 if (t.completed) return false;
                 
-                // Usamos directamente t.date, que sabemos que existe
-                const fecha = t.date;
-                if (!fecha) return false; // Si no hay fecha, no entra en filtros temporales
+                const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
+                
+                // Muro de contención: si no hay fecha, se excluye de vistas temporales
+                if (!fecha || typeof fecha !== 'string' || fecha.trim() === '') return false;
 
-                // Filtro "Hoy" relajado: Comparamos solo la parte de la fecha, ignorando horas
                 if (vista === 'today') {
-                    // Si el string coincide exactamente, o si la tarea es de un día anterior
-                    return fecha <= hoyStr; 
+                    // Evaluación alfabética estricta: "2026-06-08" <= "2026-06-09" -> true
+                    return fecha <= hoyStr;
                 }
-                if (vista === 'tomorrow') return fecha > hoyStr; // Filtro simple para simplificar
+                if (vista === 'tomorrow') {
+                    return fecha === mananaStr;
+                }
+                if (vista === 'week') {
+                    return fecha >= hoyStr && fecha <= semanaStr;
+                }
                 return true;
             });
         }
     }
     
     if (!tareasAProcesar || tareasAProcesar.length === 0) {
-        container.innerHTML = '<div class="no-tasks-notice">No hay tareas para esta vista.</div>';
+        container.innerHTML = '<div style="padding: 30px; text-align: center; color: var(--text-secondary); font-size: 15px;">No hay tareas para esta vista.</div>';
         return;
     }
 
     container.innerHTML = tareasAProcesar.map(task => `
-        <div class="task-card ${task.completed ? 'completed' : ''}">
-            <div class="task-content">
-                <div class="task-title">${task.name || task.text || 'Tarea sin título'}</div>
-                <div class="task-subtext">
-                    ${task.area ? `<span class="task-tag">${task.area}</span>` : ''} 
-                    <span class="task-date-text">📅 ${task.date}</span>
+        <div class="task-card ${task.completed ? 'completed' : ''}" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 10px; padding: 14px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+            <div class="task-content" style="flex: 1; min-width: 0;">
+                <div class="task-title" style="font-size: 15px; font-weight: 500; color: var(--text-main); line-height: 1.4; ${task.completed ? 'text-decoration: line-through;' : ''}">${task.name || task.text || 'Tarea sin título'}</div>
+                <div class="task-subtext" style="display: flex; align-items: center; gap: 8px; margin-top: 6px;">
+                    ${task.area ? `<span class="task-tag" style="background-color: var(--bg-main); border: 1px solid var(--border-color); color: var(--text-secondary); padding: 2px 6px; border-radius: 4px; font-size: 11px;">${task.area}</span>` : ''} 
+                    <span class="task-date-text" style="font-size: 11px; color: var(--text-secondary);">📅 ${task.date || task.dueDate || task.fecha}</span>
                 </div>
             </div>
-            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
-                ${task.completed ? '✓' : ''}
-            </button>
-        </div>
-    `).join('');
-};
-    container.innerHTML = tareasAProcesar.map(task => `
-        <div class="task-card ${task.completed ? 'completed' : ''}">
-            <div class="task-content">
-                <div class="task-title">${task.name || task.text || 'Tarea sin título'}</div>
-                <div style="font-size: 10px; color: red;">
-                    DEBUG: date='${task.date}' | dueDate='${task.dueDate}' | fecha='${task.fecha}'
-                </div>
-            </div>
-            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
+            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')" style="width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--text-secondary); background: ${task.completed ? 'var(--accent-color)' : 'transparent'}; color: ${task.completed ? '#0f172a' : 'var(--text-main)'}; font-size: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; cursor: pointer;">
                 ${task.completed ? '✓' : ''}
             </button>
         </div>
@@ -98,104 +98,17 @@ window.addMobileTask = function() {
     const input = document.getElementById('mobileTaskInput');
     if (!input || !input.value.trim()) return;
 
+    const hoyLocal = new Date();
+    hoyLocal.setMinutes(hoyLocal.getMinutes() - hoyLocal.getTimezoneOffset());
+    
     const newTask = {
         id: Date.now(),
         name: input.value.trim(),
         completed: false,
-        date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
+        date: hoyLocal.toISOString().split('T')[0],
         area: window.currentState?.area || 'Inbox'
     };
 
     const listaGlobal = obtenerTareasGlobales();
     if (listaGlobal && Array.isArray(listaGlobal)) {
-        listaGlobal.unshift(newTask);
-        input.value = '';
-        if (window.saveTasks) window.saveTasks();
-        window.renderTasks();
-    }
-};
-
-window.toggleMobileTask = function(id) {
-    const listaGlobal = obtenerTareasGlobales();
-    if (listaGlobal && Array.isArray(listaGlobal)) {
-        const task = listaGlobal.find(t => t.id.toString() === id.toString());
-        if (task) {
-            task.completed = !task.completed;
-            if (window.saveTasks) window.saveTasks();
-            window.renderTasks();
-        }
-    }
-};
-
-window.toggleViewMenu = function() {
-    const modal = document.getElementById('viewMenuModal');
-    if (!modal) return;
-    if (modal.classList.contains('hidden')) {
-        window.buildViewMenu();
-        modal.classList.remove('hidden');
-    } else {
-        modal.classList.add('hidden');
-    }
-};
-
-window.buildViewMenu = function() {
-    const container = document.getElementById('modalDynamicContent');
-    if (!container) return;
-
-    let html = '<h3 class="menu-section-title">Tiempo</h3>';
-    const timeViews = [
-        { id: 'today', label: 'Hoy y atrasadas' },
-        { id: 'tomorrow', label: 'Mañana' },
-        { id: 'week', label: 'Esta semana' },
-        { id: 'all', label: 'Todas las tareas' }
-    ];
-    timeViews.forEach(v => {
-        html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
-    });
-
-    const tareasParaEscanear = obtenerTareasGlobales();
-    const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
-    
-    if (areasUnicas.length > 0) {
-        html += '<h3 class="menu-section-title" style="margin-top: 20px;">Áreas</h3>';
-        areasUnicas.forEach(area => {
-            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
-        });
-    }
-    container.innerHTML = html;
-};
-
-window.selectMobileView = function(viewType) {
-    window.currentState = window.currentState || {};
-    window.currentState.view = viewType;
-    delete window.currentState.area;
-    window.renderTasks();
-    window.toggleViewMenu();
-};
-
-window.filterByTaxonomy = function(type, value) {
-    window.currentState = window.currentState || {};
-    window.currentState.view = 'all'; 
-    window.currentState[type] = value; 
-    window.renderTasks();
-    window.toggleViewMenu();
-};
-
-window.toggleSettingsMenu = function() {
-    window.toggleTheme();
-};
-
-window.toggleTheme = function() {
-    document.body.classList.toggle('light-theme');
-    const isLight = document.body.classList.contains('light-theme');
-    localStorage.setItem('mobileTheme', isLight ? 'light' : 'dark');
-    const metaTheme = document.getElementById('themeColorMeta');
-    if (metaTheme) metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#0f172a');
-};
-
-setInterval(() => {
-    const tareasActuales = obtenerTareasGlobales();
-    if (tareasActuales.length !== ultimoLargoTareas) {
-        window.renderTasks();
-    }
-}, 1000);
+        listaGlobal
