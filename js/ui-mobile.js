@@ -1,5 +1,5 @@
 // ==========================================
-// CONTROL MÓVIL (ARQUITECTURA V20 - FILTRADO ABSOLUTO)
+// CONTROL MÓVIL (ARQUITECTURA V21 - FILTRADO ESTRICTO)
 // ==========================================
 
 window.initSpeechRecognition = function() {};
@@ -9,7 +9,6 @@ window.showNotice = function(mensaje) {};
 window.refreshAllDropdowns = function() {};
 window.renderCalendar = function() {};
 
-// Extracción directa de la matriz de datos
 function obtenerTareasGlobales() {
     if (typeof tasks !== 'undefined') return tasks;
     if (typeof allTasks !== 'undefined') return allTasks;
@@ -33,16 +32,15 @@ window.renderTasks = function() {
 
     ultimoLargoTareas = todasLasTareas.length;
 
-    // 1. FILTRADO TAXONÓMICO (ÁREAS)
+    // 1. FILTRADO POR ÁREAS
     if (window.currentState && window.currentState.area) {
         tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
     } 
-    // 2. FILTRADO TEMPORAL RIGUROSO
+    // 2. FILTRADO TEMPORAL ESTRICTO
     else {
         const vista = window.currentState?.view || 'all';
         
         if (vista !== 'all') {
-            // Cálculo de fechas exactas compensando la zona horaria local
             const hoy = new Date();
             hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
             const hoyStr = hoy.toISOString().split('T')[0];
@@ -56,23 +54,23 @@ window.renderTasks = function() {
             const semanaStr = semana.toISOString().split('T')[0];
 
             tareasAProcesar = todasLasTareas.filter(t => {
-                // Las vistas temporales excluyen por defecto lo completado
                 if (t.completed) return false;
                 
-                // Escaneo multipropiedad para garantizar la captura de la fecha
                 const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
 
                 if (vista === 'today') {
-                    // Retiene tareas sin fecha, o aquellas vencidas/agendadas para hoy
-                    return !fecha || fecha <= hoyStr;
+                    // Debe tener fecha y ser <= a hoy
+                    return fecha && fecha <= hoyStr;
                 }
                 if (vista === 'tomorrow') {
-                    return fecha === mananaStr;
+                    // Debe tener fecha y ser exactamente mañana
+                    return fecha && fecha === mananaStr;
                 }
                 if (vista === 'week') {
-                    return !fecha || fecha <= semanaStr;
+                    // Debe tener fecha y estar en el rango de los próximos 7 días
+                    return fecha && fecha >= hoyStr && fecha <= semanaStr;
                 }
-                return true;
+                return true; // Solo si se agregara otra vista por error
             });
         }
     }
@@ -82,7 +80,6 @@ window.renderTasks = function() {
         return;
     }
 
-    // Inyección de HTML acoplada a las clases CSS
     container.innerHTML = tareasAProcesar.map(task => `
         <div class="task-card ${task.completed ? 'completed' : ''}">
             <div class="task-content">
@@ -107,7 +104,6 @@ window.addMobileTask = function() {
         id: Date.now(),
         name: input.value.trim(),
         completed: false,
-        // Asignación estricta de fecha para asegurar compatibilidad con filtros
         date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         area: window.currentState?.area || 'Inbox'
     };
@@ -199,7 +195,6 @@ window.toggleTheme = function() {
     if (metaTheme) metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#0f172a');
 };
 
-// Monitor reactivo de estado
 setInterval(() => {
     const tareasActuales = obtenerTareasGlobales();
     if (tareasActuales.length !== ultimoLargoTareas) {
