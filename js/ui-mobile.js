@@ -161,8 +161,8 @@ window.buildViewMenu = function() {
     ];
     
     timeViews.forEach(v => {
-        html += '<button class="btn-menu-option" onclick="window.selectMobileView(\\'' + v.id + '\\')">' + v.label + '</button>';
-    });
+    html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
+});
 
     const tareasParaEscanear = obtenerTareasGlobales();
     const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
