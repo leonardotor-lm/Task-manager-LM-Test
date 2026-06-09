@@ -48,7 +48,11 @@ window.renderTasks = function() {
                 const fecha = t.date;
                 if (!fecha) return false; // Si no hay fecha, no entra en filtros temporales
 
-                if (vista === 'today') return fecha <= hoyStr;
+                // Filtro "Hoy" relajado: Comparamos solo la parte de la fecha, ignorando horas
+                if (vista === 'today') {
+                    // Si el string coincide exactamente, o si la tarea es de un día anterior
+                    return fecha <= hoyStr; 
+                }
                 if (vista === 'tomorrow') return fecha > hoyStr; // Filtro simple para simplificar
                 return true;
             });
