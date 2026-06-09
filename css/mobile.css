@@ -1,65 +1,156 @@
-/* css/mobile.css */
-/* Variables de sistema base (Tema Oscuro por defecto) */
+/* ========================================== */
+/* ARQUITECTURA VISUAL MÓVIL PWA              */
+/* ========================================== */
+
 :root {
     --bg-main: #0f172a;
-    --bg-card: #1D313C;
+    --bg-secondary: #1e293b;
     --text-main: #f8fafc;
-    --text-muted: #8A9DB5;
-    --accent: #F6723A;
-    --accent-muted: #4A5B6D;
+    --text-secondary: #94a3b8;
+    --border-color: #334155;
+    --accent-color: #11caa0;
 }
 
-/* Reseteo y tipografía base */
-html, body { 
-    background-color: var(--bg-main); 
-    color: var(--text-main); 
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
-    margin: 0; 
-    padding: 0; 
-    min-height: 100vh;
-    -webkit-tap-highlight-color: transparent; 
-}
-/* Contenedor de controles fijo en la parte superior */
-.sticky-header { position: sticky; top: 0; background-color: rgba(15, 23, 42, 0.95); backdrop-filter: blur(8px); padding: 16px; z-index: 10; border-bottom: 1px solid var(--accent-muted); }
-.control-group { margin-bottom: 12px; }
-.control-group:last-child { margin-bottom: 0; }
-.flex-row { display: flex; gap: 8px; }
-
-/* Controles de formulario táctiles */
-.input-base { width: 100%; box-sizing: border-box; padding: 14px; background-color: var(--bg-card); color: var(--text-main); border: 1px solid var(--accent-muted); border-radius: 8px; font-size: 16px; outline: none; appearance: none; }
-.input-base:focus { border-color: var(--accent); }
-
-.btn-add { background-color: var(--accent); color: #0A1318; border: none; padding: 0 20px; border-radius: 8px; font-weight: bold; font-size: 24px; cursor: pointer; transition: transform 0.1s; }
-.btn-add:active { transform: scale(0.92); }
-
-/* Contenedor de lista */
-.task-list { padding: 16px; padding-bottom: 40px; }
-
-/* Tarjetas de tarea y sus estados */
-.task-card { background-color: var(--bg-card); margin-bottom: 12px; padding: 16px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s ease; }
-.task-card.pending { border-left: 5px solid var(--accent); }
-.task-card.completed { border-left: 5px solid var(--accent-muted); opacity: 0.6; }
-
-.task-title { font-weight: 600; font-size: 16px; margin-bottom: 6px; transition: color 0.2s; }
-.task-card.completed .task-title { color: var(--text-muted); text-decoration: line-through; }
-.task-meta { font-size: 13px; color: var(--text-muted); }
-.sub-tag { color: #F88D5D; font-weight: 600; }
-
-/* Botón de acción contextual */
-.btn-action { border: none; padding: 10px 16px; border-radius: 6px; font-weight: 600; font-size: 14px; cursor: pointer; transition: transform 0.1s; }
-.btn-action.pending { background-color: var(--accent); color: #0A1318; }
-.btn-action.completed { background-color: var(--accent-muted); color: var(--text-main); }
-.btn-action:active { transform: scale(0.92); }
-/* Paleta de Tema Claro */
 body.light-theme {
     --bg-main: #f8fafc;
-    --bg-card: #ffffff;
+    --bg-secondary: #ffffff;
     --text-main: #0f172a;
-    --text-muted: #64748b;
-    --accent: #F6723A;
-    --accent-muted: #cbd5e1;
+    --text-secondary: #64748b;
+    --border-color: #e2e8f0;
+    --accent-color: #0d9488;
 }
-/* Arquitectura de la barra inferior */
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, sans-serif;
+}
+
+body {
+    background-color: var(--bg-main);
+    color: var(--text-main);
+    overflow-x: hidden;
+}
+
+/* --- CONTENEDOR MAESTRO --- */
+#mobile-root {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    height: 100dvh; /* Soporte exacto para pantallas de iOS/Android */
+}
+
+/* --- CABECERA Y CREACIÓN DE TAREAS --- */
+.mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background-color: var(--bg-main);
+    padding: 16px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    gap: 12px;
+}
+
+.mobile-header input {
+    flex: 1;
+    padding: 12px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    background-color: var(--bg-secondary);
+    color: var(--text-main);
+    font-size: 16px;
+    outline: none;
+}
+
+.mobile-header button {
+    background-color: var(--accent-color);
+    color: #0f172a;
+    border: none;
+    border-radius: 8px;
+    width: 48px;
+    font-size: 24px;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* --- LISTA CENTRAL DE TAREAS --- */
+.task-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 16px;
+    padding-bottom: 100px; /* Evita que la última tarea quede debajo de la barra */
+}
+
+.task-card {
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.task-card.completed {
+    opacity: 0.5;
+}
+
+.task-card.completed .task-title {
+    text-decoration: line-through;
+    color: var(--text-secondary);
+}
+
+.task-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.task-title {
+    font-size: 16px;
+    font-weight: 500;
+    margin-bottom: 6px;
+    word-break: break-word;
+}
+
+.task-tag {
+    display: inline-block;
+    background-color: var(--border-color);
+    color: var(--text-main);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.btn-check {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 2px solid var(--text-secondary);
+    background: transparent;
+    color: var(--bg-main);
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+}
+
+.task-card.completed .btn-check {
+    background-color: var(--accent-color);
+    border-color: var(--accent-color);
+}
+
+/* --- BARRA INFERIOR DE NAVEGACIÓN --- */
 .bottom-nav {
     position: fixed;
     bottom: 0;
@@ -69,48 +160,28 @@ body.light-theme {
     border-top: 1px solid var(--border-color);
     display: flex;
     justify-content: space-around;
-    align-items: center;
-    padding: 12px 0 16px 0; /* Espaciado extra inferior para pantallas curvas */
+    padding: 12px 0 24px 0; /* Padding extra para gestos del SO */
     z-index: 1000;
 }
 
 .nav-btn {
-    background: none;
+    background: transparent;
     border: none;
     color: var(--text-secondary);
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 12px;
     gap: 4px;
+    font-size: 12px;
     cursor: pointer;
 }
 
-.btn-primary-nav {
-    background-color: var(--accent-color);
-    color: #0A1318;
-    border-radius: 50%;
-    width: 48px;
-    height: 48px;
-    font-size: 24px;
-    justify-content: center;
-    transform: translateY(-10px); /* Elevación jerárquica del botón de adición */
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-/* Compensación de la lista de tareas */
-.task-list {
-    padding-bottom: 90px; 
-}
-/* Arquitectura del Panel Modal a Pantalla Completa */
+/* --- MODAL PANTALLA COMPLETA --- */
 .modal-fullscreen {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    top: 0; left: 0; width: 100%; height: 100%;
     background-color: var(--bg-main);
-    z-index: 2000; /* Cobertura absoluta del viewport */
+    z-index: 2000;
     display: flex;
     flex-direction: column;
 }
@@ -127,37 +198,20 @@ body.light-theme {
     border-bottom: 1px solid var(--border-color);
 }
 
-.modal-header h2 {
-    margin: 0;
-    font-size: 20px;
-    color: var(--text-main);
-}
-
-.btn-close {
-    background: none;
-    border: none;
-    color: var(--text-main);
-    font-size: 24px;
-    font-weight: bold;
-    cursor: pointer;
-    padding: 8px;
-}
-
 .modal-content {
-    display: flex;
-    flex-direction: column;
     padding: 20px;
-    gap: 16px;
+    overflow-y: auto;
 }
 
 .btn-menu-option {
     background-color: var(--bg-secondary);
     color: var(--text-main);
     border: 1px solid var(--border-color);
-    padding: 20px;
+    padding: 16px;
     border-radius: 8px;
-    font-size: 18px;
+    font-size: 16px;
     text-align: left;
+    width: 100%;
+    margin-bottom: 10px;
     cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
