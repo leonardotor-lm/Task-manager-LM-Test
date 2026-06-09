@@ -25,39 +25,20 @@ window.updateUI = function() {
 
 window.renderTasks = function() {
     const container = document.getElementById('mobileTaskList');
+    const headerContainer = document.getElementById('mobile-header-dynamic');
     if (!container) return;
 
-    // Renderizado dinámico de Cabecera independiente
-    const headerContainer = document.getElementById('mobile-header-dynamic');
-    if (headerContainer) {
-        const titulosVistas = { 'today': 'Hoy y atrasadas', 'tomorrow': 'Mañana', 'week': 'Esta semana', 'all': 'Todas las tareas' };
-        const vistaActual = window.currentState?.view || 'today';
-        const tituloMostrado = titulosVistas[vistaActual] || vistaActual;
-        const fechaTexto = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
-        
-        headerContainer.innerHTML = `
-            <div style="padding: 24px 16px 16px 16px; background: var(--bg-main);">
-                <h1 style="font-size: 28px; font-weight: 700; margin: 0 0 4px 0; color: var(--text-main);">${tituloMostrado}</h1>
-                <p style="font-size: 10px; font-weight: 700; color: #4ade80; margin: 0; letter-spacing: 1px;">${fechaTexto}</p>
-            </div>
-        `;
-    }
-
+    // 1. Filtrado de Datos
     let todasLasTareas = obtenerTareasGlobales();
-    
-    // FILTRO GLOBAL DE SEGURIDAD: Esto descarta basura y completadas de una vez
-    // Ahora, cualquier filtro posterior operará sobre tareas "limpias"
     let todasLasTareasActivas = todasLasTareas.filter(t => !t.isDeleted && !t.completed && t.status !== 'completed');
-
     let tareasAProcesar = todasLasTareasActivas;
     ultimoLargoTareas = todasLasTareasActivas.length;
 
+    // Lógica de filtrado (Área vs Vista Temporal)
     if (window.currentState && window.currentState.area) {
-        // Filtrar solo por área sobre el conjunto ya limpio
         tareasAProcesar = todasLasTareasActivas.filter(t => t.area === window.currentState.area);
     } else {
-        const vista = window.currentState?.view || 'all';
-        
+        const vista = window.currentState?.view || 'today';
         if (vista !== 'all') {
             const hoy = new Date();
             hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
@@ -74,7 +55,6 @@ window.renderTasks = function() {
             tareasAProcesar = todasLasTareasActivas.filter(t => {
                 const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
                 if (!fecha || typeof fecha !== 'string' || fecha.trim() === '') return false;
-
                 if (vista === 'today') return fecha <= hoyStr;
                 if (vista === 'tomorrow') return fecha === mananaStr;
                 if (vista === 'week') return fecha >= hoyStr && fecha <= semanaStr;
@@ -82,67 +62,51 @@ window.renderTasks = function() {
             });
         }
     }
-    
-    container.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-secondary);">No hay tareas para esta vista.</div>';
-        return;
+
+    // 2. Renderizado de Cabecera (Si existe el contenedor)
+    if (headerContainer) {
+        const titulosVistas = { 'today': 'Hoy y atrasadas', 'tomorrow': 'Mañana', 'week': 'Esta semana', 'all': 'Todas las tareas' };
+        const vistaActual = window.currentState?.view || 'today';
+        const tituloMostrado = titulosVistas[vistaActual] || vistaActual;
+        const fechaTexto = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
+        
+        headerContainer.innerHTML = `
+            <div style="padding: 24px 16px 16px 16px; background: var(--bg-main);">
+                <h1 style="font-size: 28px; font-weight: 700; margin: 0 0 4px 0; color: var(--text-main);">${tituloMostrado}</h1>
+                <p style="font-size: 10px; font-weight: 700; color: #4ade80; margin: 0; letter-spacing: 1px;">${fechaTexto}</p>
+            </div>
+        `;
     }
 
-    // 1. Construcción dinámica de la cabecera
-    const titulosVistas = {
-        'today': 'Hoy y atrasadas',
-        'tomorrow': 'Mañana',
-        'week': 'Esta semana',
-        'all': 'Todas las tareas'
-    };
-    const vistaActual = window.currentState?.view || 'today';
-    const tituloMostrado = titulosVistas[vistaActual] || vistaActual;
-    
-    // Genera la fecha actual en formato: "Martes, 9 de junio"
-    const fechaOpciones = { weekday: 'long', day: 'numeric', month: 'long' };
-    const fechaTexto = new Date().toLocaleDateString('es-AR', fechaOpciones).toUpperCase();
+    // 3. Renderizado de la lista
+    if (!tareasAProcesar || tareasAProcesar.length === 0) {
+        container.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-sec);">No hay tareas para esta vista.</div>';
+    } else {
+        container.innerHTML = `<div class="mobile-task-list-container">` + tareasAProcesar.map(task => {
+            const esCompletada = task.completed ? 'completed' : '';
+            const titulo = task.name || task.text || 'Tarea sin título';
+            const areaTexto = task.area ? task.area : 'Inbox';
+            const subtext = `<span class="meta-area">${areaTexto}</span>`;
+            const fechaVal = task.date || task.dueDate || task.fecha;
+            const fechaHtml = fechaVal ? `<span class="meta-date">🗓 ${fechaVal}</span>` : '';
+            const checked = task.completed ? '✓' : '';
 
-    let htmlSalida = `
-        <div class="mobile-header-view">
-            <h1 class="view-title">${tituloMostrado}</h1>
-            <p class="view-subtitle">${fechaTexto}</p>
-        </div>
-        <div class="mobile-task-list-container">
-    `;
-
-    // 2. Renderizado de la lista plana
-    htmlSalida += tareasAProcesar.map(task => {
-        const esCompletada = task.completed ? 'completed' : '';
-        const titulo = task.name || task.text || 'Tarea sin título';
-        const areaTexto = task.area ? task.area : 'Inbox';
-        
-        // Asume que si tenés un contexto, lo guardás en alguna propiedad. Si no, usa el área.
-        const contexto = task.context ? `<span class="meta-dot"> • </span><span class="meta-context">${task.context}</span>` : '';
-        const subtext = `<span class="meta-area">${areaTexto}</span>${contexto}`; 
-        
-        const fechaVal = task.date || task.dueDate || task.fecha;
-        // Se alinea con el naranja de la PC
-        const fechaHtml = fechaVal ? `<span class="meta-date">🗓 ${fechaVal}</span>` : '';
-        const checked = task.completed ? '✓' : '';
-        
-        return `
-        <div class="task-row ${esCompletada}">
-            <button class="btn-check-square" onclick="window.toggleMobileTask('${task.id}')">
-                ${checked}
-            </button>
-            <div class="task-content">
-                <div class="task-title">${titulo}</div>
-                <div class="task-subtext">${subtext}</div>
+            return `
+            <div class="task-row ${esCompletada}">
+                <button class="btn-check-square" onclick="window.toggleMobileTask('${task.id}')">
+                    ${checked}
+                </button>
+                <div class="task-content">
+                    <div class="task-title">${titulo}</div>
+                    <div class="task-subtext">${subtext}</div>
+                </div>
+                <div class="task-meta-right">
+                    ${fechaHtml}
+                </div>
             </div>
-            <div class="task-meta-right">
-                ${fechaHtml}
-            </div>
-        </div>
-        `;
-    }).join('');
-
-    htmlSalida += `</div>`;
-    container.innerHTML = htmlSalida;
-        
+            `;
+        }).join('') + `</div>`;
+    }
 };
 
 window.addMobileTask = function() {
