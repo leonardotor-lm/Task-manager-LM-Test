@@ -26,33 +26,6 @@
     gap: 12px !important;
 }
 
-/* Tarjetas */
-.task-card {
-    background-color: var(--bg-card) !important;
-    border: 1px solid #334155 !important;
-    border-radius: 8px !important;
-    padding: 12px !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: space-between !important;
-}
-
-.task-title {
-    color: var(--text-main) !important;
-    font-size: 15px !important;
-}
-
-.task-card.completed .task-title {
-    text-decoration: line-through !important;
-    opacity: 0.5 !important;
-}
-
-.task-subtext {
-    font-size: 11px !important;
-    color: var(--text-sec) !important;
-    margin-top: 4px !important;
-}
-
 /* Botón de acción */
 .btn-check {
     width: 24px !important;
@@ -66,3 +39,30 @@
     align-items: center !important;
     justify-content: center !important;
 }
+container.innerHTML = tareasAProcesar.map(task => {
+        const esCompletada = task.completed ? 'completed' : '';
+        const titulo = task.name || task.text || 'Tarea sin título';
+        
+        // Emulamos el formato "Personal • @Contexto" del escritorio.
+        const areaTexto = task.area ? task.area : 'Inbox';
+        const subtext = `<span class="meta-area">${areaTexto}</span>`; 
+        
+        const fechaVal = task.date || task.dueDate || task.fecha;
+        const fechaHtml = fechaVal ? `<span class="meta-date">${fechaVal}</span>` : '';
+        const checked = task.completed ? '✓' : '';
+        
+        return `
+        <div class="task-row ${esCompletada}">
+            <button class="btn-check-square" onclick="window.toggleMobileTask('${task.id}')">
+                ${checked}
+            </button>
+            <div class="task-content">
+                <div class="task-title">${titulo}</div>
+                <div class="task-subtext">${subtext}</div>
+            </div>
+            <div class="task-meta-right">
+                ${fechaHtml}
+            </div>
+        </div>
+        `;
+    }).join('');
