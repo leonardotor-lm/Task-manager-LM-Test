@@ -51,7 +51,9 @@ window.renderTasks = function() {
             const semanaStr = semana.toISOString().split('T')[0];
 
             tareasAProcesar = todasLasTareas.filter(t => {
-                if (t.completed) return false;
+                // MURO DE ESTADOS: Ignorar papelera y completadas (criterio de PC)
+                if (t.isDeleted) return false;
+                if (t.completed || t.status === 'completed') return false;
                 
                 const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
                 
