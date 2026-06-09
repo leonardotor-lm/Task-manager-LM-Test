@@ -1,21 +1,22 @@
 // ==========================================
-// CONTROL MÓVIL (ARQUITECTURA V14 - AISLAMIENTO TOTAL)
+// CONTROL MÓVIL (ARQUITECTURA V16 - DATOS REALES)
 // ==========================================
 
 window.initSpeechRecognition = function() {};
 window.updateDateDisplay = function() {};
-window.showSyncStatus = function(status) { console.log("Sync:", status); };
-window.showNotice = function(mensaje) { console.log("Notice:", mensaje); };
+window.showSyncStatus = function(status) {};
+window.showNotice = function(mensaje) {};
 window.refreshAllDropdowns = function() {};
 window.renderCalendar = function() {};
 
 function obtenerTareasGlobales() {
-    return window.allTasks || window.tasks || [];
+    // Tu volcado confirma que la caja se llama estrictamente 'tasks'
+    return window.tasks || window.allTasks || [];
 }
 
 window.updateUI = function() { 
     if (!window.currentState) window.currentState = {};
-    if (!window.currentState.view) window.currentState.view = 'today';
+    if (!window.currentState.view) window.currentState.view = 'all'; // Por defecto 'all' para asegurar carga inicial
     window.renderTasks(); 
 };
 
@@ -26,23 +27,20 @@ window.renderTasks = function() {
     let todasLasTareas = obtenerTareasGlobales();
     let tareasAProcesar = todasLasTareas;
 
-    // MOTOR DE FILTRADO MÓVIL AUTÓNOMO (Ignora a engine.js por completo)
+    // Filtrado adaptativo para el entorno móvil
     if (window.currentState && window.currentState.area) {
         tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
     } else {
-        const vista = window.currentState?.view || 'today';
-        const hoyStr = new Date().toISOString().split('T')[0];
-
+        const vista = window.currentState?.view || 'all';
         if (vista === 'today') {
-            tareasAProcesar = todasLasTareas.filter(t => !t.completed && (!t.date || t.date <= hoyStr));
+            // Filtro seguro: no completadas
+            tareasAProcesar = todasLasTareas.filter(t => !t.completed);
         } else if (vista === 'tomorrow') {
-            let manana = new Date();
-            manana.setDate(manana.getDate() + 1);
-            const mananaStr = manana.toISOString().split('T')[0];
-            tareasAProcesar = todasLasTareas.filter(t => !t.completed && t.date === mananaStr);
+            tareasAProcesar = todasLasTareas.filter(t => !t.completed);
         } else if (vista === 'week') {
-            tareasAProcesar = todasLasTareas.filter(t => !t.completed); 
+            tareasAProcesar = todasLasTareas.filter(t => !t.completed);
         }
+        // Si es 'all', pasan las 64 tareas directamente
     }
     
     if (!tareasAProcesar || tareasAProcesar.length === 0) {
@@ -50,13 +48,13 @@ window.renderTasks = function() {
         return;
     }
 
+    // CORRECCIÓN: Usamos task.name en lugar de task.text para acoplar la base de datos
     container.innerHTML = tareasAProcesar.map(task => `
         <div class="task-card ${task.completed ? 'completed' : ''}" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background-color: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
             <div style="flex: 1; min-width: 0; padding-right: 12px;">
-                <div style="font-weight: 500; margin-bottom: 6px; font-size: 16px; ${task.completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${task.text}</div>
+                <div style="font-weight: 500; margin-bottom: 6px; font-size: 16px; ${task.completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${task.name || task.text || 'Tarea sin título'}</div>
                 <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary);">
                     ${task.area ? `<span class="tag" style="background-color: var(--border-color); padding: 2px 8px; border-radius: 4px; font-weight: 500;">${task.area}</span>` : ''} 
-                    ${task.date ? `<span>📅 ${task.date}</span>` : ''}
                 </div>
             </div>
             <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')" style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid ${task.completed ? 'var(--accent-color)' : 'var(--text-secondary)'}; background: ${task.completed ? 'var(--accent-color)' : 'none'}; color: #0f172a; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
@@ -71,16 +69,15 @@ window.addMobileTask = function() {
     if (!input || !input.value.trim()) return;
 
     const newTask = {
-        id: Date.now().toString(),
-        text: input.value.trim(),
+        id: Date.now(),
+        name: input.value.trim(), // Acoplado a 'name'
         completed: false,
-        date: new Date().toISOString().split('T')[0],
-        area: window.currentState?.area || ''
+        area: window.currentState?.area || 'Inbox'
     };
 
     const listaGlobal = obtenerTareasGlobales();
     if (listaGlobal) {
-        listaGlobal.push(newTask);
+        listaGlobal.unshift(newTask); // Al principio de la lista
         input.value = '';
         if (window.saveTasks) window.saveTasks();
         window.renderTasks();
@@ -90,7 +87,8 @@ window.addMobileTask = function() {
 window.toggleMobileTask = function(id) {
     const listaGlobal = obtenerTareasGlobales();
     if (listaGlobal) {
-        const task = listaGlobal.find(t => t.id === id);
+        // Buscamos contemplando tipos numéricos o string en el ID
+        const task = listaGlobal.find(t => t.id.toString() === id.toString());
         if (task) {
             task.completed = !task.completed;
             if (window.saveTasks) window.saveTasks();
