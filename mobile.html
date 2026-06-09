@@ -102,5 +102,17 @@
             setTimeout(() => { if(window.renderTasks) window.renderTasks(); }, 800);
         });
     </script>
+    <div id="viewMenuModal" class="mobile-modal hidden">
+            <div class="mobile-modal-overlay" onclick="window.toggleViewMenu()"></div>
+            <div class="mobile-modal-content">
+                <div class="mobile-modal-header">
+                    <h3 class="mobile-modal-title">Navegación</h3>
+                    <button onclick="window.toggleViewMenu()" class="mobile-modal-close">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" width="24" height="24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                    </button>
+                </div>
+                <div id="modalDynamicContent" class="mobile-modal-body"></div>
+            </div>
+        </div>
 </body>
 </html>
