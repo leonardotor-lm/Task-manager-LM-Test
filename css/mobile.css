@@ -380,6 +380,12 @@ container.innerHTML = tareasAProcesar.map(task => {
     pointer-events: auto !important;
 }
 /* --- ADAPTACIÓN MÓVIL DEL MODAL DE EDICIÓN --- */
+    #editModal {
+    background-color: var(--bg-main) !important;
+    padding: 0 !important;
+    align-items: flex-start !important;
+    z-index: 999999 !important; /* Fuerza al modal a estar por encima de todo */
+}
 #editModal {
     background-color: var(--bg-main) !important;
     padding: 0 !important;
