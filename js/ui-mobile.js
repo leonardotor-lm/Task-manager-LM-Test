@@ -1,5 +1,5 @@
 // ==========================================
-// CONTROL MÓVIL (ARQUITECTURA V18 - ESCOPO GLOBAL DIRECTO)
+// CONTROL MÓVIL (ARQUITECTURA V20 - FILTRADO ABSOLUTO)
 // ==========================================
 
 window.initSpeechRecognition = function() {};
@@ -9,7 +9,7 @@ window.showNotice = function(mensaje) {};
 window.refreshAllDropdowns = function() {};
 window.renderCalendar = function() {};
 
-// Extracción directa: sin el prefijo 'window.'
+// Extracción directa de la matriz de datos
 function obtenerTareasGlobales() {
     if (typeof tasks !== 'undefined') return tasks;
     if (typeof allTasks !== 'undefined') return allTasks;
@@ -20,7 +20,7 @@ let ultimoLargoTareas = -1;
 
 window.updateUI = function() { 
     if (!window.currentState) window.currentState = {};
-    if (!window.currentState.view) window.currentState.view = 'all'; 
+    if (!window.currentState.view) window.currentState.view = 'today'; 
     window.renderTasks(); 
 };
 
@@ -33,12 +33,47 @@ window.renderTasks = function() {
 
     ultimoLargoTareas = todasLasTareas.length;
 
+    // 1. FILTRADO TAXONÓMICO (ÁREAS)
     if (window.currentState && window.currentState.area) {
         tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
-    } else {
+    } 
+    // 2. FILTRADO TEMPORAL RIGUROSO
+    else {
         const vista = window.currentState?.view || 'all';
-        if (vista === 'today' || vista === 'tomorrow' || vista === 'week') {
-            tareasAProcesar = todasLasTareas.filter(t => !t.completed);
+        
+        if (vista !== 'all') {
+            // Cálculo de fechas exactas compensando la zona horaria local
+            const hoy = new Date();
+            hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
+            const hoyStr = hoy.toISOString().split('T')[0];
+
+            let manana = new Date(hoy);
+            manana.setDate(manana.getDate() + 1);
+            const mananaStr = manana.toISOString().split('T')[0];
+
+            let semana = new Date(hoy);
+            semana.setDate(semana.getDate() + 7);
+            const semanaStr = semana.toISOString().split('T')[0];
+
+            tareasAProcesar = todasLasTareas.filter(t => {
+                // Las vistas temporales excluyen por defecto lo completado
+                if (t.completed) return false;
+                
+                // Escaneo multipropiedad para garantizar la captura de la fecha
+                const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
+
+                if (vista === 'today') {
+                    // Retiene tareas sin fecha, o aquellas vencidas/agendadas para hoy
+                    return !fecha || fecha <= hoyStr;
+                }
+                if (vista === 'tomorrow') {
+                    return fecha === mananaStr;
+                }
+                if (vista === 'week') {
+                    return !fecha || fecha <= semanaStr;
+                }
+                return true;
+            });
         }
     }
     
@@ -47,15 +82,17 @@ window.renderTasks = function() {
         return;
     }
 
+    // Inyección de HTML acoplada a las clases CSS
     container.innerHTML = tareasAProcesar.map(task => `
-        <div class="task-card ${task.completed ? 'completed' : ''}" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background-color: var(--bg-secondary); border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border-color);">
-            <div style="flex: 1; min-width: 0; padding-right: 12px;">
-                <div style="font-weight: 500; margin-bottom: 6px; font-size: 16px; ${task.completed ? 'text-decoration: line-through; opacity: 0.5;' : ''}">${task.name || task.text || 'Tarea sin título'}</div>
-                <div style="display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--text-secondary);">
-                    ${task.area ? `<span class="tag" style="background-color: var(--border-color); padding: 2px 8px; border-radius: 4px; font-weight: 500;">${task.area}</span>` : ''} 
+        <div class="task-card ${task.completed ? 'completed' : ''}">
+            <div class="task-content">
+                <div class="task-title">${task.name || task.text || 'Tarea sin título'}</div>
+                <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
+                    ${task.area ? `<span class="task-tag">${task.area}</span>` : ''} 
+                    ${(task.date || task.dueDate || task.fecha) ? `<span style="font-size: 12px; color: var(--text-secondary);">📅 ${task.date || task.dueDate || task.fecha}</span>` : ''}
                 </div>
             </div>
-            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')" style="width: 28px; height: 28px; border-radius: 50%; border: 2px solid ${task.completed ? 'var(--accent-color)' : 'var(--text-secondary)'}; background: ${task.completed ? 'var(--accent-color)' : 'none'}; color: #0f172a; font-weight: bold; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0;">
+            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
                 ${task.completed ? '✓' : ''}
             </button>
         </div>
@@ -70,6 +107,8 @@ window.addMobileTask = function() {
         id: Date.now(),
         name: input.value.trim(),
         completed: false,
+        // Asignación estricta de fecha para asegurar compatibilidad con filtros
+        date: new Date(Date.now() - new Date().getTimezoneOffset() * 60000).toISOString().split('T')[0],
         area: window.currentState?.area || 'Inbox'
     };
 
@@ -109,7 +148,7 @@ window.buildViewMenu = function() {
     const container = document.getElementById('modalDynamicContent');
     if (!container) return;
 
-    let html = '<h3 class="menu-section-title" style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Tiempo</h3>';
+    let html = '<h3 style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Tiempo</h3>';
     const timeViews = [
         { id: 'today', label: 'Hoy y atrasadas' },
         { id: 'tomorrow', label: 'Mañana' },
@@ -117,16 +156,16 @@ window.buildViewMenu = function() {
         { id: 'all', label: 'Todas las tareas' }
     ];
     timeViews.forEach(v => {
-        html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')" style="background-color: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; font-size: 16px; text-align: left; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 100%; margin-bottom: 8px;">${v.label}</button>`;
+        html += `<button class="btn-menu-option" onclick="window.selectMobileView('${v.id}')">${v.label}</button>`;
     });
 
     const tareasParaEscanear = obtenerTareasGlobales();
     const areasUnicas = [...new Set(tareasParaEscanear.map(t => t.area).filter(a => a && a.trim() !== ''))];
     
     if (areasUnicas.length > 0) {
-        html += '<h3 class="menu-section-title" style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Áreas</h3>';
+        html += '<h3 style="color: var(--accent-color); font-size: 14px; text-transform: uppercase; margin-top: 20px; margin-bottom: 10px; border-bottom: 1px solid var(--border-color); padding-bottom: 5px;">Áreas</h3>';
         areasUnicas.forEach(area => {
-            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')" style="background-color: var(--bg-secondary); color: var(--text-main); border: 1px solid var(--border-color); padding: 15px; border-radius: 8px; font-size: 16px; text-align: left; cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.1); width: 100%; margin-bottom: 8px;">${area}</button>`;
+            html += `<button class="btn-menu-option" onclick="window.filterByTaxonomy('area', '${area}')">${area}</button>`;
         });
     }
     container.innerHTML = html;
@@ -160,6 +199,7 @@ window.toggleTheme = function() {
     if (metaTheme) metaTheme.setAttribute('content', isLight ? '#f8fafc' : '#0f172a');
 };
 
+// Monitor reactivo de estado
 setInterval(() => {
     const tareasActuales = obtenerTareasGlobales();
     if (tareasActuales.length !== ultimoLargoTareas) {
