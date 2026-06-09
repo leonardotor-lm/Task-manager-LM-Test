@@ -81,26 +81,33 @@ window.renderTasks = function() {
     container.innerHTML = tareasAProcesar.map(task => {
         const esCompletada = task.completed ? 'completed' : '';
         const titulo = task.name || task.text || 'Tarea sin título';
-        const area = task.area ? `<span class="task-tag">${task.area}</span>` : '';
+        
+        // Emulamos el formato "Personal • @Contexto" del escritorio.
+        // Si tenés etiquetas o contextos en tu base, dejalos listos acá.
+        const areaTexto = task.area ? task.area : 'Inbox';
+        const subtext = `<span class="meta-area">${areaTexto}</span>`; 
+        
         const fechaVal = task.date || task.dueDate || task.fecha;
-        const fecha = fechaVal ? `<span class="task-date-text">📅 ${fechaVal}</span>` : '';
+        // Se elimina el emoji. Usamos la clase para dar el color naranja si es "hoy".
+        const fechaHtml = fechaVal ? `<span class="meta-date">${fechaVal}</span>` : '';
         const checked = task.completed ? '✓' : '';
         
         return `
-        <div class="task-card ${esCompletada}">
-            <div class="task-content">
-                <div class="task-title">${titulo}</div>
-                <div class="task-subtext">
-                    ${area} 
-                    ${fecha}
-                </div>
-            </div>
-            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
+        <div class="task-row ${esCompletada}">
+            <button class="btn-check-square" onclick="window.toggleMobileTask('${task.id}')">
                 ${checked}
             </button>
+            <div class="task-content">
+                <div class="task-title">${titulo}</div>
+                <div class="task-subtext">${subtext}</div>
+            </div>
+            <div class="task-meta-right">
+                ${fechaHtml}
+            </div>
         </div>
         `;
     }).join('');
+    
 };
 
 window.addMobileTask = function() {
