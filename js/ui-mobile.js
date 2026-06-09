@@ -78,18 +78,41 @@ window.renderTasks = function() {
         return;
     }
 
-    container.innerHTML = tareasAProcesar.map(task => {
+    // 1. Construcción dinámica de la cabecera
+    const titulosVistas = {
+        'today': 'Hoy y atrasadas',
+        'tomorrow': 'Mañana',
+        'week': 'Esta semana',
+        'all': 'Todas las tareas'
+    };
+    const vistaActual = window.currentState?.view || 'today';
+    const tituloMostrado = titulosVistas[vistaActual] || vistaActual;
+    
+    // Genera la fecha actual en formato: "Martes, 9 de junio"
+    const fechaOpciones = { weekday: 'long', day: 'numeric', month: 'long' };
+    const fechaTexto = new Date().toLocaleDateString('es-AR', fechaOpciones).toUpperCase();
+
+    let htmlSalida = `
+        <div class="mobile-header-view">
+            <h1 class="view-title">${tituloMostrado}</h1>
+            <p class="view-subtitle">${fechaTexto}</p>
+        </div>
+        <div class="mobile-task-list-container">
+    `;
+
+    // 2. Renderizado de la lista plana
+    htmlSalida += tareasAProcesar.map(task => {
         const esCompletada = task.completed ? 'completed' : '';
         const titulo = task.name || task.text || 'Tarea sin título';
-        
-        // Emulamos el formato "Personal • @Contexto" del escritorio.
-        // Si tenés etiquetas o contextos en tu base, dejalos listos acá.
         const areaTexto = task.area ? task.area : 'Inbox';
-        const subtext = `<span class="meta-area">${areaTexto}</span>`; 
+        
+        // Asume que si tenés un contexto, lo guardás en alguna propiedad. Si no, usa el área.
+        const contexto = task.context ? `<span class="meta-dot"> • </span><span class="meta-context">${task.context}</span>` : '';
+        const subtext = `<span class="meta-area">${areaTexto}</span>${contexto}`; 
         
         const fechaVal = task.date || task.dueDate || task.fecha;
-        // Se elimina el emoji. Usamos la clase para dar el color naranja si es "hoy".
-        const fechaHtml = fechaVal ? `<span class="meta-date">${fechaVal}</span>` : '';
+        // Se alinea con el naranja de la PC
+        const fechaHtml = fechaVal ? `<span class="meta-date">🗓 ${fechaVal}</span>` : '';
         const checked = task.completed ? '✓' : '';
         
         return `
@@ -107,7 +130,10 @@ window.renderTasks = function() {
         </div>
         `;
     }).join('');
-    
+
+    htmlSalida += `</div>`;
+    container.innerHTML = htmlSalida;
+        
 };
 
 window.addMobileTask = function() {
