@@ -91,14 +91,13 @@ window.renderTasks = function() {
     container.innerHTML = tareasAProcesar.map(task => `
         <div class="task-card ${task.completed ? 'completed' : ''}">
             <div class="task-content">
-                <div class="task-title">${task.name || task.text || 'Tarea sin titulo'}</div>
-                <div class="task-subtext">
-                    ${task.area ? `<span class="task-tag">${task.area}</span>` : ''} 
-                    ${(task.date || task.dueDate || task.fecha) ? `<span class="task-date-text">${task.date || task.dueDate || task.fecha}</span>` : ''}
+                <div class="task-title">${task.name || task.text || 'Tarea sin título'}</div>
+                <div style="font-size: 10px; color: red;">
+                    DEBUG: date='${task.date}' | dueDate='${task.dueDate}' | fecha='${task.fecha}'
                 </div>
             </div>
             <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
-                ${task.completed ? 'X' : ''}
+                ${task.completed ? '✓' : ''}
             </button>
         </div>
     `).join('');
