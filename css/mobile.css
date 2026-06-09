@@ -3,11 +3,23 @@
 /* ========================================== */
 
 :root {
-    --bg-main: #0f172a;
-    --bg-card: #1e293b;
-    --text-main: #f8fafc;
-    --text-sec: #94a3b8;
-    --accent: #11caa0;
+    /* Paleta idéntica al Tailwind de Escritorio */
+    --bg-main: #122028; /* navy-800 */
+    --bg-secondary: #1D313C; /* navy-700 */
+    --text-main: #FDFDFD; /* navy-50 */
+    --text-sec: #8A9DB5; /* navy-300 */
+    --accent: #F6723A; /* brand-500 */
+    --border-color: #324252; /* navy-600 */
+}
+
+body, html {
+    background-color: var(--bg-main) !important;
+    color: var(--text-main) !important;
+    margin: 0;
+    padding: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    height: 100vh;
+    overflow: hidden; /* Previene scroll global, el scroll va en la lista */
 }
 
 /* Blindaje: Eliminamos márgenes globales y forzamos layout */
