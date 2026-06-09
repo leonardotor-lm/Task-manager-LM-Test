@@ -27,6 +27,21 @@ window.renderTasks = function() {
     const container = document.getElementById('mobileTaskList');
     if (!container) return;
 
+    // Renderizado dinámico de Cabecera independiente
+    const headerContainer = document.getElementById('mobile-header-dynamic');
+    if (headerContainer) {
+        const titulosVistas = { 'today': 'Hoy y atrasadas', 'tomorrow': 'Mañana', 'week': 'Esta semana', 'all': 'Todas las tareas' };
+        const vistaActual = window.currentState?.view || 'today';
+        const tituloMostrado = titulosVistas[vistaActual] || vistaActual;
+        const fechaTexto = new Date().toLocaleDateString('es-AR', { weekday: 'long', day: 'numeric', month: 'long' }).toUpperCase();
+        
+        headerContainer.innerHTML = `
+            <div style="padding: 24px 16px 16px 16px; background: var(--bg-main);">
+                <h1 style="font-size: 28px; font-weight: 700; margin: 0 0 4px 0; color: var(--text-main);">${tituloMostrado}</h1>
+                <p style="font-size: 10px; font-weight: 700; color: #4ade80; margin: 0; letter-spacing: 1px;">${fechaTexto}</p>
+            </div>
+        `;
+    }
     let todasLasTareas = obtenerTareasGlobales();
     let tareasAProcesar = todasLasTareas;
 
