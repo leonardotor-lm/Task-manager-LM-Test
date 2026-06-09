@@ -42,13 +42,19 @@ window.renderTasks = function() {
             </div>
         `;
     }
-    let todasLasTareas = obtenerTareasGlobales();
-    let tareasAProcesar = todasLasTareas;
 
-    ultimoLargoTareas = todasLasTareas.length;
+    let todasLasTareas = obtenerTareasGlobales();
+    
+    // FILTRO GLOBAL DE SEGURIDAD: Esto descarta basura y completadas de una vez
+    // Ahora, cualquier filtro posterior operará sobre tareas "limpias"
+    let todasLasTareasActivas = todasLasTareas.filter(t => !t.isDeleted && !t.completed && t.status !== 'completed');
+
+    let tareasAProcesar = todasLasTareasActivas;
+    ultimoLargoTareas = todasLasTareasActivas.length;
 
     if (window.currentState && window.currentState.area) {
-        tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
+        // Filtrar solo por área sobre el conjunto ya limpio
+        tareasAProcesar = todasLasTareasActivas.filter(t => t.area === window.currentState.area);
     } else {
         const vista = window.currentState?.view || 'all';
         
@@ -65,31 +71,19 @@ window.renderTasks = function() {
             semana.setDate(semana.getDate() + 7);
             const semanaStr = semana.toISOString().split('T')[0];
 
-            tareasAProcesar = todasLasTareas.filter(t => {
-                // MURO DE ESTADOS: Ignorar papelera y completadas (criterio de PC)
-                if (t.isDeleted) return false;
-                if (t.completed || t.status === 'completed') return false;
-                
+            tareasAProcesar = todasLasTareasActivas.filter(t => {
                 const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
-                
                 if (!fecha || typeof fecha !== 'string' || fecha.trim() === '') return false;
 
-                if (vista === 'today') {
-                    return fecha <= hoyStr;
-                }
-                if (vista === 'tomorrow') {
-                    return fecha === mananaStr;
-                }
-                if (vista === 'week') {
-                    return fecha >= hoyStr && fecha <= semanaStr;
-                }
+                if (vista === 'today') return fecha <= hoyStr;
+                if (vista === 'tomorrow') return fecha === mananaStr;
+                if (vista === 'week') return fecha >= hoyStr && fecha <= semanaStr;
                 return true;
             });
         }
     }
     
-    if (!tareasAProcesar || tareasAProcesar.length === 0) {
-        container.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-secondary);">No hay tareas para esta vista.</div>';
+    container.innerHTML = '<div style="padding:30px; text-align:center; color:var(--text-secondary);">No hay tareas para esta vista.</div>';
         return;
     }
 
