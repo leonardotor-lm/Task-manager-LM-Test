@@ -1,231 +1,68 @@
 /* ========================================== */
-/* HOJA DE ESTILOS MÓVIL AISLADA (ANTI-LEAK)   */
+/* DISEÑO MÓVIL (SANEADO - ESPECIFICIDAD TOTAL) */
 /* ========================================== */
 
 :root {
-    --bg-main: #0f172a !important;
-    --bg-secondary: #1e293b !important;
-    --text-main: #f8fafc !important;
-    --text-secondary: #94a3b8 !important;
-    --border-color: #334155 !important;
-    --accent-color: #11caa0 !important;
+    --bg-main: #0f172a;
+    --bg-card: #1e293b;
+    --text-main: #f8fafc;
+    --text-sec: #94a3b8;
+    --accent: #11caa0;
 }
 
-body.light-theme {
-    --bg-main: #f8fafc !important;
-    --bg-secondary: #ffffff !important;
-    --text-main: #0f172a !important;
-    --text-secondary: #64748b !important;
-    --border-color: #e2e8f0 !important;
-    --accent-color: #0d9488 !important;
-}
-
-/* Forzamos un reseteo espacial absoluto en el entorno móvil */
-#mobile-root, #mobile-root * {
-    box-sizing: border-box !important;
+/* Blindaje: Eliminamos márgenes globales y forzamos layout */
+#mobile-root, body {
     margin: 0 !important;
     padding: 0 !important;
+    background-color: var(--bg-main) !important;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif !important;
 }
 
-#mobile-root {
-    background-color: var(--bg-main) !important;
-    color: var(--text-main) !important;
+/* Estructura de la lista */
+#mobileTaskList {
+    padding: 16px !important;
     display: flex !important;
     flex-direction: column !important;
-    width: 100vw !important;
-    height: 100vh !important;
-    position: fixed !important; /* Evita desplazamientos elásticos del navegador */
-    top: 0 !important;
-    left: 0 !important;
-}
-
-/* --- CABECERA --- */
-.mobile-header {
-    display: flex !important;
     gap: 12px !important;
-    padding: 14px !important;
-    background-color: var(--bg-main) !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    width: 100% !important;
 }
 
-.mobile-header input {
-    flex: 1 !important;
-    padding: 12px !important;
-    border-radius: 8px !important;
-    border: 1px solid var(--border-color) !important;
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-main) !important;
-    font-size: 16px !important;
-}
-
-.mobile-header button {
-    background-color: var(--accent-color) !important;
-    color: #0f172a !important;
-    border: none !important;
-    border-radius: 8px !important;
-    width: 46px !important;
-    font-size: 22px !important;
-    font-weight: bold !important;
-    cursor: pointer !important;
-}
-
-/* --- ÁREA CENTRAL DE DESPLAZAMIENTO --- */
-.task-list {
-    flex: 1 !important;
-    overflow-y: auto !important;
-    padding: 14px !important;
-    padding-bottom: 90px !important; /* Espacio de resguardo para no solapar la barra baja */
-}
-
+/* Tarjetas */
 .task-card {
-    background-color: var(--bg-secondary) !important;
-    border: 1px solid var(--border-color) !important;
-    border-radius: 10px !important;
-    padding: 14px !important;
-    margin-bottom: 10px !important; /* Control estricto de la separación entre tarjetas */
+    background-color: var(--bg-card) !important;
+    border: 1px solid #334155 !important;
+    border-radius: 8px !important;
+    padding: 12px !important;
     display: flex !important;
     align-items: center !important;
     justify-content: space-between !important;
-    gap: 12px !important;
-}
-
-.task-card.completed {
-    opacity: 0.4 !important;
-}
-
-.task-content {
-    flex: 1 !important;
-    min-width: 0 !important;
 }
 
 .task-title {
-    font-size: 15px !important;
-    font-weight: 500 !important;
     color: var(--text-main) !important;
-    line-height: 1.4 !important;
+    font-size: 15px !important;
 }
 
 .task-card.completed .task-title {
     text-decoration: line-through !important;
+    opacity: 0.5 !important;
 }
 
 .task-subtext {
-    display: flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    margin-top: 6px !important;
-}
-
-.task-tag {
-    background-color: var(--bg-main) !important;
-    border: 1px solid var(--border-color) !important;
-    color: var(--text-secondary) !important;
-    padding: 2px 6px !important;
-    border-radius: 4px !important;
     font-size: 11px !important;
+    color: var(--text-sec) !important;
+    margin-top: 4px !important;
 }
 
-.task-date-text {
-    font-size: 11px !important;
-    color: var(--text-secondary) !important;
-}
-
+/* Botón de acción */
 .btn-check {
-    width: 26px !important;
-    height: 26px !important;
+    width: 24px !important;
+    height: 24px !important;
     border-radius: 50% !important;
-    border: 2px solid var(--text-secondary) !important;
+    border: 1px solid var(--text-sec) !important;
     background: transparent !important;
-    color: var(--text-main) !important;
-    font-size: 12px !important;
+    color: var(--accent) !important;
+    cursor: pointer !important;
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
-    flex-shrink: 0 !important;
-    cursor: pointer !important;
-}
-
-.task-card.completed .btn-check {
-    background-color: var(--accent-color) !important;
-    border-color: var(--accent-color) !important;
-    color: #0f172a !important;
-}
-
-/* --- BARRA INFERIOR --- */
-.bottom-nav {
-    position: absolute !important;
-    bottom: 0 !important;
-    left: 0 !important;
-    width: 100% !important;
-    background-color: var(--bg-main) !important;
-    border-top: 1px solid var(--border-color) !important;
-    display: flex !important;
-    justify-content: space-around !important;
-    padding: 12px 0 20px 0 !important;
-}
-
-.nav-btn {
-    background: transparent !important;
-    border: none !important;
-    color: var(--text-secondary) !important;
-    font-size: 13px !important;
-    font-weight: 500 !important;
-    cursor: pointer !important;
-}
-
-/* --- MENÚ MODAL INTERNO --- */
-.modal-fullscreen {
-    position: absolute !important;
-    top: 0 !important; left: 0 !important; width: 100% !important; height: 100% !important;
-    background-color: var(--bg-main) !important;
-    z-index: 2000 !important;
-    display: flex !important;
-    flex-direction: column !important;
-}
-
-.modal-fullscreen.hidden {
-    display: none !important;
-}
-
-.modal-header {
-    display: flex !important;
-    justify-content: space-between !important;
-    align-items: center !important;
-    padding: 16px !important;
-    border-bottom: 1px solid var(--border-color) !important;
-}
-
-.modal-content {
-    padding: 16px !important;
-    overflow-y: auto !important;
-}
-
-.menu-section-title {
-    color: var(--accent-color) !important;
-    font-size: 13px !important;
-    text-transform: uppercase !important;
-    margin-bottom: 8px !important;
-    border-bottom: 1px solid var(--border-color) !important;
-    padding-bottom: 4px !important;
-}
-
-.btn-menu-option {
-    background-color: var(--bg-secondary) !important;
-    color: var(--text-main) !important;
-    border: 1px solid var(--border-color) !important;
-    padding: 14px !important;
-    border-radius: 6px !important;
-    font-size: 15px !important;
-    text-align: left !important;
-    width: 100% !important;
-    margin-bottom: 8px !important;
-    cursor: pointer !important;
-}
-
-.no-tasks-notice {
-    padding: 30px !important;
-    text-align: center !important;
-    color: var(--text-secondary) !important;
-    font-size: 14px !important;
 }
