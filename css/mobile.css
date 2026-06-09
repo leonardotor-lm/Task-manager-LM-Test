@@ -379,3 +379,29 @@ container.innerHTML = tareasAProcesar.map(task => {
     width: 100% !important;
     pointer-events: auto !important;
 }
+/* --- ADAPTACIÓN MÓVIL DEL MODAL DE EDICIÓN --- */
+#editModal {
+    background-color: var(--bg-main) !important;
+    padding: 0 !important;
+    align-items: flex-start !important; /* Alinea al tope de la pantalla */
+}
+
+#editModal > div {
+    max-width: 100% !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    max-height: 100vh !important;
+    border: none !important;
+    border-radius: 0 !important;
+    background-color: var(--bg-main) !important;
+}
+
+/* Ajustes tipográficos para legibilidad táctil */
+#editModal input, 
+#editModal select, 
+#editModal textarea {
+    font-size: 16px !important; /* Previene el zoom automático en iOS/Android */
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-main) !important;
+    border-color: var(--border-color) !important;
+}
