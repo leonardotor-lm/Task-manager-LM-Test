@@ -32,52 +32,24 @@ window.renderTasks = function() {
 
     ultimoLargoTareas = todasLasTareas.length;
 
-    // 1. FILTRADO POR ÁREAS
     if (window.currentState && window.currentState.area) {
         tareasAProcesar = todasLasTareas.filter(t => t.area === window.currentState.area);
-    } 
-    // 2. FILTRADO TEMPORAL CON LÍMITE INFERIOR SANITARIO
-    else {
-        const vista = window.currentState?.view || 'all';
+    } else {
+        const vista = window.currentState?.view || 'today';
         
+        // Obtenemos el string de hoy en formato YYYY-MM-DD
+        const hoyStr = new Date().toISOString().split('T')[0];
+
         if (vista !== 'all') {
-            const hoy = new Date();
-            hoy.setMinutes(hoy.getMinutes() - hoy.getTimezoneOffset());
-            const hoyStr = hoy.toISOString().split('T')[0];
-
-            let manana = new Date(hoy);
-            manana.setDate(manana.getDate() + 1);
-            const mananaStr = manana.toISOString().split('T')[0];
-
-            let semana = new Date(hoy);
-            semana.setDate(semana.getDate() + 7);
-            const semanaStr = semana.toISOString().split('T')[0];
-
             tareasAProcesar = todasLasTareas.filter(t => {
                 if (t.completed) return false;
                 
-                const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
+                // Usamos directamente t.date, que sabemos que existe
+                const fecha = t.date;
+                if (!fecha) return false; // Si no hay fecha, no entra en filtros temporales
 
-                // Validación de que la fecha sea un string utilizable y no un espacio
-                const tieneFechaValida = fecha && fecha.trim() !== '' && !fecha.includes('0000');
-
-                if (vista === 'today') {
-                    // FILTRO DE HIELO: Si no hay fecha, NO entra en la vista Hoy.
-                    // Si hay fecha, DEBE ser hoy o anterior, y mayor a 2025.
-                    const fecha = t.date || t.dueDate || t.fecha || t.fechaVencimiento;
-                    
-                    if (!fecha) return false; 
-                    
-                    const tiempoTarea = new Date(fecha).getTime();
-                    const tiempoHoy = new Date(hoyStr).getTime();
-                    
-                    return !isNaN(tiempoTarea) && tiempoTarea <= tiempoHoy && tiempoTarea >= new Date("2025-01-01").getTime();
-                }                if (vista === 'tomorrow') {
-                    return tieneFechaValida && fecha === mananaStr;
-                }
-                if (vista === 'week') {
-                    return tieneFechaValida && fecha >= hoyStr && fecha <= semanaStr;
-                }
+                if (vista === 'today') return fecha <= hoyStr;
+                if (vista === 'tomorrow') return fecha > hoyStr; // Filtro simple para simplificar
                 return true;
             });
         }
@@ -88,6 +60,21 @@ window.renderTasks = function() {
         return;
     }
 
+    container.innerHTML = tareasAProcesar.map(task => `
+        <div class="task-card ${task.completed ? 'completed' : ''}">
+            <div class="task-content">
+                <div class="task-title">${task.name || task.text || 'Tarea sin título'}</div>
+                <div class="task-subtext">
+                    ${task.area ? `<span class="task-tag">${task.area}</span>` : ''} 
+                    <span class="task-date-text">📅 ${task.date}</span>
+                </div>
+            </div>
+            <button class="btn-check" onclick="window.toggleMobileTask('${task.id}')">
+                ${task.completed ? '✓' : ''}
+            </button>
+        </div>
+    `).join('');
+};
     container.innerHTML = tareasAProcesar.map(task => `
         <div class="task-card ${task.completed ? 'completed' : ''}">
             <div class="task-content">
