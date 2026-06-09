@@ -173,3 +173,76 @@ container.innerHTML = tareasAProcesar.map(task => {
         </div>
         `;
     }).join('');
+
+    /* --- BARRA INFERIOR DE NAVEGACIÓN Y ENTRADA --- */
+.mobile-bottom-bar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background-color: var(--bg-main);
+    border-top: 1px solid var(--border-color);
+    padding: 12px 16px;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    z-index: 50;
+}
+
+.mobile-input-wrapper {
+    display: flex;
+    gap: 8px;
+    width: 100%;
+}
+
+.mobile-input {
+    flex: 1;
+    background-color: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    color: var(--text-main);
+    border-radius: 6px;
+    padding: 12px;
+    font-size: 15px;
+    outline: none;
+}
+
+.mobile-input::placeholder {
+    color: var(--text-sec);
+}
+
+.mobile-add-btn {
+    background-color: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    width: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+.mobile-nav-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 4px;
+}
+
+.nav-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-sec);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    cursor: pointer;
+}
+
+#mobileTaskList {
+    padding-bottom: 120px !important; /* Espacio para que la barra inferior no tape tareas */
+    height: calc(100vh - 160px); /* Ajuste dinámico */
+    overflow-y: auto;
+}
