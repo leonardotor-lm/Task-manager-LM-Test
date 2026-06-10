@@ -383,29 +383,7 @@ function buildTaskRows(nodes, path = []) {
         const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-20 md:pl-22');
         const isCompleted = task.status === 'completed';
         const isOverdue = task.date && task.date < todayStr && !isCompleted;
-    // Dentro del .map() o del bucle de buildTaskRows en ui.js:
 
-let accionesHTML = '';
-
-if (task.isDeleted) {
-    // Modo Papelera: Controles de purga y restauración
-    accionesHTML = `
-        <div class="flex items-center space-x-2">
-            <button onclick="restoreTask('${task.id}', event)" class="px-2 py-1 bg-navy-700 text-info-500 rounded text-xs font-bold hover:bg-navy-600 transition-colors">
-                Restaurar
-            </button>
-            <button onclick="deleteTaskPermanently('${task.id}', event)" class="px-2 py-1 bg-danger-600 text-navy-50 rounded text-xs font-bold hover:bg-danger-500 transition-colors">
-                Destruir
-            </button>
-        </div>
-    `;
-} else {
-    // Modo Normal: Tus botones existentes (completar, editar, borrar lógicamente)
-    accionesHTML = `
-        `;
-}
-
-// Y luego inyectás la variable ${accionesHTML} en la celda derecha de tu fila de tarea.
 
         // El indicador de "Sin fecha" se muestra en un tono grisáceo neutro (text-navy-400)
     let dateDisplayHTML = `<span class="text-navy-400 text-[11px] font-semibold flex items-center gap-1.5 tracking-wide"><span class="w-2.5 h-[1.5px] bg-navy-400 inline-block"></span> Sin fecha</span>`;
@@ -460,31 +438,18 @@ if (task.isDeleted) {
         if (isTrash) { actionButtonsHtml = `<div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-full pr-3 bg-gradient-to-l from-navy-800/0 via-navy-800 to-transparent pl-6"><button onclick="event.stopPropagation(); restoreTask(${task.id})" title="Restaurar" class="p-1 text-emerald-500 hover:text-emerald-400 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg></button><button onclick="event.stopPropagation(); hardDeleteTask(${task.id})" title="Eliminar definitivamente" class="p-1 text-danger-500 hover:text-danger-400 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button></div>`; } 
         
         else if (!isBulkMode) {
-            let statusActionHtml = ''; if (isInProgress) statusActionHtml = `<button onclick="event.stopPropagation(); setTaskStatus(${task.id}, 'pending')" title="En progreso" class="p-1 text-info-500 hover:text-navy-50 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>`; else if (!isCompleted) statusActionHtml = `<button onclick="event.stopPropagation(); setTaskStatus(${task.id}, 'in_progress')" title="Marcar en progreso" class="p-1 text-navy-400 hover:text-info-500 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>`;
+            let statusActionHtml = ''; if (isInProgress) statusActionHtml = `<button onclick="event.stopPropagation(); setTaskStatus(${task.id}, 'pending')" title="Pausar" class="p-1 text-info-500 hover:text-navy-50 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>`; else if (!isCompleted) statusActionHtml = `<button onclick="event.stopPropagation(); setTaskStatus(${task.id}, 'in_progress')" title="Marcar en progreso" class="p-1 text-navy-400 hover:text-info-500 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>`;
             
-        // Bifurcación del menú flotante individual según el estado de la tarea
-let actionButtonsHtml = '';
+            // Se inyecta el botón de Añadir Subtarea justo antes del botón de Posponer
+            actionButtonsHtml = `<div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-full pr-3 bg-gradient-to-l from-navy-800/0 via-navy-800 to-transparent pl-6">
+                ${statusActionHtml}
+                <button onclick="quickAddSubtask(${task.id}, event)" title="Añadir subtarea rápida" class="p-1 text-brand-500 hover:text-brand-400 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg></button>
+                <button onclick="openPostponeModal(${task.id}, event)" title="Posponer" class="p-1 text-navy-400 hover:text-brand-500 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
+                <button onclick="event.stopPropagation(); openEditModal(${task.id})" title="Editar" class="p-1 text-navy-400 hover:text-navy-50 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
+                <button onclick="event.stopPropagation(); deleteTaskUniversal(${task.id})" title="Eliminar" class="p-1 text-navy-500 hover:text-danger-500 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
+            </div>`.replace(/\n\s+/g, ''); // Se comprime para evitar rupturas de línea en el template literal
+        }
 
-if (task.isDeleted) {
-    // MENÚ MODO PAPELERA: Botones explícitos de texto para acciones críticas
-    actionButtonsHtml = `<div class="flex items-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-full pr-3 bg-gradient-to-l from-navy-800/0 via-navy-800 to-transparent pl-6">
-        <button onclick="event.stopPropagation(); window.restaurarTarea(${task.id})" title="Devolver a tareas pendientes" class="px-2 py-0.5 text-info-500 bg-navy-700 hover:bg-navy-600 rounded text-[10px] font-bold uppercase tracking-wider transition-all focus:outline-none">
-            Restaurar
-        </button>
-        <button onclick="event.stopPropagation(); window.destruirTarea(${task.id})" title="Eliminar definitivamente" class="px-2 py-0.5 text-navy-50 bg-danger-600 hover:bg-danger-500 rounded text-[10px] font-bold uppercase tracking-wider transition-all focus:outline-none">
-            Destruir
-        </button>
-    </div>`.replace(/\n\s+/g, '');
-} else {
-    // MENÚ MODO NORMAL: Tus botones operativos originales intactos
-    actionButtonsHtml = `<div class="flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity absolute right-full pr-3 bg-gradient-to-l from-navy-800/0 via-navy-800 to-transparent pl-6">
-        ${statusActionHtml}
-        <button onclick="quickAddSubtask(${task.id}, event)" title="Añadir subtarea rápida" class="p-1 text-brand-500 hover:text-brand-400 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg></button>
-        <button onclick="openPostponeModal(${task.id}, event)" title="Posponer" class="p-1 text-navy-400 hover:text-brand-500 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg></button>
-        <button onclick="event.stopPropagation(); openEditModal(${task.id})" title="Editar" class="p-1 text-navy-400 hover:text-navy-50 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg></button>
-        <button onclick="event.stopPropagation(); deleteTaskUniversal(${task.id})" title="Eliminar" class="p-1 text-navy-500 hover:text-danger-500 rounded hover:bg-navy-700 transition-all focus:outline-none"><svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg></button>
-    </div>`.replace(/\n\s+/g, '');
-}
         return `
             <div class="task-item" data-id="${task.id}">
                 <div class="group flex flex-col py-1.5 pr-4 border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
