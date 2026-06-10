@@ -1231,3 +1231,35 @@ window.navigate = function(view, areaName = null, pushHistory = true, focusId = 
     // Invocamos updateUI (que está más arriba en app.js) para pintar la estructura
     if (typeof updateUI === 'function') updateUI(); 
 };
+// --- MOTOR DE PAPELERA: RESTAURACIÓN Y DESTRUCCIÓN ---
+
+window.restaurarTarea = async function(id) {
+    if (!id) return;
+    
+    // Busca la tarea en la memoria y le quita la marca de eliminada
+    findAndMutateTask(id, (nodes, i) => {
+        nodes[i].isDeleted = false;
+    });
+    
+    // Refresca la pantalla y guarda en la base de datos
+    if (typeof renderTasks === 'function') renderTasks();
+    if (typeof saveData === 'function') await saveData();
+    if (typeof showNotice === 'function') showNotice("Tarea restaurada a pendientes.");
+};
+
+window.destruirTarea = async function(id) {
+    if (!id) return;
+    
+    // Barrera de seguridad con la advertencia solicitada
+    const confirmacion = confirm("¿Estás seguro? La o las tareas serán eliminadas de forma permanente de la base de datos.");
+    if (!confirmacion) return;
+    
+    // Busca la tarea y la extrae quirúrgicamente del array de datos
+    findAndMutateTask(id, (nodes, i) => {
+        nodes.splice(i, 1); 
+    });
+
+    if (typeof renderTasks === 'function') renderTasks();
+    if (typeof saveData === 'function') await saveData();
+    if (typeof showNotice === 'function') showNotice("Registro destruido definitivamente.");
+};
