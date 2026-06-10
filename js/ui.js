@@ -148,8 +148,7 @@ window.showSyncStatus = showSyncStatus;
 window.showConfirm = showConfirm;
 window.closeConfirmModal = closeConfirmModal;
 function openAddTaskModal() { 
-    document.getElementById('taskInput').value = ''; 
-    
+document.getElementById('areaInput').value = (window.currentState && window.currentState.selectedArea) ? window.currentState.selectedArea : 'Inbox';    
     // 1. ASIGNACIÓN DINÁMICA DE FECHA (Corregida para zona horaria local)
     const dateInput = document.getElementById('dateInput');
     if (currentState && currentState.view === 'today') {
