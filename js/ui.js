@@ -383,7 +383,29 @@ function buildTaskRows(nodes, path = []) {
         const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-20 md:pl-22');
         const isCompleted = task.status === 'completed';
         const isOverdue = task.date && task.date < todayStr && !isCompleted;
+    // Dentro del .map() o del bucle de buildTaskRows en ui.js:
 
+let accionesHTML = '';
+
+if (task.isDeleted) {
+    // Modo Papelera: Controles de purga y restauración
+    accionesHTML = `
+        <div class="flex items-center space-x-2">
+            <button onclick="restoreTask('${task.id}', event)" class="px-2 py-1 bg-navy-700 text-info-500 rounded text-xs font-bold hover:bg-navy-600 transition-colors">
+                Restaurar
+            </button>
+            <button onclick="deleteTaskPermanently('${task.id}', event)" class="px-2 py-1 bg-danger-600 text-navy-50 rounded text-xs font-bold hover:bg-danger-500 transition-colors">
+                Destruir
+            </button>
+        </div>
+    `;
+} else {
+    // Modo Normal: Tus botones existentes (completar, editar, borrar lógicamente)
+    accionesHTML = `
+        `;
+}
+
+// Y luego inyectás la variable ${accionesHTML} en la celda derecha de tu fila de tarea.
 
         // El indicador de "Sin fecha" se muestra en un tono grisáceo neutro (text-navy-400)
     let dateDisplayHTML = `<span class="text-navy-400 text-[11px] font-semibold flex items-center gap-1.5 tracking-wide"><span class="w-2.5 h-[1.5px] bg-navy-400 inline-block"></span> Sin fecha</span>`;
