@@ -58,39 +58,6 @@ window.onload = async () => {
         await saveData();
     }
 
-// Algoritmo de Restauración
-window.restoreTask = async function(id, event) {
-    if (event) event.stopPropagation();
-    
-    // Mutamos el estado booleano para devolver la tarea al circuito activo
-    findAndMutateTask(id, (nodes, i) => {
-        nodes[i].isDeleted = false;
-        // Opcional: si la tarea estaba completada al borrarse, podés forzar su estado a 'pending' aquí.
-    });
-    
-    if (typeof showNotice === 'function') showNotice("Tarea restablecida a su área original.");
-    if (typeof renderTasks === 'function') renderTasks();
-    if (typeof saveData === 'function') await saveData();
-};
-
-// Algoritmo de Destrucción Definitiva
-window.deleteTaskPermanently = async function(id, event) {
-    if (event) event.stopPropagation();
-    
-    // Validación de seguridad ineludible ante pérdida de datos
-    const confirmacion = confirm("Atención: Esta acción eliminará el registro de la base de datos de forma irreversible, incluyendo todas sus subtareas. ¿Proceder?");
-    if (!confirmacion) return;
-
-    findAndMutateTask(id, (nodes, i) => {
-        // La directiva splice extrae quirúrgicamente el nodo del array
-        nodes.splice(i, 1); 
-    });
-
-    if (typeof showNotice === 'function') showNotice("Registro destruido definitivamente.");
-    if (typeof renderTasks === 'function') renderTasks();
-    if (typeof saveData === 'function') await saveData();
-};
-
    // 1. Definición en memoria PRIMERO
 window.currentState = { view: 'area', selectedArea: 'Inbox' };    window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
     
