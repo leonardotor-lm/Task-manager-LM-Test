@@ -1,13 +1,14 @@
 /** MÓDULO DE INTERFAZ (ui.js) */
-
 function getAddTaskFormData() {
     const parentIdRaw = document.getElementById('parentInput').value;
+    const rawDate = document.getElementById('dateInput').value;
+
     return {
         name: document.getElementById('taskInput').value.trim(),
         area: document.getElementById('areaInput').value,
         context: document.getElementById('contextInput').value,
         priority: document.getElementById('priorityInput').value,
-        dateInput: document.getElementById('dateInput').value,
+        dateInput: rawDate ? rawDate : "",
         timeInput: document.getElementById('timeInput').value,
         notes: document.getElementById('notesInput').value.trim(),
         reminder: document.getElementById('reminderToggle').checked,
@@ -16,6 +17,7 @@ function getAddTaskFormData() {
     };
 }
 window.getAddTaskFormData = getAddTaskFormData;
+
 function getEditTaskFormData() {
     const newParentIdRaw = document.getElementById('editParentInput').value;
     return {
