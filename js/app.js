@@ -59,8 +59,7 @@ window.onload = async () => {
     }
 
    // 1. Definición en memoria PRIMERO
-    window.currentState = { view: 'today' }; 
-    window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+window.currentState = { view: 'area', selectedArea: 'Inbox' };    window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
     
     // 2. Despliegue visual DESPUÉS
     refreshAllDropdowns();
