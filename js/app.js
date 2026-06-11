@@ -1250,11 +1250,15 @@ window.restaurarTarea = async function(id) {
 window.destruirTarea = async function(id) {
     if (!id) return;
     
-    // Barrera de seguridad con la advertencia solicitada
-    const confirmacion = confirm("¿Estás seguro? La o las tareas serán eliminadas de forma permanente de la base de datos.");
-    if (!confirmacion) return;
+    // Invocamos a tu modal estético y esperamos el clic (await)
+    const confirmacion = await window.pedirConfirmacionVisual(
+        "Destruir registro",
+        "¿Estás seguro? La o las tareas serán eliminadas de forma permanente de la base de datos."
+    );
     
-    // Busca la tarea y la extrae quirúrgicamente del array de datos
+    if (!confirmacion) return; // Si hace clic en Cancelar, el código muere aquí.
+    
+    // Si hace clic en Confirmar, ejecutamos la purga
     findAndMutateTask(id, (nodes, i) => {
         nodes.splice(i, 1); 
     });
