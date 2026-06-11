@@ -1293,8 +1293,19 @@ window.pedirConfirmacionVisual = function(titulo, mensaje) {
 // Esta es la función que tus botones de HTML ya están llamando en el onclick
 window.closeConfirmModal = function(resultado) {
     document.getElementById('confirmModal').classList.add('hidden');
+    
+    // 1. VÍA ORIGINAL: Ejecuta el envío a la papelera (Bulk Edition y Tareas complejas)
+    if (resultado && typeof confirmCallback === 'function') {
+        confirmCallback();
+    }
+    // Limpieza de memoria de la vía original
+    if (typeof confirmCallback !== 'undefined') {
+        confirmCallback = null;
+    }
+    
+    // 2. VÍA NUEVA: Ejecuta la destrucción definitiva de la papelera
     if (window.resolveConfirmacion) {
-        window.resolveConfirmacion(resultado); // Devuelve true o false al motor
+        window.resolveConfirmacion(resultado); 
         window.resolveConfirmacion = null;
     }
 };
