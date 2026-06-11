@@ -1263,3 +1263,34 @@ window.destruirTarea = async function(id) {
     if (typeof saveData === 'function') await saveData();
     if (typeof showNotice === 'function') showNotice("Registro destruido definitivamente.");
 };
+
+// --- CONTROLADOR DE CONFIRMACIÓN VISUAL ---
+window.resolveConfirmacion = null;
+
+window.pedirConfirmacionVisual = function(titulo, mensaje) {
+    return new Promise((resolve) => {
+        // 1. Inyectamos los textos en tu diseño
+        document.getElementById('confirmModalTitle').innerText = titulo;
+        document.getElementById('confirmModalMessage').innerText = mensaje;
+        
+        // 2. Modificamos el botón de acción para que luzca destructivo (rojo)
+        const btnConfirmar = document.getElementById('confirmModalBtnAction');
+        btnConfirmar.className = "w-1/2 bg-danger-600 text-navy-50 py-3 rounded-md text-sm font-semibold hover:bg-danger-500 transition-colors focus:outline-none";
+        btnConfirmar.innerText = "Destruir definitivamente";
+
+        // 3. Hacemos visible el modal
+        document.getElementById('confirmModal').classList.remove('hidden');
+        
+        // 4. Guardamos la llave de la promesa en memoria
+        window.resolveConfirmacion = resolve;
+    });
+};
+
+// Esta es la función que tus botones de HTML ya están llamando en el onclick
+window.closeConfirmModal = function(resultado) {
+    document.getElementById('confirmModal').classList.add('hidden');
+    if (window.resolveConfirmacion) {
+        window.resolveConfirmacion(resultado); // Devuelve true o false al motor
+        window.resolveConfirmacion = null;
+    }
+};
