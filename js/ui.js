@@ -161,14 +161,14 @@ window.showNotice = showNotice;
 window.showSyncStatus = showSyncStatus;
 window.showConfirm = showConfirm;
 window.closeConfirmModal = closeConfirmModal;
+
 function openAddTaskModal() { 
-document.getElementById('areaInput').value = (window.currentState && window.currentState.selectedArea) ? window.currentState.selectedArea : 'Inbox';    
     // 1. ASIGNACIÓN DINÁMICA DE FECHA (Corregida para zona horaria local)
     const dateInput = document.getElementById('dateInput');
-    if (currentState && currentState.view === 'today') {
+    if (window.currentState && window.currentState.view === 'today') {
         const today = new Date();
         dateInput.value = today.getFullYear() + '-' + String(today.getMonth() + 1).padStart(2, '0') + '-' + String(today.getDate()).padStart(2, '0');
-    } else if (currentState && currentState.view === 'tomorrow') {
+    } else if (window.currentState && window.currentState.view === 'tomorrow') {
         const tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         dateInput.value = tomorrow.getFullYear() + '-' + String(tomorrow.getMonth() + 1).padStart(2, '0') + '-' + String(tomorrow.getDate()).padStart(2, '0');
@@ -176,28 +176,35 @@ document.getElementById('areaInput').value = (window.currentState && window.curr
         dateInput.value = ''; 
     }
 
+    // ==========================================
+    // LIMPIEZA ESTRICTA DE DATOS RESIDUALES
+    // ==========================================
+    document.getElementById('taskInput').value = ''; // Corrección vital: Vaciado del título
     document.getElementById('timeInput').value = ''; 
     document.getElementById('notesInput').value = ''; 
     document.getElementById('priorityInput').value = 'baja';
-    
-    // 2. ASIGNACIÓN DINÁMICA DE ÁREA
-    const fallbackArea = customAreas.includes('Inbox') ? 'Inbox' : (customAreas[0] || '');
-    document.getElementById('areaInput').value = (currentState && currentState.selectedArea) ? currentState.selectedArea : fallbackArea; 
-    
     document.getElementById('contextInput').value = ''; 
     
+    // 2. ASIGNACIÓN DINÁMICA DE ÁREA (Unificada)
+    const fallbackArea = customAreas.includes('Inbox') ? 'Inbox' : (customAreas[0] || '');
+    document.getElementById('areaInput').value = (window.currentState && window.currentState.selectedArea) ? window.currentState.selectedArea : fallbackArea; 
+    
+    // 3. LIMPIEZA DE ADJUNTOS, JERARQUÍAS Y RECURRENCIAS
     currentAttachments = []; 
     renderAttachments('add'); 
     updateAddParentDropdown();
+    const parentInput = document.getElementById('parentInput');
+    if (parentInput) parentInput.value = 'root'; // Evita que una subtarea anterior deje su ID residual
+    
     document.getElementById('addHasRecurrence').checked = false; 
     addSelectedDays = [1]; 
     toggleDay('add', 1); 
     toggleRecurrenceUI('add');
     
-    // 1. Mostrar el modal (removiendo el display: none)
+    // 4. APERTURA VISUAL
     document.getElementById('addTaskModal').classList.remove('hidden'); 
     
-    // 2. CORRECCIÓN ARQUITECTÓNICA: Reseteo de estado con el DOM visible.
+    // 5. RESETEO DE ESTADO CON EL DOM VISIBLE
     const reminderToggle = document.getElementById('reminderToggle');
     if (reminderToggle) {
         reminderToggle.checked = false;
