@@ -264,14 +264,15 @@ function getTaskById(id) { let found = null; function walk(nodes) { for (let n o
 function getUniqueValues(nodes, key) { let vals = new Set(); function walk(ns) { if(!Array.isArray(ns)) return; ns.forEach(n => { if (n.isDeleted) return; if (n[key]) vals.add(n[key]); if(n.subtasks) walk(n.subtasks); }); } walk(nodes); return Array.from(vals); }
 function getAllAreasOrdered() { const uniqueTasksAreas = getUniqueValues(tasks, 'area').filter(Boolean); const orphaned = uniqueTasksAreas.filter(a => !customAreas.includes(a)).sort((a, b) => String(a).localeCompare(String(b))); return [...customAreas.filter(Boolean), ...orphaned]; }
 
-// NAVEGACIÓN Y FOCO
+// NAVEGACIÓN Y FOCO (Blindaje arquitectónico contra ReferenceError)
 function navigate(view, areaName = null, pushHistory = true, focusId = null) { 
-    if (pushHistory) navHistory.push(JSON.parse(JSON.stringify(currentState))); 
+    if (typeof window.navHistory === 'undefined') window.navHistory = [];
+    if (pushHistory) window.navHistory.push(JSON.parse(JSON.stringify(currentState))); 
     currentState.view = view; 
     currentState.selectedArea = areaName; 
     currentState.focusTargetId = focusId; 
-    if (window.innerWidth < 768) toggleSidebar(false); 
-    updateUI(); 
+    if (window.innerWidth < 768 && typeof toggleSidebar === 'function') toggleSidebar(false); 
+    if (typeof updateUI === 'function') updateUI(); 
 }
 function focusTaskTree(id) { 
     navigate('focus', null, true, id); 
