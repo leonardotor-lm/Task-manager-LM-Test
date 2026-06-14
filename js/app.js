@@ -146,6 +146,7 @@ async function addTask() {
         status: 'pending', 
         attachments: [...currentAttachments], 
         subtasks: [], 
+        tags: formData.tags, // <--- AGREGAR ESTA LÍNEA
         recurrenceRule: formData.rule 
     };
     
