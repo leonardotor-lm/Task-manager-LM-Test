@@ -1,9 +1,8 @@
-// --- CARGA INICIAL DE CREDENCIALES ---
-const DB_URL_KEY = 'leo_db_url_key';
-const API_KEY_STORAGE_KEY = 'leo_api_key_storage_key';
-
-let dbUrl = localStorage.getItem(DB_URL_KEY) || '';
-let customApiKey = localStorage.getItem(API_KEY_STORAGE_KEY) || '';
+// --- CONFIGURACIÓN GLOBAL ---
+window.DB_URL_KEY = 'leo_db_url_key';
+window.API_KEY_STORAGE_KEY = 'leo_api_key_storage_key';
+window.dbUrl = localStorage.getItem(window.DB_URL_KEY) || '';
+window.customApiKey = localStorage.getItem(window.API_KEY_STORAGE_KEY) || '';
 
 // INSERCIÓN RÁPIDA DE SUBTAREAS (BLINDAJE GLOBAL)
 async function quickAddSubtask(parentId, event) {
