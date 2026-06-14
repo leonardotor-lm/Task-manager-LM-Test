@@ -125,45 +125,39 @@ function migrateAndNormalizeTasks() {
 
 // LÓGICA DE TAREAS (CREATE / UPDATE / DELETE / COMPLETE)
 async function addTask() { 
-    // 1. UI: Recolectar datos del formulario vía el nuevo helper
-    const formData = getAddTaskFormData();
-    
-    // Validación de negocio
-    if (!formData.name) return; 
-    
-    // 2. Modelo: Construir el objeto de dominio
+    // Captura directa de valores (reemplazamos la llamada al helper por el acceso directo)
+    const name = document.getElementById('taskNameInput').value;
+    if (!name) return; 
+
     const newTask = { 
         id: Date.now(), 
-        name: formData.name, 
-        area: formData.area, 
-        context: formData.context, 
-        priority: formData.priority, 
-        date: formData.dateInput, 
-        startDate: formData.dateInput, 
-        time: formData.timeInput, 
-        notes: formData.notes, 
-        reminder: formData.reminder, 
+        name: name, 
+        area: document.getElementById('areaSelect').value,
+        context: document.getElementById('contextInput').value,
+        priority: document.getElementById('prioritySelect').value,
+        date: document.getElementById('dateInput').value,
+        startDate: document.getElementById('dateInput').value,
+        time: document.getElementById('timeInput').value,
+        notes: document.getElementById('notesInput').value,
+        reminder: document.getElementById('reminderInput').checked,
         status: 'pending', 
         attachments: [...currentAttachments], 
         subtasks: [], 
-        tags: formData.tags, // <--- AGREGAR ESTA LÍNEA
-        recurrenceRule: formData.rule 
+        tags: document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(t => t !== ""), // Captura directa
+        recurrenceRule: (typeof getRecurrenceRuleData === 'function') ? getRecurrenceRuleData() : null
     };
     
-    // Inserción en el Estado
-    if (formData.parentId === 'root') {
+    const parentId = document.getElementById('parentIdInput').value;
+    if (parentId === 'root') {
         tasks.unshift(newTask);
     } else {
-        insertTask(newTask, formData.parentId);
+        insertTask(newTask, parentId);
     }
     
-    // 3. UI: Refrescar interfaz
     closeAddTaskModal(); 
     refreshAllDropdowns(); 
     renderTasks(); 
     showNotice("Tarea guardada"); 
-    
-    // 4. Cloud: Persistir datos
     await saveData(); 
 }
 window.addTask = addTask;
