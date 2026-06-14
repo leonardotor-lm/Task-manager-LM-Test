@@ -62,9 +62,10 @@ if (!Array.isArray(nodeList)) return [];
         if (filters.search !== '') { 
             const sTerm = filters.search.toLowerCase(); 
             const textMatch = (node.name || '').toLowerCase().includes(sTerm) || 
-                              (node.area || '').toLowerCase().includes(sTerm) || 
-                              (node.context || '').toLowerCase().includes(sTerm); 
-            if (!textMatch) matches = false; 
+                  (node.area || '').toLowerCase().includes(sTerm) || 
+                  (node.context || '').toLowerCase().includes(sTerm) ||
+                  (node.tags && node.tags.join(' ').toLowerCase().includes(sTerm)); 
+if (!textMatch) matches = false;
         }
         
         // Filtros cruzados estandarizados
