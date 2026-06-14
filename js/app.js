@@ -92,6 +92,11 @@ function migrateAndNormalizeTasks() {
             if (!n.subtasks) { n.subtasks = []; changed = true; }
             if (n.notes === undefined) { n.notes = ''; changed = true; }
             if (n.attachments === undefined) { n.attachments = []; changed = true; }
+            
+            // --- INYECCIÓN QUIRÚRGICA DE TAGS ---
+            if (n.tags === undefined) { n.tags = []; changed = true; }
+            // ------------------------------------
+            
             if (!n.area || n.area === 'General') { n.area = parentArea || 'Inbox'; changed = true; }
             if (n.context === undefined) { n.context = ''; changed = true; }
             if (n.time === undefined) { n.time = ''; changed = true; }
