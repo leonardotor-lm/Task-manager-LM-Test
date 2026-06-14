@@ -45,6 +45,7 @@ window.onload = async () => {
     updateDateDisplay(); 
     document.getElementById('settingsDbUrlInput').value = dbUrl;
     document.getElementById('settingsApiKeyInput').value = customApiKey;
+    document.getElementById('editTagsInput').value = Array.isArray(task.tags) ? task.tags.join(', ') : '';
     
     let loadedFromCloud = false;
     if (dbUrl) { 
