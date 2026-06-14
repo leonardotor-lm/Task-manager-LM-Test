@@ -61,10 +61,15 @@ if (!Array.isArray(nodeList)) return [];
         // Filtro de búsqueda
         if (filters.search !== '') { 
             const sTerm = filters.search.toLowerCase(); 
-            const textMatch = (node.name || '').toLowerCase().includes(sTerm) || 
+            // Extracción segura de los tags a una cadena de texto
+const tagsText = Array.isArray(node.tags) ? node.tags.join(' ') : '';
+
+// Evaluación integral de búsqueda
+const textMatch = (node.name || '').toLowerCase().includes(sTerm) || 
                   (node.area || '').toLowerCase().includes(sTerm) || 
                   (node.context || '').toLowerCase().includes(sTerm) ||
-                  (node.tags && node.tags.join(' ').toLowerCase().includes(sTerm)); 
+                  tagsText.toLowerCase().includes(sTerm); 
+
 if (!textMatch) matches = false;
         }
         
