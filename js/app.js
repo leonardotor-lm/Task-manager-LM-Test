@@ -451,32 +451,41 @@ if (typeof updateSort === 'undefined') {
     var updateSort = window.updateSort;
 }
 
-// Orquestador de interfaz actualizado
+// Orquestador de interfaz actualizado (Resolución de DOM Gemelo)
 function updateUI() {
-    const btnBack = document.getElementById('btnBack'); if (btnBack && typeof navHistory !== 'undefined' && navHistory.length > 0) btnBack.classList.remove('hidden'); else if (btnBack) btnBack.classList.add('hidden');
-    const titleEl = document.getElementById('view-title');
+    const btnBack = document.getElementById('btnBack'); 
+    if (btnBack && typeof navHistory !== 'undefined' && navHistory.length > 0) btnBack.classList.remove('hidden'); 
+    else if (btnBack) btnBack.classList.add('hidden');
+
+    // 1. SINCRONIZACIÓN DE TÍTULOS GEMELOS
     const titles = { 'today':'Hoy y atrasadas', 'tomorrow':'Mañana', 'week':'Esta semana', 'fortnight':'Próximos 15 días', 'all':'Todas las tareas', 'calendar':'Calendario', 'focus':'Dependencia específica', 'trash':'Papelera (10 días)' };
-    if (titleEl) titleEl.innerText = currentState.view === 'area' ? `Área: ${currentState.selectedArea}` : titles[currentState.view];
+    const currentTitleText = currentState.view === 'area' ? `Área: ${currentState.selectedArea}` : titles[currentState.view];
+    
+    document.querySelectorAll('[id="view-title"]').forEach(titleEl => {
+        titleEl.innerText = currentTitleText;
+    });
+
     const isTrash = currentState.view === 'trash';
     
+    // 2. SINCRONIZACIÓN DE MENÚS GEMELOS (Iteración sobre selectores de atributos)
     ['nav-today', 'nav-tomorrow', 'nav-week', 'nav-fortnight', 'nav-all', 'nav-calendar', 'nav-trash'].forEach(id => { 
-        const el = document.getElementById(id); 
-        if (!el) return; // Blindaje crítico: evita el crash si falta un nodo en la maqueta
-        if (id === `nav-${currentState.view}`) { 
-            el.classList.add('bg-navy-900', 'text-brand-500', 'border-r-2', 'border-brand-500'); 
-            el.classList.remove('text-navy-300', 'border-transparent'); 
-            if(id === 'nav-trash') {
-                const svg = el.querySelector('svg');
-                if (svg) svg.classList.remove('text-danger-500'); 
-            }
-        } else { 
-            el.classList.remove('bg-navy-900', 'text-brand-500', 'border-r-2', 'border-brand-500'); 
-            el.classList.add('text-navy-300', 'border-transparent'); 
-            if(id === 'nav-trash') {
-                const svg = el.querySelector('svg');
-                if (svg) svg.classList.add('text-danger-500'); 
-            }
-        } 
+        document.querySelectorAll(`[id="${id}"]`).forEach(el => { 
+            if (id === `nav-${currentState.view}`) { 
+                el.classList.add('bg-navy-900', 'text-brand-500', 'border-r-2', 'border-brand-500'); 
+                el.classList.remove('text-navy-300', 'border-transparent'); 
+                if(id === 'nav-trash') {
+                    const svg = el.querySelector('svg');
+                    if (svg) svg.classList.remove('text-danger-500'); 
+                }
+            } else { 
+                el.classList.remove('bg-navy-900', 'text-brand-500', 'border-r-2', 'border-brand-500'); 
+                el.classList.add('text-navy-300', 'border-transparent'); 
+                if(id === 'nav-trash') {
+                    const svg = el.querySelector('svg');
+                    if (svg) svg.classList.add('text-danger-500'); 
+                }
+            } 
+        });
     });
     
     document.querySelectorAll('.sidebar-area-item').forEach(el => { 
@@ -489,48 +498,56 @@ function updateUI() {
         } 
     });
     
-    const toggleHidden = (id, condition) => { const el = document.getElementById(id); if (el) el.classList.toggle('hidden', condition); };
-    toggleHidden('view-list', currentState.view === 'calendar'); 
+    // 3. HELPER UNIVERSAL PARA ALTERNAR VISIBILIDAD DE GEMELOS
+    const toggleHiddenAll = (id, condition) => { 
+        document.querySelectorAll(`[id="${id}"]`).forEach(el => el.classList.toggle('hidden', condition)); 
+    };
+
+    toggleHiddenAll('view-list', currentState.view === 'calendar'); 
     
     if (currentState.view === 'calendar') { 
-        const omni = document.getElementById('omnibar-container'); if (omni) omni.classList.add('hidden'); 
-        const aiBtn = document.getElementById('btnAIToggle'); 
-        if (aiBtn) { aiBtn.classList.remove('text-brand-500', 'bg-navy-700'); aiBtn.classList.add('text-navy-400'); }
+        toggleHiddenAll('omnibar-container', true); 
+        document.querySelectorAll('[id="btnAIToggle"]').forEach(aiBtn => {
+            aiBtn.classList.remove('text-brand-500', 'bg-navy-700'); 
+            aiBtn.classList.add('text-navy-400');
+        });
     }
     
-    toggleHidden('view-calendar', currentState.view !== 'calendar'); 
-    toggleHidden('filters-container', currentState.view === 'calendar');
-    toggleHidden('btnEmptyTrash', !isTrash);
-    toggleHidden('searchWrap', isTrash);
-    toggleHidden('filterStatus', isTrash);
-    toggleHidden('filterPriority', isTrash);
-    toggleHidden('filterContext', isTrash);
-    toggleHidden('sortSelect', isTrash);
-    toggleHidden('btnBulkMode', isTrash);
-    toggleHidden('btnResetFilters', isTrash);
-    toggleHidden('btnAIToggle', isTrash);
-    toggleHidden('filtersDivider', isTrash);
+    toggleHiddenAll('view-calendar', currentState.view !== 'calendar'); 
+    toggleHiddenAll('filters-container', currentState.view === 'calendar');
+    toggleHiddenAll('btnEmptyTrash', !isTrash);
+    toggleHiddenAll('searchWrap', isTrash);
+    toggleHiddenAll('filterStatus', isTrash);
+    toggleHiddenAll('filterPriority', isTrash);
+    toggleHiddenAll('filterContext', isTrash);
+    toggleHiddenAll('sortSelect', isTrash);
+    toggleHiddenAll('btnBulkMode', isTrash);
+    toggleHiddenAll('btnResetFilters', isTrash);
+    toggleHiddenAll('btnAIToggle', isTrash);
+    toggleHiddenAll('filtersDivider', isTrash);
     
-    const fab = document.getElementById('mainFab');
-    if (fab) {
+    document.querySelectorAll('[id="mainFab"]').forEach(fab => {
         if (isTrash) fab.classList.add('hidden'); 
         else { 
             fab.classList.remove('hidden'); 
             if (typeof isBulkMode !== 'undefined' && isBulkMode) fab.classList.add('translate-y-24', 'opacity-0'); 
             else fab.classList.remove('translate-y-24', 'opacity-0'); 
         }
-    }
+    });
     
     if (currentState.view === 'calendar' && typeof isBulkMode !== 'undefined' && isBulkMode && typeof toggleBulkMode === 'function') toggleBulkMode();
     
-    // Ejecución inyectada del motor analítico
-if (typeof calculateSidebarCounters === 'function' && typeof renderSidebarCounters === 'function') {
-    renderSidebarCounters(calculateSidebarCounters(tasks));
-}
-    // Renderizado final
+    if (typeof calculateSidebarCounters === 'function' && typeof renderSidebarCounters === 'function') {
+        renderSidebarCounters(calculateSidebarCounters(tasks));
+    }
     if (currentState.view === 'calendar' && typeof renderCalendar === 'function') renderCalendar(); 
     else if (typeof renderTasks === 'function') renderTasks();
 }
+
+// 4. DISPARADOR DE ARRANQUE (Asegura que la vista inicial coincida con el estado real)
+document.addEventListener('DOMContentLoaded', () => {
+    if (typeof updateUI === 'function') updateUI();
+});
 
 // VARIOUS OTHER UTILS
 function toggleExpand(id, event) { if (event) event.stopPropagation(); expandedStates[id] = !expandedStates[id]; localStorage.setItem('leo_expanded_states', JSON.stringify(expandedStates)); renderTasks(); }
