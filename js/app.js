@@ -57,16 +57,17 @@ window.onload = async () => {
     if (hadMutations && dbUrl && loadedFromCloud) {
         await saveData();
     }
-// 1. Despliegue visual (Población de Selectores)
-    refreshAllDropdowns();
+
+    // --- ARRANQUE UNIFICADO ---
+    // 1. Sincronizamos las variables globales con el entorno
+    if (typeof syncGlobals === 'function') syncGlobals();
     
-    // 2. Disparo unificado del Motor de Navegación (Previene la ruptura de referencias en memoria)
+    // 2. Disparamos la navegación inicial hacia 'today' usando el motor centralizado
+    // Esto asegura que la UI y el renderizador lean el mismo estado desde el inicio
     if (typeof window.navigate === 'function') {
-        // Ejecuta el arranque unificado: muta el estado a "Hoy", limpia filtros y renderiza sin inyectar historial fantasma (false)
         window.navigate('today', null, false);
     }
-    
- };
+};
 
 function saveCategories() {
     localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
