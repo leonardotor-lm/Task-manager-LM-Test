@@ -226,9 +226,9 @@ function closeAddTaskModal() {
 window.openEditModal = function(id) {
     console.log(">> Intentando abrir modal para ID:", id);
     
-    // 1. Buscamos la tarea
     editState = { id, parentId: getParentId(id) }; 
     let target = null;
+    
     function traverse(nodes) {
         for(let n of nodes) {
             if(n.id === id) { target = n; return true; }
@@ -242,56 +242,56 @@ window.openEditModal = function(id) {
         return;
     }
 
-    // 2. Función helper para asignar valores sin romper el script si el input no existe
-    function setVal(id, val) {
+    // --- FUNCIÓN PROTECTORA ---
+    // Esta función intenta poner el valor, pero si el input no existe, no explota
+    const setVal = (id, val) => {
         const el = document.getElementById(id);
         if (el) {
             el.value = val;
         } else {
-            console.warn("!! Aviso: No se encontró el input con ID:", id);
+            console.warn("!! Input no encontrado:", id);
         }
-    }
+    };
 
-    // 3. Asignaciones seguras
+    // --- ASIGNACIÓN SEGURA ---
     setVal('editNameInput', target.name || '');
-    refreshEditDropdowns();
     setVal('editStatusInput', target.status || 'pending');
     setVal('editAreaInput', target.area || 'Inbox');
     setVal('editContextInput', target.context || '');
     setVal('editPriorityInput', target.priority || 'baja');
     setVal('editDateInput', target.date || '');
     setVal('editTimeInput', target.time || '');
-    
-    const rem = document.getElementById('editReminderToggle');
-    if (rem) rem.checked = target.reminder || false;
-    
     setVal('editNotesInput', target.notes || '');
     setVal('editTagsInput', Array.isArray(target.tags) ? target.tags.join(', ') : '');
+    
+    // Checkbox de recordatorio
+    const rem = document.getElementById('editReminderToggle');
+    if (rem) rem.checked = target.reminder || false;
 
-    // 4. Adjuntos y Dropdowns
+    // Actualización de dropdowns
+    if (typeof refreshEditDropdowns === 'function') refreshEditDropdowns(id);
+    
+    // Adjuntos
     currentAttachments = target.attachments ? [...target.attachments] : [];
     if (typeof renderAttachments === 'function') renderAttachments('edit');
-    updateEditParentDropdown(id);
-    setVal('editParentInput', editState.parentId || 'root');
-
-    // 5. Recurrencia (con protección)
+    
+    // Recurrencia
     const recToggle = document.getElementById('editHasRecurrence');
     if (target.recurrenceRule) {
         if (recToggle) recToggle.checked = true;
-        // ... (resto de tu lógica de recurrencia)
+        // (La lógica de recurrencia larga acá, asegurate que los IDs coincidan)
     } else {
         if (recToggle) recToggle.checked = false;
     }
-    
     if (typeof toggleRecurrenceUI === 'function') toggleRecurrenceUI('edit');
 
-    // 6. EL GOLPE FINAL: Abrir el modal
+    // --- APERTURA FINAL ---
     const modal = document.getElementById('editModal');
     if (modal) {
         modal.classList.remove('hidden');
         console.log(">> Modal abierto con éxito.");
     } else {
-        console.error("!! Error crítico: No existe editModal en el HTML.");
+        console.error("!! ERROR CRÍTICO: No existe el elemento 'editModal' en el HTML.");
     }
 };
 
