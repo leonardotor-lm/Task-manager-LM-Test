@@ -195,7 +195,7 @@ async function saveEdit() {
         targetTask.reminder = formData.reminder; 
         targetTask.recurrenceRule = formData.rule; 
         targetTask.attachments = [...currentAttachments]; 
-        
+        targetTask.tags = formData.tags; // <--- AGREGAR ESTA LÍNEA
         insertTask(targetTask, formData.newParentId); 
     } else { 
         // No cambió de padre, se muta in situ
@@ -212,6 +212,7 @@ async function saveEdit() {
             n.reminder = formData.reminder; 
             n.recurrenceRule = formData.rule; 
             n.attachments = [...currentAttachments]; 
+            n.tags = formData.tags; // <--- AGREGAR ESTA LÍNEA
         }); 
     }
     
