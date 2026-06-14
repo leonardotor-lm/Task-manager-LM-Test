@@ -432,7 +432,8 @@
         </div>
     </div>
     
-   <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
+   
+    <div id="editModal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-4 modal-overlay">
     <div class="bg-navy-800 w-full max-w-lg rounded-md border border-navy-600 overflow-hidden slide-up flex flex-col max-h-[90vh]">
         
         <div class="p-4 md:p-5 border-b border-navy-700 flex justify-between items-center shrink-0">
@@ -441,6 +442,27 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
             </button>
         </div>
+
+        <div class="p-4 md:p-5 overflow-y-auto space-y-4 flex-1">
+            
+            <div class="space-y-1">
+                <label class="block text-[10px] font-bold text-navy-400 uppercase tracking-wider ml-1 mb-1">Tags (separados por coma)</label>
+                <input type="text" id="editTagsInput" placeholder="Ej: estudio, urgente" class="w-full text-sm bg-navy-900 border border-navy-700 text-navy-50 px-3 py-2 rounded-md focus:outline-none focus:border-brand-500">
+            </div>
+
+            <div class="space-y-1">
+                <label class="block text-[10px] font-bold text-navy-400 uppercase tracking-wider ml-1 mb-1">Nombre</label>
+                <input type="text" id="editNameInput" class="w-full text-base bg-navy-900 border border-navy-700 text-navy-50 px-3 py-2.5 rounded-md focus:outline-none focus:border-brand-500">
+            </div>
+            
+            </div>
+
+        <div class="p-4 md:p-5 border-t border-navy-700 flex space-x-3 shrink-0">
+            <button onclick="closeEditModal()" class="w-1/2 bg-navy-700 text-navy-50 py-2.5 rounded-md text-sm font-semibold hover:bg-navy-600 transition-colors focus:outline-none">Cancelar</button>
+            <button onclick="saveEdit()" class="w-1/2 bg-brand-500 text-navy-900 py-2.5 rounded-md text-sm font-semibold hover:bg-brand-400 transition-colors focus:outline-none">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
 
         <div class="p-4 md:p-5 overflow-y-auto space-y-4 flex-1">
             <div class="space-y-1">
