@@ -1382,22 +1382,23 @@ window.closeConfirmModal = function(resultado) {
         window.resolveConfirmacion = null;
     }
 };
-// ESCUCHADOR GLOBAL DE CLICS (Delegación)
-document.addEventListener('click', function(e) {
-    // Si el usuario hace clic en el nombre de la tarea (span)
-    if (e.target.classList.contains('task-name')) {
-        e.preventDefault(); // Evitamos que otros eventos interfieran
-        
-        // Obtenemos el ID desde el contenedor padre .task-item
-        const taskItem = e.target.closest('.task-item');
-        if (taskItem) {
-            const taskId = taskItem.dataset.id;
-            console.log(">> Clic interceptado en ID:", taskId);
+// Delegación de eventos: Escuchamos clics en la lista, no en el botón
+document.getElementById('taskList').addEventListener('click', function(e) {
+    // Buscamos el elemento .task-name que tocaste
+    const clickedTask = e.target.closest('.task-name');
+    
+    if (clickedTask) {
+        // Buscamos el ID en el contenedor padre
+        const item = e.target.closest('.task-item');
+        if (item) {
+            const taskId = item.dataset.id;
+            console.log(">> Clic detectado en ID:", taskId);
             
+            // Forzamos la apertura
             if (typeof window.openEditModal === 'function') {
                 window.openEditModal(Number(taskId));
             } else {
-                console.error("!! openEditModal no existe en window.");
+                console.error("!! Error: La función openEditModal no está definida en window.");
             }
         }
     }
