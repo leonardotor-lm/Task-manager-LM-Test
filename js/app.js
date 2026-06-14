@@ -162,48 +162,78 @@ async function addTask() {
 }
 window.addTask = addTask;
 async function saveEdit() {
-    const id = editState.id; 
-    const name = document.getElementById('editTaskNameInput').value;
-    if (!name) return; 
+    // 1. Validación inicial (aseguramos que el campo exista y tenga texto)
+    const nameInput = document.getElementById('editNameInput');
+    if (!nameInput || !nameInput.value.trim()) {
+        if (typeof showNotice === 'function') showNotice("El nombre es obligatorio");
+        return; 
+    }
 
-    // Preparamos los datos
+    const id = editState.id; 
+    
+    // 2. Recolección de datos directa y segura (evitamos el helper viejo)
     const updatedData = {
-        name: name,
-        status: document.getElementById('editStatusSelect').value,
-        area: document.getElementById('editAreaSelect').value,
-        context: document.getElementById('editContextInput').value,
-        priority: document.getElementById('editPrioritySelect').value,
-        date: document.getElementById('editDateInput').value,
-        time: document.getElementById('editTimeInput').value,
-        notes: document.getElementById('editNotesInput').value,
-        reminder: document.getElementById('editReminderInput').checked,
-        recurrenceRule: (typeof getRecurrenceRuleData === 'function') ? getRecurrenceRuleData() : null,
-        tags: document.getElementById('editTagsInput').value.split(',').map(t => t.trim()).filter(t => t !== "")
+        name: nameInput.value.trim(),
+        status: document.getElementById('editStatusInput')?.value || 'pending',
+        area: document.getElementById('editAreaInput')?.value || 'Inbox',
+        context: document.getElementById('editContextInput')?.value || '',
+        priority: document.getElementById('editPriorityInput')?.value || 'baja',
+        dateInput: document.getElementById('editDateInput')?.value || '',
+        timeInput: document.getElementById('editTimeInput')?.value || '',
+        notes: document.getElementById('editNotesInput')?.value || '',
+        reminder: document.getElementById('editReminderToggle')?.checked || false,
+        rule: (typeof getRecurrenceRuleData === 'function') ? getRecurrenceRuleData('edit') : null,
+        // Extracción y limpieza de los tags
+        tags: document.getElementById('editTagsInput')?.value.split(',').map(t => t.trim()).filter(t => t !== "") || []
     };
 
-    const newParentId = document.getElementById('editParentIdInput').value;
+    const newParentId = document.getElementById('editParentInput')?.value || 'root';
     let targetTask = null; 
     
+    // 3. Lógica de reubicación si cambió de dependencia
     if (newParentId !== editState.parentId) { 
         targetTask = extractTask(id); 
     }
     
+    // 4. Inserción o mutación
     if (targetTask) { 
-        Object.assign(targetTask, updatedData);
+        targetTask.name = updatedData.name;
+        targetTask.status = updatedData.status;
+        targetTask.area = updatedData.area;
+        targetTask.context = updatedData.context;
+        targetTask.priority = updatedData.priority;
+        targetTask.date = updatedData.dateInput;
+        targetTask.time = updatedData.timeInput;
+        targetTask.notes = updatedData.notes;
+        targetTask.reminder = updatedData.reminder;
+        targetTask.recurrenceRule = updatedData.rule;
+        targetTask.tags = updatedData.tags;
         targetTask.attachments = [...currentAttachments]; 
+        
         insertTask(targetTask, newParentId); 
     } else { 
         findAndMutateTask(id, (nodes, i) => { 
-            Object.assign(nodes[i], updatedData);
+            nodes[i].name = updatedData.name;
+            nodes[i].status = updatedData.status;
+            nodes[i].area = updatedData.area;
+            nodes[i].context = updatedData.context;
+            nodes[i].priority = updatedData.priority;
+            nodes[i].date = updatedData.dateInput;
+            nodes[i].time = updatedData.timeInput;
+            nodes[i].notes = updatedData.notes;
+            nodes[i].reminder = updatedData.reminder;
+            nodes[i].recurrenceRule = updatedData.rule;
+            nodes[i].tags = updatedData.tags;
             nodes[i].attachments = [...currentAttachments]; 
         }); 
     }
     
+    // 5. Cierre y persistencia
     closeEditModal(); 
     refreshAllDropdowns(); 
     renderTasks(); 
-    showNotice("Guardado exitosamente"); 
-    await saveData(); 
+    if (typeof showNotice === 'function') showNotice("Guardado exitosamente"); 
+    if (typeof saveData === 'function') await saveData(); 
 }
 window.saveEdit = saveEdit;
 async function toggleTaskUniversal(id) {
