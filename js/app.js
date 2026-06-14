@@ -275,8 +275,43 @@ async function toggleTaskUniversal(id) {
 async function deleteTaskUniversal(id) { const task = getTaskById(id); if (!task) return; const performDelete = async () => { if (findAndMutateTask(id, (nodes, i) => { nodes[i].isDeleted = true; nodes[i].deletedAt = Date.now(); })) { refreshAllDropdowns(); renderTasks(); renderCalendar(); showNotice("Enviada a papelera"); await saveData(); } }; if (task.subtasks && task.subtasks.length > 0) { showConfirm("Eliminar con subtareas", `¿Enviar a papelera con sus ${task.subtasks.length} subtareas?`, performDelete, true); } else { await performDelete(); } }
 
 // UTILIDADES Y RENDERIZADO VISUAL
-async function saveSettings() { dbUrl = document.getElementById('settingsDbUrlInput').value.trim(); customApiKey = document.getElementById('settingsApiKeyInput').value.trim(); if (dbUrl) localStorage.setItem(DB_URL_KEY, dbUrl); else localStorage.removeItem(DB_URL_KEY); if (customApiKey) localStorage.setItem(API_KEY_STORAGE_KEY, customApiKey); else localStorage.removeItem(API_KEY_STORAGE_KEY); closeSettingsModal(); showNotice("Configuración actualizada."); if (dbUrl) await loadDataFromCloud(); else { showSyncStatus('none'); updateUI(); } }
+async function saveSettings() {
+    console.log("Iniciando saveSettings...");
+    try {
+        const dbInput = document.getElementById('settingsDbUrlInput');
+        const apiInput = document.getElementById('settingsApiKeyInput');
 
+        if (!dbInput) {
+            console.error("ERROR: No se encuentra el input 'settingsDbUrlInput'");
+            return;
+        }
+
+        const newUrl = dbInput.value.trim();
+        const newApiKey = apiInput ? apiInput.value.trim() : '';
+
+        // Guardado persistente usando las llaves globales window.DB_URL_KEY
+        if (newUrl) localStorage.setItem(window.DB_URL_KEY, newUrl);
+        else localStorage.removeItem(window.DB_URL_KEY);
+
+        if (newApiKey) localStorage.setItem(window.API_KEY_STORAGE_KEY, newApiKey);
+        else localStorage.removeItem(window.API_KEY_STORAGE_KEY);
+
+        window.dbUrl = newUrl;
+        window.customApiKey = newApiKey;
+
+        closeSettingsModal();
+        showNotice("Configuración guardada.");
+        
+        console.log("Configuración guardada. Recargando datos...");
+        if (window.dbUrl) await loadDataFromCloud();
+        else { showSyncStatus('none'); updateUI(); }
+        
+    } catch (e) {
+        console.error("ERROR CRÍTICO EN SAVESETTINGS:", e);
+        showNotice("Error al guardar: " + e.message);
+    }
+}
+window.saveSettings = saveSettings;
 // CORE ENGINE HELPERS
 function findAndMutateTask(taskId, mutationFn) { function traverse(nodes) { for (let i = 0; i < nodes.length; i++) { if (nodes[i].id === taskId) { mutationFn(nodes, i); return true; } if (nodes[i].subtasks && traverse(nodes[i].subtasks)) return true; } return false; } return traverse(tasks); }
 function extractTask(taskId) { let extracted = null; function walk(nodes) { for (let i = 0; i < nodes.length; i++) { if (nodes[i].id === taskId) { extracted = nodes.splice(i, 1)[0]; return true; } if (nodes[i].subtasks && walk(nodes[i].subtasks)) return true; } return false; } walk(tasks); return extracted; }
