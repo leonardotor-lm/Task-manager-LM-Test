@@ -499,8 +499,11 @@ function buildTaskRows(nodes, path = []) {
         const nameStyle = isCompleted ? 'line-through text-navy-500' : (isOverdue ? 'text-danger-500 font-semibold' : (isInProgress ? 'text-info-500' : (isMuted ? 'text-navy-400 italic opacity-80' : 'text-navy-50')));
         
         // ... (tu lógica de actionButtonsHtml se mantiene igual) ...
-        let actionButtonsHtml = ''; // ... (asegúrate de mantener tu lógica aquí) ...
-
+        // Definimos los botones como un string limpio y simple, sin backticks complejos
+let actionButtonsHtml = '<button onclick="togglePause(' + task.id + ')" class="text-navy-400 hover:text-brand-500 p-1.5 rounded hover:bg-navy-700 transition-colors" title="Pausa">P</button>' +
+                        '<button onclick="openEditModal(' + task.id + ')" class="text-navy-400 hover:text-brand-500 p-1.5 rounded hover:bg-navy-700 transition-colors" title="Editar">E</button>' +
+                        '<button onclick="deleteTask(' + task.id + ')" class="text-navy-400 hover:text-danger-500 p-1.5 rounded hover:bg-navy-700 transition-colors" title="Eliminar">X</button>';
+        
         return `
             <div class="task-item" data-id="${task.id}">
                 <div class="group flex flex-col py-1.5 pr-4 border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
