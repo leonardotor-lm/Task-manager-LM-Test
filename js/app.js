@@ -57,23 +57,16 @@ window.onload = async () => {
     if (hadMutations && dbUrl && loadedFromCloud) {
         await saveData();
     }
-
-  // 1. Definición en memoria PRIMERO (Alineado para arrancar en Hoy y atrasadas)
-window.currentState = { view: 'today', selectedArea: null };
-    
-    // 2. Despliegue visual DESPUÉS
+// 1. Despliegue visual (Población de Selectores)
     refreshAllDropdowns();
-      
-    // Invocación explícita de la función de dibujado
-    if (typeof renderTasks === 'function') {
-        renderTasks();
+    
+    // 2. Disparo unificado del Motor de Navegación (Previene la ruptura de referencias en memoria)
+    if (typeof window.navigate === 'function') {
+        // Ejecuta el arranque unificado: muta el estado a "Hoy", limpia filtros y renderiza sin inyectar historial fantasma (false)
+        window.navigate('today', null, false);
     }
     
-    // Mantenemos updateUI por si dibuja otras partes (como contadores)
-    if (typeof updateUI === 'function') {
-        updateUI();
-    }
-};
+ };
 
 function saveCategories() {
     localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
