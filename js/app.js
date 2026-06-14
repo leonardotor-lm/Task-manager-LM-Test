@@ -1382,3 +1382,23 @@ window.closeConfirmModal = function(resultado) {
         window.resolveConfirmacion = null;
     }
 };
+// ESCUCHADOR GLOBAL DE CLICS (Delegación)
+document.addEventListener('click', function(e) {
+    // Si el usuario hace clic en el nombre de la tarea (span)
+    if (e.target.classList.contains('task-name')) {
+        e.preventDefault(); // Evitamos que otros eventos interfieran
+        
+        // Obtenemos el ID desde el contenedor padre .task-item
+        const taskItem = e.target.closest('.task-item');
+        if (taskItem) {
+            const taskId = taskItem.dataset.id;
+            console.log(">> Clic interceptado en ID:", taskId);
+            
+            if (typeof window.openEditModal === 'function') {
+                window.openEditModal(Number(taskId));
+            } else {
+                console.error("!! openEditModal no existe en window.");
+            }
+        }
+    }
+});
