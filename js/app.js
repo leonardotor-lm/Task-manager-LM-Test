@@ -1382,23 +1382,19 @@ window.closeConfirmModal = function(resultado) {
         window.resolveConfirmacion = null;
     }
 };
-// Delegación de eventos: Escuchamos clics en la lista, no en el botón
-document.getElementById('taskList').addEventListener('click', function(e) {
-    // Buscamos el elemento .task-name que tocaste
-    const clickedTask = e.target.closest('.task-name');
+// Delegación de eventos ultra-robusta
+document.addEventListener('click', function(e) {
+    // Buscamos el elemento .task-item más cercano al clic
+    const taskItem = e.target.closest('.task-item');
     
-    if (clickedTask) {
-        // Buscamos el ID en el contenedor padre
-        const item = e.target.closest('.task-item');
-        if (item) {
-            const taskId = item.dataset.id;
-            console.log(">> Clic detectado en ID:", taskId);
-            
-            // Forzamos la apertura
+    if (taskItem) {
+        const taskId = taskItem.dataset.id;
+        console.log("¡Clic interceptado en tarea:", taskId);
+        
+        // Verificamos si el clic fue en el nombre de la tarea para editar
+        if (e.target.classList.contains('task-name')) {
             if (typeof window.openEditModal === 'function') {
                 window.openEditModal(Number(taskId));
-            } else {
-                console.error("!! Error: La función openEditModal no está definida en window.");
             }
         }
     }
