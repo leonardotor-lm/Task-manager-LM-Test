@@ -50,37 +50,26 @@ window.onload = async () => {
     initSpeechRecognition(); 
     updateDateDisplay(); 
     
-    // 1. Cargamos las credenciales guardadas en los inputs
+    // Seteamos valores iniciales si existen
     const dbInput = document.getElementById('settingsDbUrlInput');
     const apiInput = document.getElementById('settingsApiKeyInput');
     
-    if (dbInput) dbInput.value = dbUrl;
-    if (apiInput) apiInput.value = customApiKey;
+    if (dbInput) dbInput.value = window.dbUrl;
+    if (apiInput) apiInput.value = window.customApiKey;
 
     let loadedFromCloud = false;
     
-    // 2. Intentamos conectar si existe URL
-    if (dbUrl && dbUrl.trim() !== "") { 
+    // Conexión automática
+    if (window.dbUrl && window.dbUrl.trim() !== "") { 
         loadedFromCloud = await loadDataFromCloud(); 
     } else { 
         showSyncStatus('none'); 
     }
 
-    // 3. Normalizamos datos
-    const hadMutations = migrateAndNormalizeTasks(); 
-    if (hadMutations && dbUrl && loadedFromCloud) {
-        await saveData();
-    }
-
-    // 4. Sincronizamos globals
+    migrateAndNormalizeTasks(); 
     if (typeof syncGlobals === 'function') syncGlobals();
-    
-    // 5. Navegamos al inicio
-    if (typeof window.navigate === 'function') {
-        window.navigate('today', null, false);
-    }
+    if (typeof window.navigate === 'function') window.navigate('today', null, false);
 };
-
 function saveCategories() {
     localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
     localStorage.setItem('leo_custom_contexts', JSON.stringify(customContexts));
