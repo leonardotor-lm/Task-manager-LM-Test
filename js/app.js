@@ -58,8 +58,8 @@ window.onload = async () => {
         await saveData();
     }
 
-   // 1. Definición en memoria PRIMERO
-window.currentState = { view: 'area', selectedArea: 'Inbox' };    window.currentFilters = { search: '', status: 'pending', priority: 'all', context: 'all' };
+  // 1. Definición en memoria PRIMERO (Alineado para arrancar en Hoy y atrasadas)
+window.currentState = { view: 'today', selectedArea: null };
     
     // 2. Despliegue visual DESPUÉS
     refreshAllDropdowns();
