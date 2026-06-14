@@ -49,28 +49,33 @@ window.quickAddSubtask = quickAddSubtask;
 window.onload = async () => { 
     initSpeechRecognition(); 
     updateDateDisplay(); 
-    document.getElementById('settingsDbUrlInput').value = dbUrl;
-    document.getElementById('settingsApiKeyInput').value = customApiKey;
-    document.getElementById('editTagsInput').value = Array.isArray(task.tags) ? task.tags.join(', ') : '';
     
+    // 1. Cargamos las credenciales guardadas en los inputs
+    const dbInput = document.getElementById('settingsDbUrlInput');
+    const apiInput = document.getElementById('settingsApiKeyInput');
+    
+    if (dbInput) dbInput.value = dbUrl;
+    if (apiInput) apiInput.value = customApiKey;
+
     let loadedFromCloud = false;
-    if (dbUrl) { 
+    
+    // 2. Intentamos conectar si existe URL
+    if (dbUrl && dbUrl.trim() !== "") { 
         loadedFromCloud = await loadDataFromCloud(); 
     } else { 
         showSyncStatus('none'); 
     }
 
+    // 3. Normalizamos datos
     const hadMutations = migrateAndNormalizeTasks(); 
     if (hadMutations && dbUrl && loadedFromCloud) {
         await saveData();
     }
 
-    // --- ARRANQUE UNIFICADO ---
-    // 1. Sincronizamos las variables globales con el entorno
+    // 4. Sincronizamos globals
     if (typeof syncGlobals === 'function') syncGlobals();
     
-    // 2. Disparamos la navegación inicial hacia 'today' usando el motor centralizado
-    // Esto asegura que la UI y el renderizador lean el mismo estado desde el inicio
+    // 5. Navegamos al inicio
     if (typeof window.navigate === 'function') {
         window.navigate('today', null, false);
     }
