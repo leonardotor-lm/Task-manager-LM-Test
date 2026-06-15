@@ -125,40 +125,54 @@ function migrateAndNormalizeTasks() {
 
 // LÓGICA DE TAREAS (CREATE / UPDATE / DELETE / COMPLETE)
 async function addTask() { 
-    // Captura directa de valores (reemplazamos la llamada al helper por el acceso directo)
-    const name = document.getElementById('taskNameInput').value;
-    if (!name) return; 
-
-    const newTask = { 
-        id: Date.now(), 
-        name: name, 
-        area: document.getElementById('areaSelect').value,
-        context: document.getElementById('contextInput').value,
-        priority: document.getElementById('prioritySelect').value,
-        date: document.getElementById('dateInput').value,
-        startDate: document.getElementById('dateInput').value,
-        time: document.getElementById('timeInput').value,
-        notes: document.getElementById('notesInput').value,
-        reminder: document.getElementById('reminderInput').checked,
-        status: 'pending', 
-        attachments: [...currentAttachments], 
-        subtasks: [], 
-        tags: document.getElementById('tagsInput').value.split(',').map(t => t.trim()).filter(t => t !== ""), // Captura directa
-        recurrenceRule: (typeof getRecurrenceRuleData === 'function') ? getRecurrenceRuleData() : null
-    };
-    
-    const parentId = document.getElementById('parentIdInput').value;
-    if (parentId === 'root') {
-        tasks.unshift(newTask);
-    } else {
-        insertTask(newTask, parentId);
+    // 1. Invocamos la función recolectora blindada de ui.js
+    if (typeof window.getAddTaskFormData !== 'function') {
+        console.error("Error estructural: getAddTaskFormData no está disponible.");
+        return;
     }
     
-    closeAddTaskModal(); 
-    refreshAllDropdowns(); 
-    renderTasks(); 
-    showNotice("Tarea guardada"); 
-    await saveData(); 
+    const data = window.getAddTaskFormData();
+    
+    // Validación estructural mínima: no se guardan tareas sin nombre
+    if (!data.name) return; 
+
+    // 2. Ensamblaje del nuevo nodo
+    const newTask = { 
+        id: Date.now(), 
+        name: data.name, 
+        area: data.area,
+        context: data.context,
+        priority: data.priority,
+        date: data.dateInput,
+        startDate: data.dateInput, // Asumimos fecha de inicio igual a la agendada
+        time: data.timeInput,
+        notes: data.notes,
+        reminder: data.reminder,
+        status: 'pending', 
+        attachments: typeof currentAttachments !== 'undefined' ? [...currentAttachments] : [], 
+        subtasks: [], 
+        tags: data.tags, 
+        recurrenceRule: data.rule 
+    };
+    
+    // 3. Inserción jerárquica
+    if (data.parentId === 'root') {
+        tasks.unshift(newTask);
+    } else {
+        if (typeof insertTask === 'function') {
+            insertTask(newTask, data.parentId);
+        } else {
+            console.error("Fallo de enrutamiento: insertTask no está definida.");
+            return;
+        }
+    }
+    
+    // 4. Cierre del ciclo visual y persistencia
+    if (typeof closeAddTaskModal === 'function') closeAddTaskModal(); 
+    if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns(); 
+    if (typeof renderTasks === 'function') renderTasks(); 
+    if (typeof showNotice === 'function') showNotice("Tarea guardada"); 
+    if (typeof saveData === 'function') await saveData(); 
 }
 window.addTask = addTask;
 async function saveEdit() {
