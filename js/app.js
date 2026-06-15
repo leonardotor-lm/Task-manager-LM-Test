@@ -1399,3 +1399,44 @@ document.addEventListener('click', function(e) {
         }
     }
 });
+// Restaurar tarea desde la papelera
+window.restoreTaskNative = async function(id) {
+    if (typeof findAndMutateTask === 'function') {
+        findAndMutateTask(id, (nodes, i) => {
+            nodes[i].isDeleted = false;
+            nodes[i].deletedAt = null;
+        });
+        if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
+        if (typeof renderTasks === 'function') renderTasks();
+        if (typeof showNotice === 'function') showNotice("Tarea restaurada con éxito");
+        if (typeof saveData === 'function') await saveData();
+    }
+};
+
+// Eliminación destructiva (Hard Delete)
+window.hardDeleteTaskNative = function(id) {
+    if (typeof showConfirm === 'function') {
+        showConfirm("Atención: Borrado Definitivo", "Esta acción eliminará la tarea de la base de datos de manera permanente y no se puede deshacer. ¿Continuar?", async () => {
+            
+            // Función recursiva para erradicar el nodo del array en memoria
+            function removeNode(nodes) {
+                for (let i = 0; i < nodes.length; i++) {
+                    if (nodes[i].id === id) {
+                        nodes.splice(i, 1);
+                        return true;
+                    }
+                    if (nodes[i].subtasks && removeNode(nodes[i].subtasks)) return true;
+                }
+                return false;
+            }
+            
+            if (typeof tasks !== 'undefined') {
+                removeNode(tasks);
+                if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
+                if (typeof renderTasks === 'function') renderTasks();
+                if (typeof showNotice === 'function') showNotice("Registro eliminado de la base de datos");
+                if (typeof saveData === 'function') await saveData();
+            }
+        }, true);
+    }
+};
