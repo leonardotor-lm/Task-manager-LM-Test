@@ -465,7 +465,7 @@ function buildTaskRows(nodes, path = []) {
         // ... (todo tu código inicial de lógica sigue igual) ...
         const visualSubCount = task._subCount !== undefined ? task._subCount : (task.subtasks ? task.subtasks.length : 0);
         const hasChildren = visualSubCount > 0;
-        const isExpanded = (isTrash || currentState.view === 'focus' || isFiltering) ? true : !!expandedStates[VARIABLE_DEL_BUCLE.id];
+        const isExpanded = isTrash || (currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
         const logicalDepth = path.length + 1;
         const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-20 md:pl-22');
         const isCompleted = task.status === 'completed';
