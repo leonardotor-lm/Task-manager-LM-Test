@@ -465,7 +465,7 @@ function buildTaskRows(nodes, path = []) {
         // ... (todo tu código inicial de lógica sigue igual) ...
         const visualSubCount = task._subCount !== undefined ? task._subCount : (task.subtasks ? task.subtasks.length : 0);
         const hasChildren = visualSubCount > 0;
-        const isExpanded = (isTrash || currentState.view === 'focus' || isFiltering) ? true : !!expandedStates[VARIABLE_DEL_BUCLE.id];
+        const isExpanded = isTrash || (currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
         const logicalDepth = path.length + 1;
         const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-20 md:pl-22');
         const isCompleted = task.status === 'completed';
@@ -585,7 +585,6 @@ let actionButtonsHtml = '';
 }
 
 window.renderTasks = function() {
-    if (typeof window.expandedStates === 'undefined') window.expandedStates = JSON.parse(localStorage.getItem('leo_expanded_states')) || {};
     const list = document.getElementById('taskList'); 
     const empty = document.getElementById('emptyState');
     
@@ -610,7 +609,8 @@ const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'unde
         const hasActiveStatus = filters.status && filters.status !== 'pending' && filters.status !== 'all';
         
         // El aplanamiento se activa obligatoriamente con cualquier filtro o en la vista global
-        const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus;
+        const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus || state.view === 'all';
+        
         nodesToRender = isFlatView ? (typeof window.flattenMatches === 'function' ? window.flattenMatches(pruned) : (typeof flattenMatches === 'function' ? flattenMatches(pruned) : [])) : pruned;
 
         // MOTOR DE ORDENAMIENTO JERÁRQUICO
