@@ -585,6 +585,7 @@ let actionButtonsHtml = '';
 }
 
 window.renderTasks = function() {
+    if (typeof window.expandedStates === 'undefined') window.expandedStates = JSON.parse(localStorage.getItem('leo_expanded_states')) || {};
     const list = document.getElementById('taskList'); 
     const empty = document.getElementById('emptyState');
     
