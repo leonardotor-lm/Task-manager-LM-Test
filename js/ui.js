@@ -1,22 +1,25 @@
 /** MÓDULO DE INTERFAZ (ui.js) */
 function getAddTaskFormData() {
-    const parentIdRaw = document.getElementById('parentInput').value;
-    const rawDate = document.getElementById('dateInput').value;
-    const tagsInput = document.getElementById('tagsInput');
+    // Función auxiliar para leer inputs sin riesgo de crash (si no existe, devuelve '')
+    const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const isChecked = (id) => { const el = document.getElementById(id); return el ? el.checked : false; };
+
+    const parentIdRaw = getVal('parentInput');
+    const rawDate = getVal('dateInput');
+    const rawTags = getVal('tagsInput'); // Lectura segura
 
     return {
-        name: document.getElementById('taskInput').value.trim(),
-        area: document.getElementById('areaInput').value,
-        context: document.getElementById('contextInput').value,
-        priority: document.getElementById('priorityInput').value,
+        name: getVal('taskInput').trim(),
+        area: getVal('areaInput'),
+        context: getVal('contextInput'),
+        priority: getVal('priorityInput') || 'baja',
         dateInput: rawDate ? rawDate : "",
-        timeInput: document.getElementById('timeInput').value,
-        notes: document.getElementById('notesInput').value.trim(),
-        reminder: document.getElementById('reminderToggle').checked,
+        timeInput: getVal('timeInput'),
+        notes: getVal('notesInput').trim(),
+        reminder: isChecked('reminderToggle'),
         rule: typeof buildRuleFromUI === 'function' ? buildRuleFromUI('add') : null,
-        parentId: parentIdRaw === 'root' ? 'root' : Number(parentIdRaw),
-        // Integración vital para evitar el crash:
-        tags: tagsInput && tagsInput.value ? tagsInput.value.split(',').map(t => t.trim()).filter(Boolean) : []
+        parentId: parentIdRaw === 'root' ? 'root' : (parentIdRaw ? Number(parentIdRaw) : 'root'),
+        tags: rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : []
     };
 }
 window.getAddTaskFormData = getAddTaskFormData;
