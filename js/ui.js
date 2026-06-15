@@ -455,180 +455,28 @@ window.renderSidebarCounters = renderSidebarCounters;
 
 // BUILD TASK ROWS
 function buildTaskRows(nodes, path = []) {
-    if (!nodes || nodes.length === 0) return '';
-    const isTrash = currentState.view === 'trash';
-    const indentMap = { 
-    1: 'pl-3 md:pl-5', 
-    2: 'pl-8 md:pl-10', 
-    3: 'pl-12 md:pl-14', 
-    4: 'pl-16 md:pl-18', 
-    5: 'pl-20 md:pl-22',
-    6: 'pl-24 md:pl-26',
-    7: 'pl-28 md:pl-30' 
-};
-    const isFiltering = currentFilters.search !== '' || currentFilters.priority !== 'all' || currentFilters.context !== 'all' || currentFilters.status === 'in_progress' || currentFilters.status === 'completed';
-    const todayStr = formatDateLocal(new Date());
+    if (!nodes || !Array.isArray(nodes) || nodes.length === 0) return '';
 
     return nodes.map(task => {
-        // ... (todo tu código inicial de lógica sigue igual) ...
-        const visualSubCount = task._subCount !== undefined ? task._subCount : (task.subtasks ? task.subtasks.length : 0);
-        const hasChildren = visualSubCount > 0;
-        const isExpanded = isTrash || (currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
-        const logicalDepth = path.length + 1;
-        const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-28 md:pl-30');
-        const isCompleted = task.status === 'completed';
-        const isOverdue = task.date && task.date < todayStr && !isCompleted;
+        // Definición segura de subtareas para evitar colapso de renderizado
+        const hasChildren = task.subtasks && task.subtasks.length > 0;
+        const isExpanded = true; // Forzamos expansión para evitar errores de estado
 
-        // --- CÁLCULO DE TAGS (Calculado fuera del template string para evitar errores) ---
-        let tagsHtml = '';
-        if (task.tags && Array.isArray(task.tags) && task.tags.length > 0) {
-            tagsHtml = task.tags.map(tag => 
-                `<span class="ml-1.5 bg-navy-700 text-brand-400 border border-brand-500/20 text-[9px] px-1.5 py-0.5 rounded uppercase tracking-wider font-bold">#${tag}</span>`
-            ).join('');
-        }
-        // --------------------------------------------------------------------------------
-
-        // ... (aquí mantén toda tu lógica original de dateDisplayHTML, recurrenceBadge, etc.) ...
-        let dateDisplayHTML = `<span class="text-navy-400 text-[11px] font-semibold flex items-center gap-1.5 tracking-wide"><span class="w-2.5 h-[1.5px] bg-navy-400 inline-block"></span> Sin fecha</span>`;
-        if (task.date) { 
-            const dateColorClass = isOverdue ? 'text-danger-500 font-bold' : 'text-brand-500'; 
-            let relativeDateLabel = formatDateAR(task.date, false);
-            try {
-                const [year, month, day] = task.date.split('-').map(Number);
-                const taskD = new Date(year, month - 1, day);
-                const today = new Date();
-                today.setHours(0, 0, 0, 0);
-                const diffTime = taskD.getTime() - today.getTime();
-                const diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
-                if (diffDays === 0) relativeDateLabel = 'hoy';
-                else if (diffDays === 1) relativeDateLabel = 'mañana';
-                else if (diffDays > 1 && diffDays <= 7) {
-                    const dayNames = ['domingo', 'lunes', 'martes', 'miércoles', 'jueves', 'viernes', 'sábado'];
-                    relativeDateLabel = dayNames[taskD.getDay()];
-                }
-            } catch (e) { console.warn("Fallo en fecha relativa", e); }
-            dateDisplayHTML = `<span class="${dateColorClass} text-[11px] font-semibold flex items-center gap-1.5 tracking-wide"><svg class="w-3.5 h-3.5 mb-[1px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>${relativeDateLabel} ${isOverdue ? '(Vencida)' : ''}</span>`; 
-        }
-        const recurrenceBadge = task.recurrenceRule ? `<span class="ml-2 flex items-center gap-1 text-brand-500 bg-brand-500/10 border border-brand-500/30 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide font-bold"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Repite</span>` : '';
-        let subtasksHtml = (isExpanded && hasChildren) ? buildTaskRows(task.subtasks, [...path, {id: task.id, name: task.name}]) : '';
-        // ... dentro del map de buildTaskRows ...
-
-// Ajuste: Aseguramos que si no hay hijos, no se renderice ni el contenedor
-const subtaskListHTML = (hasChildren && !isTrash) ? `
-    <div class="subtasks-list w-full" data-parent-id="${task.id}" style="${!isExpanded ? 'display: none;' : ''}">
-        ${subtasksHtml}
-    </div>
-` : '';
-
-        // ... dentro del map de buildTaskRows ...
-return `
-    <div class="task-item group flex flex-col w-full border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}" data-id="${task.id}">
-        <div class="flex items-center justify-between py-2 pr-4 w-full h-10">
-            <div class="flex items-center gap-3 flex-1 min-w-0">
-                ${bulkCheckboxHTML}
-                ${(hasChildren && !isTrash) ? `
-                    <button onclick="toggleExpand(${task.id}, event)" class="p-0.5 text-navy-400 hover:text-navy-50 transition-transform ${isExpanded ? 'rotate-90' : ''} focus:outline-none shrink-0">
-                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
-                    </button>
-                ` : `<div class="w-4 shrink-0"></div>`}
-                
-                <input type="checkbox" ${isCompleted ? 'checked' : ''} ${isTrash ? 'disabled' : `onchange="toggleTaskUniversal(${task.id})"`} class="task-cb shrink-0 ${isTrash ? 'opacity-40' : ''}">
-                
-                <span class="text-[14px] font-medium task-name ${nameStyle} truncate cursor-pointer select-none leading-none" onclick="${isTrash ? '' : `openEditModal(${task.id})`}">
-                    ${task.name || 'Sin nombre'}
-                </span>
-                ${tagsHtml}
-            </div>
-            
-            <div class="flex items-center gap-3 shrink-0">
-                ${actionButtonsHtml}
-                <div class="w-28 flex items-center justify-end pl-2">
-                    ${dateDisplayHTML}
-                </div>
-            </div>
-        </div>
-        ${(isExpanded && hasChildren) ? buildTaskRows(task.subtasks, [...path, {id: task.id, name: task.name}]) : ''}
-    </div>
-`.trim();
-}).join('');
-        const bulkCheckboxHTML = (isBulkMode && !isTrash) ? `<div class="shrink-0 mr-2 flex items-center justify-center cursor-pointer py-1 pr-1" onclick="toggleBulkSelect(${task.id}, event)"><input type="checkbox" class="w-[18px] h-[18px] rounded-sm border border-navy-500 text-brand-500 bg-navy-800 focus:ring-0 cursor-pointer pointer-events-none transition-colors" ${selectedTaskIds.has(task.id) ? 'checked' : ''}></div>` : '';
-        const isInProgress = task.status === 'in_progress'; const isMuted = !task._explicitMatch && isFiltering && !isTrash;
-        let contextHtml = ''; if (task.context && task.context.trim() !== '') { const ctxStyles = getContextStyles(task.context); contextHtml = `<span class="mx-1 shrink-0 text-navy-600">&bull;</span><span class="truncate font-semibold tracking-wide ${ctxStyles.text} max-w-[80px] sm:max-w-[120px]">${task.context}</span>`; }
-        let dependencyHtml = ''; if (task._parentPath && task._parentPath.length > 0) { const immediateParent = task._parentPath[task._parentPath.length - 1]; dependencyHtml = `<span class="mx-1 shrink-0 text-navy-600">&bull;</span><span class="text-navy-400 truncate max-w-[150px] sm:max-w-[250px]" title="Subtarea de: ${immediateParent.name}">Subtarea de: <span class="text-brand-400 font-semibold cursor-pointer hover:underline" onclick="event.stopPropagation(); focusTaskTree(${immediateParent.id})">${immediateParent.name}</span></span>`; }
-        const nameStyle = isCompleted ? 'line-through text-navy-500' : (isOverdue ? 'text-danger-500 font-semibold' : (isInProgress ? 'text-info-500' : (isMuted ? 'text-navy-400 italic opacity-80' : 'text-navy-50')));
-        
-        // ... (tu lógica de actionButtonsHtml se mantiene igual) ...
-        // Definimos los botones como un string limpio y simple, sin backticks complejos
-let actionButtonsHtml = '';
-        
-        if (isTrash) {
-            actionButtonsHtml = `
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button onclick="event.stopPropagation(); restoreTaskNative(${task.id})" class="text-navy-400 hover:text-emerald-500 p-1.5 rounded hover:bg-navy-700 transition-colors focus:outline-none" title="Restaurar Tarea">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h10a8 8 0 018 8v2M3 10l6 6m-6-6l6-6"/></svg>
-                    </button>
-                    <button onclick="event.stopPropagation(); hardDeleteTaskNative(${task.id})" class="text-navy-400 hover:text-danger-500 p-1.5 rounded hover:bg-navy-700 transition-colors focus:outline-none" title="Eliminar Definitivamente">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
-                </div>
-            `;
-        } else {
-            actionButtonsHtml = `
-                <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                    <button onclick="window.toggleProgressSafe(${task.id}, event)" class="text-navy-400 hover:text-brand-500 p-1.5 rounded hover:bg-navy-700 transition-colors focus:outline-none" title="Pausar/Reanudar">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 9v6m4-6v6m7-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </button>
-                    <button onclick="window.prepareSubtaskSafe(${task.id}, event)" class="text-navy-400 hover:text-brand-500 p-1.5 rounded hover:bg-navy-700 transition-colors focus:outline-none" title="Agregar Subtarea">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
-                    </button>
-                    <button onclick="window.openPostponeModal(${task.id}, event)" class="text-navy-400 hover:text-brand-500 p-1.5 rounded hover:bg-navy-700 transition-colors focus:outline-none" title="Posponer">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-                    </button>
-                    <button onclick="event.stopPropagation(); window.openEditModal(${task.id})" class="text-navy-400 hover:text-brand-500 p-1.5 rounded hover:bg-navy-700 transition-colors focus:outline-none" title="Editar">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-                    </button>
-                    <button onclick="event.stopPropagation(); window.deleteTaskUniversal(${task.id})" class="text-navy-400 hover:text-danger-500 p-1.5 rounded hover:bg-navy-700 transition-colors focus:outline-none" title="Eliminar">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-                    </button>
-                </div>
-            `;
-        }
-                                                
+        // Retorno plano y sin riesgos
         return `
-    <div class="task-wrapper w-full" data-id="${task.id}">
-        <div class="task-item group flex flex-col w-full border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
-            <div class="flex items-center justify-between py-1.5 pr-4 w-full">
-                <div class="flex items-center gap-3 flex-1 min-w-0">
-                    ${bulkCheckboxHTML}
-                    ${(hasChildren && !isTrash) ? `<button onclick="toggleExpand(${task.id}, event)" class="p-0.5 text-navy-400 hover:text-navy-50 transition-transform ${isExpanded ? 'rotate-90' : ''} focus:outline-none shrink-0"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>` : `<div class="w-4 shrink-0"></div>`}
-                    <input type="checkbox" ${isCompleted ? 'checked' : ''} ${isTrash ? 'disabled' : `onchange="toggleTaskUniversal(${task.id})"`} class="task-cb shrink-0 ${(isBulkMode || isTrash) ? 'opacity-40 pointer-events-none' : ''} ${isInProgress ? 'is-in-progress' : ''}">
-                    
-                    <div class="flex flex-col min-w-[100px] flex-1">
-                        <div class="flex items-center gap-2 w-full">
-                            <span class="text-[14px] font-medium task-name ${nameStyle} truncate cursor-pointer select-none leading-none transition-colors" onclick="${isTrash ? '' : (isBulkMode ? `toggleBulkSelect(${task.id}, event)` : `openEditModal(${task.id})`)}">
-                                ${task.name || 'Sin nombre'}
-                            </span>
-                            ${tagsHtml} 
-                            ${(hasChildren && !isTrash) ? `<span class="bg-navy-700 text-navy-400 px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 shadow-inner">+${visualSubCount} sub.</span>` : ''}
-                            ${recurrenceBadge}
-                        </div>
+            <div class="task-item" data-id="${task.id}" style="width: 100%;">
+                <div class="flex items-center justify-between py-2 pr-4 border-b border-navy-700 hover:bg-navy-700/50">
+                    <div class="flex items-center gap-2">
+                        <span class="text-navy-50 font-medium">${task.name || 'Sin nombre'}</span>
                     </div>
                 </div>
-                
-                <div class="flex items-center gap-3 shrink-0">
-                    ${actionButtonsHtml}
-                    <div class="w-28 flex flex-col items-start justify-center gap-1.5 shrink-0 pl-2">
-                         ${dateDisplayHTML}
-                    </div>
+                <div class="subtasks-container">
+                    ${(isExpanded && hasChildren) ? buildTaskRows(task.subtasks, [...path, task.id]) : ''}
                 </div>
             </div>
-            ${hasChildren ? subtaskListHTML : ''}
-        </div>
-    </div>
-`;
-            }).join('');
-        }
-
+        `;
+    }).join('');
+}
 window.renderTasks = function() {
     const list = document.getElementById('taskList'); 
     const empty = document.getElementById('emptyState');
