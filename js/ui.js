@@ -511,7 +511,25 @@ function buildTaskRows(nodes, path = []) {
         }
         const recurrenceBadge = task.recurrenceRule ? `<span class="ml-2 flex items-center gap-1 text-brand-500 bg-brand-500/10 border border-brand-500/30 px-1.5 py-0.5 rounded text-[9px] uppercase tracking-wide font-bold"><svg class="w-2.5 h-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>Repite</span>` : '';
         let subtasksHtml = (isExpanded && hasChildren) ? buildTaskRows(task.subtasks, [...path, {id: task.id, name: task.name}]) : '';
-        const subtaskListHTML = isTrash ? '' : `<div class="subtasks-list" data-parent-id="${task.id}" style="${(hasChildren && !isExpanded) ? 'display: none;' : ''}">${subtasksHtml}</div>`;
+        // ... dentro del map de buildTaskRows ...
+
+// Ajuste: Aseguramos que si no hay hijos, no se renderice ni el contenedor
+const subtaskListHTML = (hasChildren && !isTrash) ? `
+    <div class="subtasks-list w-full" data-parent-id="${task.id}" style="${!isExpanded ? 'display: none;' : ''}">
+        ${subtasksHtml}
+    </div>
+` : '';
+
+// ... en el return final ...
+return `
+    <div class="task-wrapper w-full flex flex-col" data-id="${task.id}">
+        <div class="task-item group flex flex-col w-full border-b border-navy-700 hover:bg-navy-700/50 transition-colors">
+            <div class="flex items-center justify-between py-1.5 pr-4 w-full">
+                </div>
+        </div>
+        ${subtaskListHTML}
+    </div>
+`;
         const bulkCheckboxHTML = (isBulkMode && !isTrash) ? `<div class="shrink-0 mr-2 flex items-center justify-center cursor-pointer py-1 pr-1" onclick="toggleBulkSelect(${task.id}, event)"><input type="checkbox" class="w-[18px] h-[18px] rounded-sm border border-navy-500 text-brand-500 bg-navy-800 focus:ring-0 cursor-pointer pointer-events-none transition-colors" ${selectedTaskIds.has(task.id) ? 'checked' : ''}></div>` : '';
         const isInProgress = task.status === 'in_progress'; const isMuted = !task._explicitMatch && isFiltering && !isTrash;
         let contextHtml = ''; if (task.context && task.context.trim() !== '') { const ctxStyles = getContextStyles(task.context); contextHtml = `<span class="mx-1 shrink-0 text-navy-600">&bull;</span><span class="truncate font-semibold tracking-wide ${ctxStyles.text} max-w-[80px] sm:max-w-[120px]">${task.context}</span>`; }
