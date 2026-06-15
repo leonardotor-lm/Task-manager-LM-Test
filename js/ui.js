@@ -475,7 +475,7 @@ function buildTaskRows(nodes, path = []) {
         const hasChildren = visualSubCount > 0;
         const isExpanded = isTrash || (currentState.view === 'focus' || isFiltering) ? true : (expandedStates[task.id] || false);
         const logicalDepth = path.length + 1;
-        const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-20 md:pl-22');
+        const indentClass = isTrash ? 'pl-3 md:pl-5' : (indentMap[logicalDepth] || 'pl-28 md:pl-30');
         const isCompleted = task.status === 'completed';
         const isOverdue = task.date && task.date < todayStr && !isCompleted;
 
