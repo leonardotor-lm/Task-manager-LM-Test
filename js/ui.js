@@ -520,42 +520,37 @@ const subtaskListHTML = (hasChildren && !isTrash) ? `
     </div>
 ` : '';
 
-// ... en el return final ...
+        // ... dentro del map de buildTaskRows ...
 return `
-            <div class="task-container" data-id="${task.id}" style="width: 100%;">
-                <div class="task-item flex items-center justify-between py-1.5 pr-4 border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
-                    
-                    <div class="flex items-center gap-3 flex-1 min-w-0">
-                        ${bulkCheckboxHTML}
-                        ${(hasChildren && !isTrash) ? `<button onclick="toggleExpand(${task.id}, event)" class="p-0.5 text-navy-400 hover:text-navy-50 transition-transform ${isExpanded ? 'rotate-90' : ''} focus:outline-none shrink-0"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>` : `<div class="w-4 shrink-0"></div>`}
-                        <input type="checkbox" ${isCompleted ? 'checked' : ''} ${isTrash ? 'disabled' : `onchange="toggleTaskUniversal(${task.id})"`} class="task-cb shrink-0 ${(isBulkMode || isTrash) ? 'opacity-40 pointer-events-none' : ''} ${isInProgress ? 'is-in-progress' : ''}">
-                        
-                        <div class="flex flex-col min-w-[120px] flex-1">
-                            <div class="flex items-center gap-2 w-full">
-                                <span class="text-[14px] font-medium task-name ${nameStyle} truncate cursor-pointer select-none leading-none transition-colors" onclick="${isTrash ? '' : (isBulkMode ? `toggleBulkSelect(${task.id}, event)` : `openEditModal(${task.id})`)}">
-                                    ${task.name || 'Sin nombre'}
-                                </span>
-                                ${tagsHtml}
-                                ${recurrenceBadge}
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="flex items-center gap-3 shrink-0">
-                        ${actionButtonsHtml}
-                        <div class="w-28 flex flex-col items-start justify-center gap-1.5 shrink-0 pl-2">
-                             ${dateDisplayHTML}
-                        </div>
-                    </div>
-                </div>
+    <div class="task-item group flex flex-col w-full border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}" data-id="${task.id}">
+        <div class="flex items-center justify-between py-2 pr-4 w-full h-10">
+            <div class="flex items-center gap-3 flex-1 min-w-0">
+                ${bulkCheckboxHTML}
+                ${(hasChildren && !isTrash) ? `
+                    <button onclick="toggleExpand(${task.id}, event)" class="p-0.5 text-navy-400 hover:text-navy-50 transition-transform ${isExpanded ? 'rotate-90' : ''} focus:outline-none shrink-0">
+                        <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                    </button>
+                ` : `<div class="w-4 shrink-0"></div>`}
                 
-                ${hasChildren ? `
-                    <div class="subtasks-container w-full" style="display: ${isExpanded ? 'block' : 'none'}; padding-left: 20px;">
-                        ${subtasksHtml}
-                    </div>
-                ` : ''}
+                <input type="checkbox" ${isCompleted ? 'checked' : ''} ${isTrash ? 'disabled' : `onchange="toggleTaskUniversal(${task.id})"`} class="task-cb shrink-0 ${isTrash ? 'opacity-40' : ''}">
+                
+                <span class="text-[14px] font-medium task-name ${nameStyle} truncate cursor-pointer select-none leading-none" onclick="${isTrash ? '' : `openEditModal(${task.id})`}">
+                    ${task.name || 'Sin nombre'}
+                </span>
+                ${tagsHtml}
             </div>
-        `;
+            
+            <div class="flex items-center gap-3 shrink-0">
+                ${actionButtonsHtml}
+                <div class="w-28 flex items-center justify-end pl-2">
+                    ${dateDisplayHTML}
+                </div>
+            </div>
+        </div>
+        ${(isExpanded && hasChildren) ? buildTaskRows(task.subtasks, [...path, {id: task.id, name: task.name}]) : ''}
+    </div>
+`.trim();
+}).join('');
         const bulkCheckboxHTML = (isBulkMode && !isTrash) ? `<div class="shrink-0 mr-2 flex items-center justify-center cursor-pointer py-1 pr-1" onclick="toggleBulkSelect(${task.id}, event)"><input type="checkbox" class="w-[18px] h-[18px] rounded-sm border border-navy-500 text-brand-500 bg-navy-800 focus:ring-0 cursor-pointer pointer-events-none transition-colors" ${selectedTaskIds.has(task.id) ? 'checked' : ''}></div>` : '';
         const isInProgress = task.status === 'in_progress'; const isMuted = !task._explicitMatch && isFiltering && !isTrash;
         let contextHtml = ''; if (task.context && task.context.trim() !== '') { const ctxStyles = getContextStyles(task.context); contextHtml = `<span class="mx-1 shrink-0 text-navy-600">&bull;</span><span class="truncate font-semibold tracking-wide ${ctxStyles.text} max-w-[80px] sm:max-w-[120px]">${task.context}</span>`; }
