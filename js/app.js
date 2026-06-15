@@ -1440,3 +1440,50 @@ window.hardDeleteTaskNative = function(id) {
         }, true);
     }
 };
+// Función autónoma y segura para cambiar el estado de la tarea
+window.toggleProgressSafe = async function(id, event) {
+    if (event) event.stopPropagation(); // Frenamos el clic para que no abra el modal
+    
+    let found = false;
+    let newStatus = "";
+    
+    // Recorrido directo sobre el árbol en memoria
+    function traverse(nodes) {
+        for (let i = 0; i < nodes.length; i++) {
+            if (nodes[i].id === id) {
+                nodes[i].status = nodes[i].status === 'in_progress' ? 'pending' : 'in_progress';
+                newStatus = nodes[i].status;
+                found = true;
+                return true;
+            }
+            if (nodes[i].subtasks && traverse(nodes[i].subtasks)) return true;
+        }
+        return false;
+    }
+    
+    if (typeof tasks !== 'undefined') {
+        traverse(tasks);
+        if (found) {
+            // Invocamos actualización de UI y persistencia
+            if (typeof renderTasks === 'function') renderTasks();
+            if (typeof showNotice === 'function') showNotice(newStatus === 'in_progress' ? "Tarea en progreso" : "Tarea pausada");
+            if (typeof saveData === 'function') await saveData();
+        }
+    }
+};
+
+// Función segura para inyectar el ID del padre al crear subtarea
+window.prepareSubtaskSafe = function(id, event) {
+    if (event) event.stopPropagation();
+    
+    if (typeof openAddTaskModal === 'function') {
+        openAddTaskModal();
+        // Retardo estratégico para que el DOM termine de dibujar el <select>
+        setTimeout(() => {
+            const parentDropdown = document.getElementById('parentInput');
+            if (parentDropdown) {
+                parentDropdown.value = id;
+            }
+        }, 50);
+    }
+};
