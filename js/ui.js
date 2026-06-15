@@ -609,8 +609,7 @@ const pruned = (typeof window.pruneTree === 'function' && typeof tasks !== 'unde
         const hasActiveStatus = filters.status && filters.status !== 'pending' && filters.status !== 'all';
         
         // El aplanamiento se activa obligatoriamente con cualquier filtro o en la vista global
-        const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus || state.view === 'all';
-        
+        const isFlatView = isTemporalView || hasActiveSearch || hasActivePriority || hasActiveContext || hasActiveStatus;        
         nodesToRender = isFlatView ? (typeof window.flattenMatches === 'function' ? window.flattenMatches(pruned) : (typeof flattenMatches === 'function' ? flattenMatches(pruned) : [])) : pruned;
 
         // MOTOR DE ORDENAMIENTO JERÁRQUICO
