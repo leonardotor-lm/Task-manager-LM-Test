@@ -556,27 +556,13 @@ let actionButtonsHtml = '';
         }
                                                 
         return `
-            <div class="task-item" data-id="${task.id}">
-                <div class="group flex flex-col py-1.5 pr-4 border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
+            <div class="task-wrapper" data-id="${task.id}">
+                <div class="task-item group flex flex-col py-1.5 pr-4 border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
                     <div class="flex items-center justify-between">
                         <div class="flex items-center gap-3 flex-1 min-w-0">
                             ${bulkCheckboxHTML}
                             ${(hasChildren && !isTrash) ? `<button onclick="toggleExpand(${task.id}, event)" class="p-0.5 text-navy-400 hover:text-navy-50 transition-transform ${isExpanded ? 'rotate-90' : ''} focus:outline-none shrink-0"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>` : `<div class="w-4 shrink-0"></div>`}
-                            <input type="checkbox" ${isCompleted ? 'checked' : ''} ${isTrash ? 'disabled' : `onchange="toggleTaskUniversal(${task.id})"`} class="task-cb shrink-0 ${(isBulkMode || isTrash) ? 'opacity-40 pointer-events-none' : ''} ${isInProgress ? 'is-in-progress' : ''}">
-                            <div class="flex flex-col min-w-0 flex-1">
-                                <div class="flex items-center gap-2 min-w-0">
-                                    <span class="text-[14px] font-medium task-name ${nameStyle} truncate ${isTrash ? 'pointer-events-none' : 'cursor-pointer'} select-none leading-none transition-colors" onclick="${isTrash ? '' : (isBulkMode ? `toggleBulkSelect(${task.id}, event)` : `openEditModal(${task.id})`)}">${task.name}</span>
-                                    ${tagsHtml} ${(hasChildren && !isTrash) ? `<span class="bg-navy-700 text-navy-400 px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 shadow-inner">+${visualSubCount} sub.</span>` : ''}
-                                    ${recurrenceBadge}
-                                    ${(task.attachments && task.attachments.length > 0) ? `<svg class="w-3.5 h-3.5 text-blue-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13"/></svg>` : ''}
-                                </div>
-                                <div class="flex items-center text-[11px] mt-1 leading-none min-w-0 select-none">
-                                    <div class="flex items-center text-navy-400 ${isTrash ? '' : 'cursor-pointer hover:text-navy-300'} transition-colors shrink-0 min-w-0">
-                                        <span class="truncate">${task.area}</span>${contextHtml}${dependencyHtml}
-                                    </div>
-                                </div>
                             </div>
-                        </div>
                         <div class="flex items-center gap-3 shrink-0 relative">
                             ${actionButtonsHtml}
                             <div class="w-28 flex flex-col items-start justify-center gap-1.5 shrink-0 pl-2">
@@ -586,11 +572,11 @@ let actionButtonsHtml = '';
                         </div>
                     </div>
                 </div>
-                ${subtaskListHTML}
+                ${hasChildren ? subtaskListHTML : ''}
             </div>
         `;
     }).join('');
-}
+        }
 
 window.renderTasks = function() {
     const list = document.getElementById('taskList'); 
