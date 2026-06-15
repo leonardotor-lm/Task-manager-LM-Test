@@ -125,7 +125,6 @@ function migrateAndNormalizeTasks() {
 
 // LÓGICA DE TAREAS (CREATE / UPDATE / DELETE / COMPLETE)
 async function addTask() { 
-    // 1. Invocamos la función recolectora blindada de ui.js
     if (typeof window.getAddTaskFormData !== 'function') {
         console.error("Error estructural: getAddTaskFormData no está disponible.");
         return;
@@ -133,10 +132,9 @@ async function addTask() {
     
     const data = window.getAddTaskFormData();
     
-    // Validación estructural mínima: no se guardan tareas sin nombre
+    // Validación estructural mínima
     if (!data.name) return; 
 
-    // 2. Ensamblaje del nuevo nodo
     const newTask = { 
         id: Date.now(), 
         name: data.name, 
@@ -144,7 +142,7 @@ async function addTask() {
         context: data.context,
         priority: data.priority,
         date: data.dateInput,
-        startDate: data.dateInput, // Asumimos fecha de inicio igual a la agendada
+        startDate: data.dateInput,
         time: data.timeInput,
         notes: data.notes,
         reminder: data.reminder,
@@ -155,19 +153,42 @@ async function addTask() {
         recurrenceRule: data.rule 
     };
     
-    // 3. Inserción jerárquica
+    // Ruteo Jerárquico Definitivo
     if (data.parentId === 'root') {
         tasks.unshift(newTask);
     } else {
-        if (typeof insertTask === 'function') {
-            insertTask(newTask, data.parentId);
+        // CIRUGÍA: Inyección recursiva nativa (Bypass a la función defectuosa insertTask)
+        let inserted = false;
+        
+        function injectSubtask(nodes) {
+            for (let i = 0; i < nodes.length; i++) {
+                if (nodes[i].id === data.parentId) {
+                    // Garantizamos la existencia del array
+                    if (!nodes[i].subtasks) nodes[i].subtasks = [];
+                    // Inyectamos EXCLUSIVAMENTE en el padre
+                    nodes[i].subtasks.unshift(newTask);
+                    inserted = true;
+                    return true;
+                }
+                // Búsqueda en profundidad
+                if (nodes[i].subtasks && injectSubtask(nodes[i].subtasks)) return true;
+            }
+            return false;
+        }
+        
+        injectSubtask(typeof tasks !== 'undefined' ? tasks : []);
+        
+        if (!inserted) {
+            console.warn("El nodo padre no fue encontrado. Derivando a la raíz por seguridad.");
+            tasks.unshift(newTask);
         } else {
-            console.error("Fallo de enrutamiento: insertTask no está definida.");
-            return;
+            // Expansión automática: forzamos que el padre se abra para que la creación sea visible
+            if (typeof window.expandedStates === 'undefined') window.expandedStates = {};
+            window.expandedStates[data.parentId] = true;
         }
     }
     
-    // 4. Cierre del ciclo visual y persistencia
+    // Cierre y ciclo de persistencia
     if (typeof closeAddTaskModal === 'function') closeAddTaskModal(); 
     if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns(); 
     if (typeof renderTasks === 'function') renderTasks(); 
