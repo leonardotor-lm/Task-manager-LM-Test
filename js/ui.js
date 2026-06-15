@@ -457,7 +457,15 @@ window.renderSidebarCounters = renderSidebarCounters;
 function buildTaskRows(nodes, path = []) {
     if (!nodes || nodes.length === 0) return '';
     const isTrash = currentState.view === 'trash';
-    const indentMap = { 1: 'pl-3 md:pl-5', 2: 'pl-8 md:pl-10', 3: 'pl-12 md:pl-14', 4: 'pl-16 md:pl-18', 5: 'pl-20 md:pl-22' };
+    const indentMap = { 
+    1: 'pl-3 md:pl-5', 
+    2: 'pl-8 md:pl-10', 
+    3: 'pl-12 md:pl-14', 
+    4: 'pl-16 md:pl-18', 
+    5: 'pl-20 md:pl-22',
+    6: 'pl-24 md:pl-26',
+    7: 'pl-28 md:pl-30' 
+};
     const isFiltering = currentFilters.search !== '' || currentFilters.priority !== 'all' || currentFilters.context !== 'all' || currentFilters.status === 'in_progress' || currentFilters.status === 'completed';
     const todayStr = formatDateLocal(new Date());
 
