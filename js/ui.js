@@ -23,28 +23,30 @@ function getAddTaskFormData() {
     };
 }
 window.getAddTaskFormData = getAddTaskFormData;
-
 function getEditTaskFormData() {
-    const newParentIdRaw = document.getElementById('editParentInput').value;
-    const editTagsInput = document.getElementById('editTagsInput');
-    
+    const getVal = (id) => { const el = document.getElementById(id); return el ? el.value : ''; };
+    const isChecked = (id) => { const el = document.getElementById(id); return el ? el.checked : false; };
+
+    const newParentIdRaw = getVal('editParentInput');
+    const rawTags = getVal('editTagsInput');
+
     return {
-        name: document.getElementById('editNameInput').value.trim(),
-        status: document.getElementById('editStatusInput').value,
-        area: document.getElementById('editAreaInput').value,
-        context: document.getElementById('editContextInput').value,
-        priority: document.getElementById('editPriorityInput').value,
-        dateInput: document.getElementById('editDateInput').value,
-        timeInput: document.getElementById('editTimeInput').value,
-        notes: document.getElementById('editNotesInput').value.trim(),
-        reminder: document.getElementById('editReminderToggle').checked,
+        name: getVal('editNameInput').trim(),
+        status: getVal('editStatusInput') || 'pending',
+        area: getVal('editAreaInput'),
+        context: getVal('editContextInput'),
+        priority: getVal('editPriorityInput') || 'baja',
+        dateInput: getVal('editDateInput'),
+        timeInput: getVal('editTimeInput'),
+        notes: getVal('editNotesInput').trim(),
+        reminder: isChecked('editReminderToggle'),
         rule: typeof buildRuleFromUI === 'function' ? buildRuleFromUI('edit') : null,
-        newParentId: newParentIdRaw === 'root' ? 'root' : Number(newParentIdRaw),
-        // Integración vital para evitar el crash:
-        tags: editTagsInput && editTagsInput.value ? editTagsInput.value.split(',').map(t => t.trim()).filter(Boolean) : []
+        newParentId: newParentIdRaw === 'root' ? 'root' : (newParentIdRaw ? Number(newParentIdRaw) : 'root'),
+        tags: rawTags ? rawTags.split(',').map(t => t.trim()).filter(Boolean) : []
     };
 }
 window.getEditTaskFormData = getEditTaskFormData;
+
 function getBulkMoveFormData() {
     return {
         newArea: document.getElementById('bulkAreaInput').value,
