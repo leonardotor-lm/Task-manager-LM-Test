@@ -556,26 +556,38 @@ let actionButtonsHtml = '';
         }
                                                 
         return `
-            <div class="task-wrapper" data-id="${task.id}">
-                <div class="task-item group flex flex-col py-1.5 pr-4 border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
-                    <div class="flex items-center justify-between">
-                        <div class="flex items-center gap-3 flex-1 min-w-0">
-                            ${bulkCheckboxHTML}
-                            ${(hasChildren && !isTrash) ? `<button onclick="toggleExpand(${task.id}, event)" class="p-0.5 text-navy-400 hover:text-navy-50 transition-transform ${isExpanded ? 'rotate-90' : ''} focus:outline-none shrink-0"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>` : `<div class="w-4 shrink-0"></div>`}
-                            </div>
-                        <div class="flex items-center gap-3 shrink-0 relative">
-                            ${actionButtonsHtml}
-                            <div class="w-28 flex flex-col items-start justify-center gap-1.5 shrink-0 pl-2">
-                                <svg title="Prioridad: ${task.priority}" class="w-3.5 h-3.5 ${priorityColors[task.priority]}" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M3 6a3 3 0 013-3h10a1 1 0 01.8 1.6L14.25 8l2.55 3.4A1 1 0 0116 13H6a1 1 0 00-1 1v3a1 1 0 11-2 0V6z" clip-rule="evenodd"/></svg>
-                                ${dateDisplayHTML}
-                            </div>
+    <div class="task-wrapper w-full" data-id="${task.id}">
+        <div class="task-item group flex flex-col w-full border-b border-navy-700 hover:bg-navy-700/50 transition-colors ${indentClass}">
+            <div class="flex items-center justify-between py-1.5 pr-4 w-full">
+                <div class="flex items-center gap-3 flex-1 min-w-0">
+                    ${bulkCheckboxHTML}
+                    ${(hasChildren && !isTrash) ? `<button onclick="toggleExpand(${task.id}, event)" class="p-0.5 text-navy-400 hover:text-navy-50 transition-transform ${isExpanded ? 'rotate-90' : ''} focus:outline-none shrink-0"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg></button>` : `<div class="w-4 shrink-0"></div>`}
+                    <input type="checkbox" ${isCompleted ? 'checked' : ''} ${isTrash ? 'disabled' : `onchange="toggleTaskUniversal(${task.id})"`} class="task-cb shrink-0 ${(isBulkMode || isTrash) ? 'opacity-40 pointer-events-none' : ''} ${isInProgress ? 'is-in-progress' : ''}">
+                    
+                    <div class="flex flex-col min-w-[100px] flex-1">
+                        <div class="flex items-center gap-2 w-full">
+                            <span class="text-[14px] font-medium task-name ${nameStyle} truncate cursor-pointer select-none leading-none transition-colors" onclick="${isTrash ? '' : (isBulkMode ? `toggleBulkSelect(${task.id}, event)` : `openEditModal(${task.id})`)}">
+                                ${task.name || 'Sin nombre'}
+                            </span>
+                            ${tagsHtml} 
+                            ${(hasChildren && !isTrash) ? `<span class="bg-navy-700 text-navy-400 px-1.5 py-0.5 rounded text-[10px] font-bold shrink-0 shadow-inner">+${visualSubCount} sub.</span>` : ''}
+                            ${recurrenceBadge}
                         </div>
                     </div>
                 </div>
-                ${hasChildren ? subtaskListHTML : ''}
+                
+                <div class="flex items-center gap-3 shrink-0">
+                    ${actionButtonsHtml}
+                    <div class="w-28 flex flex-col items-start justify-center gap-1.5 shrink-0 pl-2">
+                         ${dateDisplayHTML}
+                    </div>
+                </div>
             </div>
-        `;
-    }).join('');
+            ${hasChildren ? subtaskListHTML : ''}
+        </div>
+    </div>
+`;
+            }).join('');
         }
 
 window.renderTasks = function() {
