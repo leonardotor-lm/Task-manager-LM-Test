@@ -2,6 +2,7 @@
 function getAddTaskFormData() {
     const parentIdRaw = document.getElementById('parentInput').value;
     const rawDate = document.getElementById('dateInput').value;
+    const tagsInput = document.getElementById('tagsInput');
 
     return {
         name: document.getElementById('taskInput').value.trim(),
@@ -13,13 +14,17 @@ function getAddTaskFormData() {
         notes: document.getElementById('notesInput').value.trim(),
         reminder: document.getElementById('reminderToggle').checked,
         rule: typeof buildRuleFromUI === 'function' ? buildRuleFromUI('add') : null,
-        parentId: parentIdRaw === 'root' ? 'root' : Number(parentIdRaw)
+        parentId: parentIdRaw === 'root' ? 'root' : Number(parentIdRaw),
+        // Integración vital para evitar el crash:
+        tags: tagsInput && tagsInput.value ? tagsInput.value.split(',').map(t => t.trim()).filter(Boolean) : []
     };
 }
 window.getAddTaskFormData = getAddTaskFormData;
 
 function getEditTaskFormData() {
     const newParentIdRaw = document.getElementById('editParentInput').value;
+    const editTagsInput = document.getElementById('editTagsInput');
+    
     return {
         name: document.getElementById('editNameInput').value.trim(),
         status: document.getElementById('editStatusInput').value,
@@ -31,7 +36,9 @@ function getEditTaskFormData() {
         notes: document.getElementById('editNotesInput').value.trim(),
         reminder: document.getElementById('editReminderToggle').checked,
         rule: typeof buildRuleFromUI === 'function' ? buildRuleFromUI('edit') : null,
-        newParentId: newParentIdRaw === 'root' ? 'root' : Number(newParentIdRaw)
+        newParentId: newParentIdRaw === 'root' ? 'root' : Number(newParentIdRaw),
+        // Integración vital para evitar el crash:
+        tags: editTagsInput && editTagsInput.value ? editTagsInput.value.split(',').map(t => t.trim()).filter(Boolean) : []
     };
 }
 window.getEditTaskFormData = getEditTaskFormData;
