@@ -123,18 +123,12 @@ function migrateAndNormalizeTasks() {
     return changed;
 }
 
-// LÓGICA DE TAREAS (CREATE / UPDATE / DELETE / COMPLETE)
 async function addTask() { 
-    if (typeof window.getAddTaskFormData !== 'function') {
-        console.error("Error estructural: getAddTaskFormData no está disponible.");
-        return;
-    }
-    
+    if (typeof window.getAddTaskFormData !== 'function') return;
     const data = window.getAddTaskFormData();
-    
-    // Validación estructural mínima
     if (!data.name) return; 
 
+    // Construcción limpia
     const newTask = { 
         id: Date.now(), 
         name: data.name, 
@@ -150,49 +144,44 @@ async function addTask() {
         attachments: typeof currentAttachments !== 'undefined' ? [...currentAttachments] : [], 
         subtasks: [], 
         tags: data.tags, 
-        recurrenceRule: data.rule 
+        recurrenceRule: data.rule
+        // IMPORTANTE: Nos aseguramos de que no arrastre propiedades de ruta viejas
     };
     
-    // Ruteo Jerárquico Definitivo
+    // Inserción forzada
     if (data.parentId === 'root') {
         tasks.unshift(newTask);
     } else {
-        // CIRUGÍA: Inyección recursiva nativa (Bypass a la función defectuosa insertTask)
-        let inserted = false;
+        let parentFound = false;
         
-        function injectSubtask(nodes) {
-            for (let i = 0; i < nodes.length; i++) {
-                if (nodes[i].id === data.parentId) {
-                    // Garantizamos la existencia del array
-                    if (!nodes[i].subtasks) nodes[i].subtasks = [];
-                    // Inyectamos EXCLUSIVAMENTE en el padre
-                    nodes[i].subtasks.unshift(newTask);
-                    inserted = true;
+        // Función de inyección limpia
+        function findAndInject(nodes) {
+            for (let node of nodes) {
+                if (node.id === data.parentId) {
+                    if (!node.subtasks) node.subtasks = [];
+                    node.subtasks.unshift(newTask);
+                    
+                    // FORZAMOS LA APERTURA VISUAL
+                    if (typeof window.expandedStates === 'object') {
+                        window.expandedStates[node.id] = true;
+                    }
+                    parentFound = true;
                     return true;
                 }
-                // Búsqueda en profundidad
-                if (nodes[i].subtasks && injectSubtask(nodes[i].subtasks)) return true;
+                if (node.subtasks && findAndInject(node.subtasks)) return true;
             }
             return false;
         }
         
-        injectSubtask(typeof tasks !== 'undefined' ? tasks : []);
+        findAndInject(tasks);
         
-        if (!inserted) {
-            console.warn("El nodo padre no fue encontrado. Derivando a la raíz por seguridad.");
-            tasks.unshift(newTask);
-        } else {
-            // Expansión automática: forzamos que el padre se abra para que la creación sea visible
-            if (typeof window.expandedStates === 'undefined') window.expandedStates = {};
-            window.expandedStates[data.parentId] = true;
-        }
+        // Si por algún motivo falló la inyección, metela en la raíz para no perderla
+        if (!parentFound) tasks.unshift(newTask);
     }
     
-    // Cierre y ciclo de persistencia
+    // LIMPIEZA FINAL
     if (typeof closeAddTaskModal === 'function') closeAddTaskModal(); 
-    if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns(); 
     if (typeof renderTasks === 'function') renderTasks(); 
-    if (typeof showNotice === 'function') showNotice("Tarea guardada"); 
     if (typeof saveData === 'function') await saveData(); 
 }
 window.addTask = addTask;
