@@ -619,6 +619,50 @@ function updateUI() {
 // VARIOUS OTHER UTILS
 function toggleExpand(id, event) { if (event) event.stopPropagation(); expandedStates[id] = !expandedStates[id]; localStorage.setItem('leo_expanded_states', JSON.stringify(expandedStates)); renderTasks(); }
 
+// 1. Restaurar tarea
+window.restoreTask = function(id) {
+    const task = tasks.find(t => t.id === id);
+    if (task) {
+        task.isDeleted = false;
+        delete task.deletedAt;
+        task.status = 'pending'; // Devuelve el estado a pendiente
+        
+        // NOTA: Reemplazá 'saveTasks()' por el nombre exacto de la función 
+        // que uses para guardar en localStorage si se llama distinto.
+        if (typeof saveTasks === 'function') saveTasks(); 
+        renderTasks();
+    }
+};
+
+// 2. Borrado definitivo individual
+window.deleteTaskPermanently = function(id) {
+    if (confirm("¿Estás seguro de eliminar esta tarea definitivamente? Esta acción es irreversible.")) {
+        const index = tasks.findIndex(t => t.id === id);
+        if (index !== -1) {
+            tasks.splice(index, 1); // Extirpa la tarea del array global
+            if (typeof saveTasks === 'function') saveTasks();
+            renderTasks();
+        }
+    }
+};
+
+// 3. Vaciar toda la papelera
+window.emptyTrash = function() {
+    const trashCount = tasks.filter(t => t.isDeleted).length;
+    if (trashCount === 0) return; // Evita acciones si ya está vacía
+
+    if (confirm(`¿Estás seguro de eliminar definitivamente las ${trashCount} tareas de la papelera?`)) {
+        // Mantenemos solo las tareas que NO están en la papelera.
+        // Usamos splice para no perder la referencia de memoria del array original 'tasks'.
+        const remainingTasks = tasks.filter(t => !t.isDeleted);
+        tasks.length = 0; 
+        tasks.push(...remainingTasks);
+        
+        if (typeof saveTasks === 'function') saveTasks();
+        renderTasks();
+    }
+};
+
 function renderCalendar() { 
     const grid = document.getElementById('calendar-grid'); 
     if (!grid) return; 
