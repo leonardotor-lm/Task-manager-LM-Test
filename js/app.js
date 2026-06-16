@@ -1031,7 +1031,54 @@ function renderManageItems() {
 async function setTaskStatus(id, newStatus) { findAndMutateTask(id, (nodes, i) => { nodes[i].status = newStatus; }); renderTasks(); renderCalendar(); await saveData(); }
 async function restoreTask(id) { if (findAndMutateTask(id, (nodes, i) => { nodes[i].isDeleted = false; delete nodes[i].deletedAt; })) { refreshAllDropdowns(); renderTasks(); renderCalendar(); showNotice("Tarea restaurada"); await saveData(); } }
 async function hardDeleteTask(id) { showConfirm("Eliminar", "¿Eliminar definitivamente?", async () => { if (findAndMutateTask(id, (nodes, i) => nodes.splice(i, 1))) { refreshAllDropdowns(); renderTasks(); showNotice("Eliminada"); await saveData(); } }, true); }
-async function emptyTrash() { showConfirm("Vaciar Papelera", "¿Vaciar toda la papelera?", async () => { let changed = false; function walk(nodes) { for (let i = nodes.length - 1; i >= 0; i--) { if (nodes[i].isDeleted) { nodes.splice(i, 1); changed = true; } else if (nodes[i].subtasks) walk(nodes[i].subtasks); } } walk(tasks); if (changed) { renderTasks(); showNotice("Papelera vaciada"); await saveData(); } }, true); }
+// Vaciar toda la papelera (Refactorizado)
+window.emptyTrash = async function() {
+    let hasDeletedTasks = false;
+    
+    // 1. Verificación previa de seguridad
+    function checkDeleted(nodes) {
+        for (let node of nodes) {
+            if (node.isDeleted) return true;
+            if (node.subtasks && checkDeleted(node.subtasks)) return true;
+        }
+        return false;
+    }
+    
+    if (typeof tasks !== 'undefined') hasDeletedTasks = checkDeleted(tasks);
+
+    if (!hasDeletedTasks) {
+        if (typeof showNotice === 'function') showNotice("La papelera ya está vacía");
+        return;
+    }
+
+    // 2. Ejecución con persistencia estricta
+    if (typeof showConfirm === 'function') {
+        showConfirm(
+            "Vaciar Papelera", 
+            "¿Estás seguro de eliminar definitivamente todas las tareas de la papelera? Esta acción es irreversible y purgará la base de datos.", 
+            async () => {
+                function clearDeletedNodes(nodes) {
+                    for (let i = nodes.length - 1; i >= 0; i--) {
+                        if (nodes[i].isDeleted) {
+                            nodes.splice(i, 1);
+                        } else if (nodes[i].subtasks) {
+                            clearDeletedNodes(nodes[i].subtasks);
+                        }
+                    }
+                }
+                
+                if (typeof tasks !== 'undefined') {
+                    clearDeletedNodes(tasks);
+                    if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
+                    if (typeof renderTasks === 'function') renderTasks();
+                    if (typeof showNotice === 'function') showNotice("Papelera vaciada por completo");
+                    if (typeof saveData === 'function') await saveData(); // Persistencia forzada
+                }
+            }, 
+            true
+        );
+    }
+};
 
 // BULK ACTIONS
 // BULK ACTIONS
