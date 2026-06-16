@@ -1508,6 +1508,56 @@ window.hardDeleteTaskNative = function(id) {
         }, true);
     }
 };
+// Vaciar toda la papelera
+window.emptyTrashNative = function() {
+    // Verificamos si hay algo que borrar antes de abrir el modal
+    let hasDeletedTasks = false;
+    function checkDeleted(nodes) {
+        for (let node of nodes) {
+            if (node.isDeleted) return true;
+            if (node.subtasks && checkDeleted(node.subtasks)) return true;
+        }
+        return false;
+    }
+    
+    if (typeof tasks !== 'undefined') {
+        hasDeletedTasks = checkDeleted(tasks);
+    }
+
+    if (!hasDeletedTasks) {
+        if (typeof showNotice === 'function') showNotice("La papelera ya está vacía");
+        return;
+    }
+
+    if (typeof showConfirm === 'function') {
+        showConfirm(
+            "Vaciar Papelera", 
+            "¿Estás seguro de eliminar definitivamente todas las tareas de la papelera? Esta acción es irreversible y purgará la base de datos.", 
+            async () => {
+                // Función recursiva inversa para evitar saltos de índice al hacer splice
+                function clearDeletedNodes(nodes) {
+                    for (let i = nodes.length - 1; i >= 0; i--) {
+                        if (nodes[i].isDeleted) {
+                            nodes.splice(i, 1);
+                        } else if (nodes[i].subtasks) {
+                            clearDeletedNodes(nodes[i].subtasks);
+                        }
+                    }
+                }
+                
+                if (typeof tasks !== 'undefined') {
+                    clearDeletedNodes(tasks);
+                    if (typeof refreshAllDropdowns === 'function') refreshAllDropdowns();
+                    if (typeof renderTasks === 'function') renderTasks();
+                    if (typeof showNotice === 'function') showNotice("Papelera vaciada por completo");
+                    if (typeof saveData === 'function') await saveData();
+                }
+            }, 
+            true
+        );
+    }
+};
+
 // Función autónoma y segura para cambiar el estado de la tarea
 window.toggleProgressSafe = async function(id, event) {
     if (event) event.stopPropagation(); // Frenamos el clic para que no abra el modal
