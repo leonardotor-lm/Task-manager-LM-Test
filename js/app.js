@@ -1604,7 +1604,36 @@ window.emptyTrashNative = function() {
         );
     }
 };
+window.syncViewUI = function() {
+    // 1. Sincronización del Título Principal
+    const viewTitles = {
+        'today': 'Hoy y atrasadas',
+        'all': 'Todas las tareas',
+        'focus': 'Modo Enfoque',
+        'trash': 'Papelera'
+    };
 
+    // Ajustá 'viewTitle' por el ID real que tenga tu etiqueta <h2> o <h1> en el HTML
+    const titleElement = document.getElementById('viewTitle') || document.querySelector('.main-header h2');
+    if (titleElement && viewTitles[currentState.view]) {
+        titleElement.textContent = viewTitles[currentState.view];
+    }
+
+    // 2. Sincronización de la Barra Lateral
+    // Interceptamos los botones basándonos en su atributo onclick
+    const sidebarButtons = document.querySelectorAll('[onclick*="changeView"], [onclick*="setView"], [onclick*="switchView"]');
+    
+    sidebarButtons.forEach(btn => {
+        // Removemos las clases de estado "activo" de todos los botones
+        btn.classList.remove('bg-navy-700', 'text-brand-500', 'font-semibold');
+        
+        // Comprobamos si este botón invoca a la vista que está actualmente en el estado
+        if (btn.getAttribute('onclick').includes(currentState.view)) {
+            // Aplicamos las clases de iluminación al botón correspondiente
+            btn.classList.add('bg-navy-700', 'text-brand-500', 'font-semibold');
+        }
+    });
+};
 // Función autónoma y segura para cambiar el estado de la tarea
 window.toggleProgressSafe = async function(id, event) {
     if (event) event.stopPropagation(); // Frenamos el clic para que no abra el modal
