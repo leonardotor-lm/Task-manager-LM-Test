@@ -171,6 +171,10 @@ function closeConfirmModal(accepted) { document.getElementById('confirmModal').c
 
 window.showNotice = showNotice;
 window.showSyncStatus = showSyncStatus;
+// --- SONDA DIAGNÓSTICA DE ÁREAS ---
+console.log("1. Área guardada en la tarea:", `"${target.area}"`);
+console.log("2. Opciones reales en el HTML:", Array.from(document.getElementById('editAreaInput').options).map(o => `"${o.value}"`));
+console.log("3. Resultado en pantalla:", `"${document.getElementById('editAreaInput').value}"`);
 window.showConfirm = showConfirm;
 window.closeConfirmModal = closeConfirmModal;
 
