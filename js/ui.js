@@ -265,6 +265,8 @@ window.openEditModal = function(id) {
         }
     };
 
+    // Actualización de dropdowns
+    if (typeof refreshEditDropdowns === 'function') refreshEditDropdowns(id);
     // --- ASIGNACIÓN SEGURA ---
     setVal('editNameInput', target.name || '');
     setVal('editStatusInput', target.status || 'pending');
@@ -279,10 +281,7 @@ window.openEditModal = function(id) {
     // Checkbox de recordatorio
     const rem = document.getElementById('editReminderToggle');
     if (rem) rem.checked = target.reminder || false;
-
-    // Actualización de dropdowns
-    if (typeof refreshEditDropdowns === 'function') refreshEditDropdowns(id);
-    
+  
     // Adjuntos
     currentAttachments = target.attachments ? [...target.attachments] : [];
     if (typeof renderAttachments === 'function') renderAttachments('edit');
