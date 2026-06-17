@@ -171,10 +171,6 @@ function closeConfirmModal(accepted) { document.getElementById('confirmModal').c
 
 window.showNotice = showNotice;
 window.showSyncStatus = showSyncStatus;
-// --- SONDA DIAGNÓSTICA DE ÁREAS ---
-console.log("1. Área guardada en la tarea:", `"${target.area}"`);
-console.log("2. Opciones reales en el HTML:", Array.from(document.getElementById('editAreaInput').options).map(o => `"${o.value}"`));
-console.log("3. Resultado en pantalla:", `"${document.getElementById('editAreaInput').value}"`);
 window.showConfirm = showConfirm;
 window.closeConfirmModal = closeConfirmModal;
 
@@ -275,6 +271,10 @@ window.openEditModal = function(id) {
     setVal('editNameInput', target.name || '');
     setVal('editStatusInput', target.status || 'pending');
     setVal('editAreaInput', target.area || 'Inbox');
+    // --- SONDA DIAGNÓSTICA DE ÁREAS ---
+console.log("1. Área guardada en la tarea:", `"${target.area}"`);
+console.log("2. Opciones reales en el HTML:", Array.from(document.getElementById('editAreaInput').options).map(o => `"${o.value}"`));
+console.log("3. Resultado en pantalla:", `"${document.getElementById('editAreaInput').value}"`);
     setVal('editContextInput', target.context || '');
     setVal('editPriorityInput', target.priority || 'baja');
     setVal('editDateInput', target.date || '');
