@@ -149,6 +149,7 @@ function migrateAndNormalizeTasks() {
         }
     }
     
+   
     if (typeof tasks !== 'undefined') {
         if (Array.isArray(tasks)) { 
             walk(tasks, null); 
@@ -158,12 +159,16 @@ function migrateAndNormalizeTasks() {
         }
     }
     
+    // --- ESCUDO CONTRA CORRUPCIÓN DE FIREFOX ---
     if (changed) { 
-        localStorage.setItem('leo_agenda_v11', JSON.stringify(tasks)); 
+        try {
+            localStorage.setItem('leo_agenda_v11', JSON.stringify(tasks)); 
+        } catch (e) {
+            console.warn("!! Operación abortada: Disco local bloqueado por el navegador.", e);
+        }
     }
     return changed;
 }
-
 async function addTask() { 
     if (typeof window.getAddTaskFormData !== 'function') return;
     const data = window.getAddTaskFormData();
