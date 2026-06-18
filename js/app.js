@@ -56,6 +56,7 @@ async function quickAddSubtask(parentId, event) {
 window.quickAddSubtask = quickAddSubtask;
 
 // INICIALIZACIÓN SECUENCIAL Y ASÍNCRONA
+// INICIALIZACIÓN SECUENCIAL Y ASÍNCRONA
 window.onload = async () => { 
     try {
         if (typeof initSpeechRecognition === 'function') initSpeechRecognition(); 
@@ -67,31 +68,37 @@ window.onload = async () => {
         if (dbInput) dbInput.value = window.dbUrl;
         if (apiInput) apiInput.value = window.customApiKey;
 
-        // Garantizamos la vista antes de someter la app al bloqueo de red
+        // 1. ENLACE DE MEMORIA PRIMARIO (Vital para que 'navigate' funcione y no salte a Inbox)
+        if (typeof syncGlobals === 'function') syncGlobals();
+
+        // 2. PURGA DE AUTOCOMPLETADO (Frena la intrusión de URLs de Chrome en el buscador)
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) searchInput.value = '';
+
+        // 3. NAVEGACIÓN GARANTIZADA
         if (typeof window.navigate === 'function') {
             window.navigate('today', null, false);
         }
 
         let loadedFromCloud = false;
         
-        // Conexión aislada para no romper la interfaz si falla
+        // 4. CONEXIÓN AISLADA (No rompe la interfaz si Firefox o la red fallan)
         if (window.dbUrl && window.dbUrl.trim() !== "") { 
             loadedFromCloud = await loadDataFromCloud(); 
         } else { 
             if (typeof showSyncStatus === 'function') showSyncStatus('none'); 
         }
 
+        // 5. NORMALIZACIÓN DE DATOS
         if (typeof migrateAndNormalizeTasks === 'function') migrateAndNormalizeTasks(); 
-        if (typeof syncGlobals === 'function') syncGlobals();
 
-        // Refresco final para inyectar los datos recién llegados
+        // 6. REFRESCO VISUAL FINAL
         if (typeof updateUI === 'function') updateUI();
 
     } catch (criticalError) {
         console.error("!! Falla crítica durante la inicialización:", criticalError);
     }
 };
-
 function saveCategories() {
     try {
         localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
