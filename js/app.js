@@ -1,8 +1,10 @@
 // --- CONFIGURACIÓN GLOBAL ---
-window.DB_URL_KEY = 'leo_db_url_key';
-window.API_KEY_STORAGE_KEY = 'leo_api_key_storage_key';
-window.dbUrl = localStorage.getItem(window.DB_URL_KEY) || '';
-window.customApiKey = localStorage.getItem(window.API_KEY_STORAGE_KEY) || '';
+window.dbUrl = readDiskSafely(window.DB_URL_KEY);
+window.customApiKey = readDiskSafely(window.API_KEY_STORAGE_KEY);
+
+// INYECCIÓN QUIRÚRGICA: Sincronización de referencias locales
+dbUrl = window.dbUrl;
+customApiKey = window.customApiKey;
 
 // INSERCIÓN RÁPIDA DE SUBTAREAS (BLINDAJE GLOBAL)
 async function quickAddSubtask(parentId, event) {
