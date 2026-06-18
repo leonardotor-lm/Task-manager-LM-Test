@@ -307,11 +307,15 @@ async function saveSettings() {
         if (newUrl) localStorage.setItem(window.DB_URL_KEY, newUrl);
         else localStorage.removeItem(window.DB_URL_KEY);
 
-        if (newApiKey) localStorage.setItem(window.API_KEY_STORAGE_KEY, newApiKey);
+       if (newApiKey) localStorage.setItem(window.API_KEY_STORAGE_KEY, newApiKey);
         else localStorage.removeItem(window.API_KEY_STORAGE_KEY);
 
         window.dbUrl = newUrl;
         window.customApiKey = newApiKey;
+
+        // INYECCIÓN QUIRÚRGICA: Sincronización de referencias locales tras el guardado
+        dbUrl = window.dbUrl;
+        customApiKey = window.customApiKey;
 
         closeSettingsModal();
         showNotice("Configuración guardada.");
