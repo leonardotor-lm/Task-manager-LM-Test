@@ -1,8 +1,19 @@
-// --- CONFIGURACIÓN GLOBAL ---
+// --- CONFIGURACIÓN GLOBAL (ESTADO BLINDADO) ---
 window.DB_URL_KEY = 'leo_db_url_key';
 window.API_KEY_STORAGE_KEY = 'leo_api_key_storage_key';
-window.dbUrl = localStorage.getItem(window.DB_URL_KEY) || '';
-window.customApiKey = localStorage.getItem(window.API_KEY_STORAGE_KEY) || '';
+
+// Función pura para lectura segura de disco
+function readDiskSafely(key) {
+    try {
+        return localStorage.getItem(key) || '';
+    } catch (error) {
+        console.warn(`!! Acceso denegado o disco corrupto al leer [${key}]. Operando en modo volátil.`);
+        return '';
+    }
+}
+
+window.dbUrl = readDiskSafely(window.DB_URL_KEY);
+window.customApiKey = readDiskSafely(window.API_KEY_STORAGE_KEY);
 
 // INSERCIÓN RÁPIDA DE SUBTAREAS (BLINDAJE GLOBAL)
 async function quickAddSubtask(parentId, event) {
@@ -20,8 +31,8 @@ async function quickAddSubtask(parentId, event) {
             area: nodes[i].area || 'Inbox', 
             context: '', 
             priority: 'baja', 
-            date: '', // Corrección: la fecha no se hereda
-            startDate: '', // Corrección: la fecha de inicio tampoco se hereda
+            date: '', 
+            startDate: '', 
             time: '', 
             notes: '', 
             reminder: false, 
@@ -39,47 +50,69 @@ async function quickAddSubtask(parentId, event) {
     });
     
     renderTasks();
-    showNotice("Subtarea rápida creada.");
-    await saveData();
+    if (typeof showNotice === 'function') showNotice("Subtarea rápida creada.");
+    if (typeof saveData === 'function') await saveData();
 }
-// Forzamos la exposición al objeto global para garantizar que el HTML la encuentre
 window.quickAddSubtask = quickAddSubtask;
-// INICIALIZACIÓN SECUENCIAL
+
+// INICIALIZACIÓN SECUENCIAL Y ASÍNCRONA
 window.onload = async () => { 
-    initSpeechRecognition(); 
-    updateDateDisplay(); 
-    
-    // Seteamos valores iniciales si existen
-    const dbInput = document.getElementById('settingsDbUrlInput');
-    const apiInput = document.getElementById('settingsApiKeyInput');
-    
-    if (dbInput) dbInput.value = window.dbUrl;
-    if (apiInput) apiInput.value = window.customApiKey;
+    try {
+        if (typeof initSpeechRecognition === 'function') initSpeechRecognition(); 
+        if (typeof updateDateDisplay === 'function') updateDateDisplay(); 
+        
+        const dbInput = document.getElementById('settingsDbUrlInput');
+        const apiInput = document.getElementById('settingsApiKeyInput');
+        
+        if (dbInput) dbInput.value = window.dbUrl;
+        if (apiInput) apiInput.value = window.customApiKey;
 
-    let loadedFromCloud = false;
-    
-    // Conexión automática
-    if (window.dbUrl && window.dbUrl.trim() !== "") { 
-        loadedFromCloud = await loadDataFromCloud(); 
-    } else { 
-        showSyncStatus('none'); 
+        // Garantizamos la vista antes de someter la app al bloqueo de red
+        if (typeof window.navigate === 'function') {
+            window.navigate('today', null, false);
+        }
+
+        let loadedFromCloud = false;
+        
+        // Conexión aislada para no romper la interfaz si falla
+        if (window.dbUrl && window.dbUrl.trim() !== "") { 
+            loadedFromCloud = await loadDataFromCloud(); 
+        } else { 
+            if (typeof showSyncStatus === 'function') showSyncStatus('none'); 
+        }
+
+        if (typeof migrateAndNormalizeTasks === 'function') migrateAndNormalizeTasks(); 
+        if (typeof syncGlobals === 'function') syncGlobals();
+
+        // Refresco final para inyectar los datos recién llegados
+        if (typeof updateUI === 'function') updateUI();
+
+    } catch (criticalError) {
+        console.error("!! Falla crítica durante la inicialización:", criticalError);
     }
-
-    migrateAndNormalizeTasks(); 
-    if (typeof syncGlobals === 'function') syncGlobals();
-    if (typeof window.navigate === 'function') window.navigate('today', null, false);
 };
+
 function saveCategories() {
-    localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
-    localStorage.setItem('leo_custom_contexts', JSON.stringify(customContexts));
+    try {
+        localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
+        localStorage.setItem('leo_custom_contexts', JSON.stringify(customContexts));
+    } catch (e) {
+        console.warn("!! Imposible guardar categorías. Disco bloqueado.");
+    }
 }
 
 // MIGRACIÓN Y NORMALIZACIÓN
 function migrateAndNormalizeTasks() { 
     let changed = false;
-    if (!customAreas.includes("Inbox")) { customAreas.unshift("Inbox"); saveCategories(); changed = true; }
+    if (!customAreas.includes("Inbox")) { 
+        customAreas.unshift("Inbox"); 
+        saveCategories(); 
+        changed = true; 
+    }
     const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
-    const now = Date.now();
+    const now = Date.now(); 
+    // ... el resto de tu función continúa igual
+}
     
     function walk(nodes, parentArea) {
         if (!Array.isArray(nodes)) return;
