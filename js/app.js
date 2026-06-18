@@ -1,11 +1,18 @@
-// --- CONFIGURACIÓN GLOBAL ---
+// --- CONFIGURACIÓN GLOBAL (ESTADO BLINDADO) ---
+window.DB_URL_KEY = 'leo_db_url_key';
+window.API_KEY_STORAGE_KEY = 'leo_api_key_storage_key';
+
+function readDiskSafely(key) {
+    try {
+        return localStorage.getItem(key) || '';
+    } catch (error) {
+        console.warn(`!! Acceso denegado o disco corrupto al leer [${key}]. Operando en modo volátil.`);
+        return '';
+    }
+}
+
 window.dbUrl = readDiskSafely(window.DB_URL_KEY);
 window.customApiKey = readDiskSafely(window.API_KEY_STORAGE_KEY);
-
-// INYECCIÓN QUIRÚRGICA: Sincronización de referencias locales
-dbUrl = window.dbUrl;
-customApiKey = window.customApiKey;
-
 // INSERCIÓN RÁPIDA DE SUBTAREAS (BLINDAJE GLOBAL)
 async function quickAddSubtask(parentId, event) {
     if (event) event.stopPropagation(); 
