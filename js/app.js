@@ -100,19 +100,16 @@ function saveCategories() {
         console.warn("!! Imposible guardar categorías. Disco bloqueado.");
     }
 }
-
 // MIGRACIÓN Y NORMALIZACIÓN
 function migrateAndNormalizeTasks() { 
     let changed = false;
-    if (!customAreas.includes("Inbox")) { 
+    if (typeof customAreas !== 'undefined' && !customAreas.includes("Inbox")) { 
         customAreas.unshift("Inbox"); 
         saveCategories(); 
         changed = true; 
     }
     const tenDaysMs = 10 * 24 * 60 * 60 * 1000;
     const now = Date.now(); 
-    // ... el resto de tu función continúa igual
-}
     
     function walk(nodes, parentArea) {
         if (!Array.isArray(nodes)) return;
@@ -151,8 +148,19 @@ function migrateAndNormalizeTasks() {
             if (n.subtasks) walk(n.subtasks, n.area);
         }
     }
-    if (Array.isArray(tasks)) { walk(tasks, null); } else { tasks = []; changed = true; }
-    if (changed) { localStorage.setItem('leo_agenda_v11', JSON.stringify(tasks)); }
+    
+    if (typeof tasks !== 'undefined') {
+        if (Array.isArray(tasks)) { 
+            walk(tasks, null); 
+        } else { 
+            tasks = []; 
+            changed = true; 
+        }
+    }
+    
+    if (changed) { 
+        localStorage.setItem('leo_agenda_v11', JSON.stringify(tasks)); 
+    }
     return changed;
 }
 
