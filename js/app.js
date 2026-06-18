@@ -69,11 +69,16 @@ window.onload = async () => {
         if (apiInput) apiInput.value = window.customApiKey;
 
         // 1. ENLACE DE MEMORIA PRIMARIO (Vital para que 'navigate' funcione y no salte a Inbox)
+        // 1. ENLACE DE MEMORIA PRIMARIO
         if (typeof syncGlobals === 'function') syncGlobals();
 
-        // 2. PURGA DE AUTOCOMPLETADO (Frena la intrusión de URLs de Chrome en el buscador)
-        const searchInput = document.getElementById('searchInput');
-        if (searchInput) searchInput.value = '';
+        // 2. PURGA DE AUTOCOMPLETADO (Retardo forzado para ganarle a Chrome)
+        setTimeout(() => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) {
+                searchInput.value = '';
+            }
+        }, 500); // 500 milisegundos de espera
 
         // 3. NAVEGACIÓN GARANTIZADA
         if (typeof window.navigate === 'function') {
