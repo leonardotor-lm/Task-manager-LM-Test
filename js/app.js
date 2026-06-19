@@ -53,10 +53,17 @@ async function quickAddSubtask(parentId, event) {
 }
 // Forzamos la exposición al objeto global para garantizar que el HTML la encuentre
 window.quickAddSubtask = quickAddSubtask;
-// INICIALIZACIÓN SECUENCIAL
+// INICIALIZACIÓN SECUENCIAL Y ASÍNCRONA
 window.onload = async () => { 
-    initSpeechRecognition(); 
-    updateDateDisplay(); 
+        try {
+        // --- INYECCIÓN QUIRÚRGICA: Sincronización diferida ---
+        dbUrl = window.dbUrl;
+        customApiKey = window.customApiKey;
+        // -----------------------------------------------------
+
+        if (typeof initSpeechRecognition === 'function') initSpeechRecognition(); 
+        if (typeof updateDateDisplay === 'function') updateDateDisplay(); 
+        // ... (el resto de la función continúa intacto)
     
     // Seteamos valores iniciales si existen
     const dbInput = document.getElementById('settingsDbUrlInput');
