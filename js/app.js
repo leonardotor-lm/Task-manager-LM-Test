@@ -55,35 +55,53 @@ async function quickAddSubtask(parentId, event) {
 window.quickAddSubtask = quickAddSubtask;
 // INICIALIZACIÓN SECUENCIAL Y ASÍNCRONA
 window.onload = async () => { 
-        try {
-        // --- INYECCIÓN QUIRÚRGICA: Sincronización diferida ---
+    try {
+        // --- 1. SINCRONIZACIÓN DE VARIABLES LOCALES ---
         dbUrl = window.dbUrl;
         customApiKey = window.customApiKey;
-        // -----------------------------------------------------
+
+        // --- 2. ENLACE DE MEMORIA PRIMARIO ---
+        if (typeof syncGlobals === 'function') syncGlobals();
 
         if (typeof initSpeechRecognition === 'function') initSpeechRecognition(); 
         if (typeof updateDateDisplay === 'function') updateDateDisplay(); 
-        // ... (el resto de la función continúa intacto)
-    
-    // Seteamos valores iniciales si existen
-    const dbInput = document.getElementById('settingsDbUrlInput');
-    const apiInput = document.getElementById('settingsApiKeyInput');
-    
-    if (dbInput) dbInput.value = window.dbUrl;
-    if (apiInput) apiInput.value = window.customApiKey;
+        
+        const dbInput = document.getElementById('settingsDbUrlInput');
+        const apiInput = document.getElementById('settingsApiKeyInput');
+        
+        if (dbInput) dbInput.value = window.dbUrl;
+        if (apiInput) apiInput.value = window.customApiKey;
 
-    let loadedFromCloud = false;
-    
-    // Conexión automática
-    if (window.dbUrl && window.dbUrl.trim() !== "") { 
-        loadedFromCloud = await loadDataFromCloud(); 
-    } else { 
-        showSyncStatus('none'); 
+        // --- 3. PURGA DE AUTOCOMPLETADO DE CHROME ---
+        setTimeout(() => {
+            const searchInput = document.getElementById('searchInput');
+            if (searchInput) searchInput.value = '';
+        }, 500);
+
+        // --- 4. NAVEGACIÓN GARANTIZADA ---
+        if (typeof window.navigate === 'function') {
+            window.navigate('today', null, false);
+        }
+
+        let loadedFromCloud = false;
+        
+        // --- 5. CONEXIÓN A LA NUBE ---
+        if (window.dbUrl && window.dbUrl.trim() !== "") { 
+            loadedFromCloud = await loadDataFromCloud(); 
+        } else { 
+            if (typeof showSyncStatus === 'function') showSyncStatus('none'); 
+        }
+
+        // --- 6. NORMALIZACIÓN ---
+        if (typeof migrateAndNormalizeTasks === 'function') migrateAndNormalizeTasks(); 
+
+        // --- 7. REFRESCO VISUAL ---
+        if (typeof updateUI === 'function') updateUI();
+
+    } catch (criticalError) {
+        // CIERRE ESTRICTO DEL BLOQUE TRY
+        console.error("!! Falla crítica durante la inicialización:", criticalError);
     }
-
-    migrateAndNormalizeTasks(); 
-    if (typeof syncGlobals === 'function') syncGlobals();
-    if (typeof window.navigate === 'function') window.navigate('today', null, false);
 };
 function saveCategories() {
     localStorage.setItem('leo_custom_areas', JSON.stringify(customAreas));
